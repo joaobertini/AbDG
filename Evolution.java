@@ -3,9 +3,9 @@
  */
 public class Evolution {
 
-    public Evolution(NetworkFull[] networksFull, AttributeHandler[] vetAtrHandler, double[][] m, int poolsize, double n){
+    public Evolution(NetworkFull networksFull, AttributeHandler[] vetAtrHandler, double[][] m, int poolsize, double n){
 
-        nroClasses = networksFull.length;
+      //  nroClasses = networksFull.length;
         matriz = m;
         neta = n;
         popSize = poolsize;
@@ -87,25 +87,25 @@ public class Evolution {
         int line = matriz.length, indMaior;
         int coll = matriz[0].length;
 
-        for(int b = 0; b < nroClasses; b++){                                  // vetAttrCorr
-            abdg[b].criaProbClassWeightedGeneticAlgorithm(matriz,va);       // Weighted(matriz,attrGain);                // ############### classificador 3
+                               // vetAttrCorr
+            abdg.criaProbClassWeightedGeneticAlgorithm(matriz,va);       // Weighted(matriz,attrGain);                // ############### classificador 3
             //    vetAux = networks[b].getVetCorrelation();
-        }
+
 
 
         for(int a = 0; a < line; a++){
 
-           somaProb = abdg[0].getProb(a);
-           somaSum = abdg[0].getSum(a);
+           somaProb = abdg.getProb(a,1);
+           somaSum = abdg.getSum(a,1);
 
            somaSum += somaProb;
            maior = somaSum;
            indMaior = 0;
 
-           for(int c = 1; c < nroClasses; c++){
+           for(int c = 2; c < nroClasses+1; c++){
 
-               somaProb = abdg[c].getProb(a);
-               somaSum = abdg[c].getSum(a);
+               somaProb = abdg.getProb(a,c);
+               somaSum = abdg.getSum(a,c);
 
                somaSum += somaProb;
                somaSum = somaSum;
@@ -116,7 +116,7 @@ public class Evolution {
                  }
               }
 
-               classe = abdg[indMaior].getClasse();
+               classe = indMaior;
 
 
                if(classe == matriz[a][coll-1])
@@ -136,10 +136,7 @@ public class Evolution {
         int line = matriz.length, indMaior = 0;
         int coll = matriz[0].length;
 
-        for(int b = 0; b < nroClasses; b++){                                  // vetAttrCorr
-            abdg[b].criaProbClassWeightedGeneticAlgorithmF1(matriz,va);       // Weighted(matriz,attrGain);                // ############### classificador 3
-            //    vetAux = networks[b].getVetCorrelation();
-        }
+            abdg.criaProbClassWeightedGeneticAlgorithmF1(matriz,va);       // Weighted(matriz,attrGain);                // ############### classificador 3
 
 
         for(int a = 0; a < line; a++){
@@ -147,8 +144,8 @@ public class Evolution {
             somaProb = 0;
             somaSum = 0;
             for(int b = 0; b < nroClasses; b++){
-                somaProb += abdg[b].getProb(a);
-                somaSum += abdg[b].getSum(a);
+                somaProb += abdg.getProb(a,b);
+                somaSum += abdg.getSum(a,b);
             }
 
 
@@ -156,23 +153,23 @@ public class Evolution {
                 if(somaSum == 0 && somaProb == 0)
                     maior = 0;
                 else if(somaSum == 0)
-                    maior = (abdg[0].getProb(a)/somaProb);
+                    maior = (abdg.getProb(a,1)/somaProb);
                 else if(somaProb == 0)
-                    maior = (abdg[0].getSum(a)/somaSum);
+                    maior = (abdg.getSum(a,1)/somaSum);
                 else
-                    maior = (neta*(abdg[0].getSum(a)/somaSum) + (1-neta)*(abdg[0].getProb(a)/somaProb));
+                    maior = (neta*(abdg.getSum(a,1)/somaSum) + (1-neta)*(abdg.getProb(a,1)/somaProb));
 
                 indMaior = 0;
-                for(int c = 1; c < nroClasses; c++){
+                for(int c = 2; c < nroClasses+1; c++){
 
                     if(somaSum != 0 && somaProb != 0)
-                        aux = (neta*(abdg[c].getSum(a)/somaSum) + (1-neta)*(abdg[c].getProb(a)/somaProb));
+                        aux = (neta*(abdg.getSum(a,c)/somaSum) + (1-neta)*(abdg.getProb(a,c)/somaProb));
                     else if(somaSum == 0 && somaProb == 0)
                         aux = 0;
                     else if(somaSum == 0)
-                        aux = (abdg[c].getProb(a)/somaProb);
+                        aux = (abdg.getProb(a,c)/somaProb);
                     else if(somaProb == 0)
-                        aux = (abdg[c].getSum(a)/somaSum);
+                        aux = (abdg.getSum(a,c)/somaSum);
 
 
                     if(aux > maior){
@@ -181,7 +178,7 @@ public class Evolution {
                     }
                 }
 
-                classe = abdg[indMaior].getClasse();
+                classe = indMaior;
 
             if(classe == matriz[a][coll-1])
                 acertos++;
@@ -291,7 +288,7 @@ public class Evolution {
     }
 
     private GAedges[][] vetGAedges;
-    private NetworkFull[] abdg;
+    private NetworkFull abdg;
     private int nroClasses, popSize, numEdgeFull;
     private double[][] matriz;
     private int[] bestFitness;

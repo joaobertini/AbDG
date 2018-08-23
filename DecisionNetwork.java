@@ -187,112 +187,6 @@ public class DecisionNetwork {
         //artificialDataHighDimension();
     }
 
-    public DecisionNetwork(char[] inputFile1, char[] inputFile2){
-
-        double[][] matriz = adjustFile(inputFile1);
-        double[][] test = adjustFile(inputFile2);
-        double[] classes;
-
-        int line = matriz.length;     // numero de elementos
-        int coll = matriz[0].length;  // numero de atrbutos
-        numAtr = coll;
-        double[] tempClass = new double[line];
-
-        // descobre quantas classes tem o problema
-        int cont = 0;
-        boolean newClass = true;
-
-
-        // descobre quantas classes possui E
-        for(int p = 0; p < line; p++){
-            newClass = true;
-            for(int q = 0; q < cont; q++)
-                if(matriz[p][coll - 1] == tempClass[q])
-                    newClass = false;
-
-            if(newClass){
-                tempClass[cont] = matriz[p][coll - 1];
-                cont++;
-            }
-        }
-
-        Classes = new double[cont]; //declara vetor de classes
-        // em Classes estao as classes originais
-        for(int c = 0; c < cont; c++)
-            Classes[c] = tempClass[c];
-
-        nroClasses = cont;
-
-
-          if(nroClasses == 2){
-            for(int n = 0; n < line; n++)
-                if(matriz[n][coll-1] == -1 || matriz[n][coll-1] == 0)
-                    matriz[n][coll-1] = 2;
-
-            if(Classes[0] == -1 || Classes[0] == 0)
-                Classes[0] = 2;
-
-            if(Classes[1] == -1 || Classes[1] == 0)
-                Classes[1] = 2;
-        }
-
-
-
-        // ------------------------------    inicia constru��o do grafo 
-        double[][] oneClassTrain;
-        networks = new Networks[nroClasses];
-
-        particionaAtributo(matriz);
-
-        int[] auxAtr = new int[vetAtrHandler.length];
-        int contAtrZero = 0;
-
-        for(int a = 0; a < coll - 1; a++){
-            vetAtrHandler[a].MDLP();
-            //   vetAtrHandler[a].optmizeIntervals();
-            //   vetAtrHandler[a].histogramPart(3);        // numero de intervalos n�o de thresholds.   retirar para o caso de info gain
-            vetAtrHandler[a].calculateIntervalGain();      // calcula ganho de informa��o de intervalo atual
-            if(vetAtrHandler[a].getIntervalGain() == 0){
-                auxAtr[a] = 1;
-                contAtrZero++;
-            }
-
-            //  vetAtrHandler[a].intervalWeights();         // calcula pesos dos intervalos
-            vetAtrHandler[a].intervalWeightsEntropy();
-        }
-
-        // atualiza matriz - retira atributos com ganho 0    -   n�o se aplica � imputa��o
-        /*            if(contAtrZero != 0){
-                        matriz = retiraAtributos(auxAtr, contAtrZero, matriz);
-                        coll = matriz[0].length;
-                    }
-        */
-
-         // vetor que armazena correla��es de instancias independentes de suas classes
-       AttributeCorrelation[] vetAtrCorrAllClass = classIndependentCorrs(vetAtrHandler,matriz);
-
-        for(int i = 0; i < nroClasses; i++) {
-            oneClassTrain = criaTreinamento(matriz,Classes[i]);
-            if(oneClassTrain.length > 0){
-                networks[i] = new Networks(oneClassTrain, Classes[i], matriz.length);
-                networks[i].learn(vetAtrHandler);
-            }
-            else
-                System.out.println("uma classe");
-        }
-
-
-        normalizeCorrelations(coll-1);
-        normalizeIntervalGain(coll-1);
-
-    //   classes = DnoClassifierRetClasses(test,vetAtrCorrAllClass);
-
-     //  for(int i = 0; i < classes.length ; i++)
-     //     System.out.println(classes[i]);
-
-
-    }
-
 
     public DecisionNetwork(char[] inputFile, String filename){  // deals Heterogeneous Attributes
 
@@ -455,7 +349,7 @@ public class DecisionNetwork {
 
    //    criaMatrizMissingAttrubuteNA(matriz,filename);        // atualmente rodando com prob = 0
 
-   //   matriz = normalizacaoMaiorMenor(matriz);    // normaliza��o para AbDG
+      matriz = normalizacaoMaiorMenor(matriz);    // normaliza��o para AbDG
 
    //   criaMatrizMissingAttrubuteNALinXCol(matriz,filename);       // gera as 5 versoes com prob 0.1 a 0.5
 
@@ -489,8 +383,9 @@ public class DecisionNetwork {
 
   //      matriz = normalizacaoMaiorMenor(matriz);    // normaliza��o para AbDG
 
-       criaTreinoeTesteRefining(matriz, filename);     //  cria treino e teste refinando ambos
+    //   criaTreinoeTesteRefining(matriz, filename);     //  cria treino e teste (nao alterado) refinando ambos
 
+     //   criaTreinoeTesteRefiningExtension(matriz,filename);  // cria treino e teste com ruido
 
 
        //      simulateRefiningAttributeRandom(matriz, filename);
@@ -515,7 +410,7 @@ public class DecisionNetwork {
 
 //      stratifiedCrossValidation(matriz,0);           // ordenado
 
-      //stratifiedCrossValidationFull(matriz,0);    //  full-connected
+      stratifiedCrossValidationFull(matriz,0);    //  full-connected
 
    //     stratifiedCrossValidationGeneticallyDefinedStructure(matriz,0);    //  geneticamente definido
 
@@ -785,10 +680,6 @@ public class DecisionNetwork {
                    matrizTeste = ordenaAtributosPorGanho(matrizTeste,ordem);
 
 
-                // vetor que armazena correla��es de instancias independentes de suas classes
-               AttributeCorrelation[] vetAtrCorrAllClass = classIndependentCorrs(vetAtrHandler,matrizTreino);
-
-
                for(int i = 0; i < nroClasses; i++) {   //  anda em classes
                  //  ordem = ordenaAtributos(Classes[i]);
                    oneClassTrain = criaTreinamento(matrizTreino,Classes[i]);
@@ -887,7 +778,6 @@ public class DecisionNetwork {
 
           while(it <= fold){
 
-              networksFull = new NetworkFull[nroClasses];
               coll = matriz[0].length;
               contTreino = 0;
               contTeste = 0;
@@ -945,28 +835,29 @@ public class DecisionNetwork {
 
      // %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%   FULL   %%%%%%%%%%%%%%%%
 
-          if(contAtrZero != 0 && contAtrZero != (coll-1)){
+/*          if(contAtrZero != 0 && contAtrZero != (coll-1)){
                    matrizTreino = retiraAtributos(auxAtr, contAtrZero, matrizTreino);
                    matrizTeste = retiraAtributosTeste(auxAtr, contAtrZero, matrizTeste);
                    coll = matrizTreino[0].length;
                }
-
+*/
               //#############################################
 
 
 
-         for(int i = 0; i < nroClasses; i++) {   // para experimento com 3 classe  - anda em classes
-            oneClassTrain = criaTreinamento(matrizTreino,Classes[i]);
-            networksFull[i] = new NetworkFull(oneClassTrain, Classes[i], matrizTreino.length);
-            networksFull[i].learnFullConection(vetAtrHandler);
-        }
+      //   for(int i = 0; i < nroClasses; i++) {   // para experimento com 3 classe  - anda em classes
+      //      oneClassTrain = criaTreinamento(matrizTreino,Classes[i]);
+      //      networksFull[i] = new NetworkFull(oneClassTrain, Classes[i], matrizTreino.length);
+      //      networksFull[i].learnFullConection(vetAtrHandler);
+      //  }
+
+        networksFull = new NetworkFull(matrizTreino, nroClasses, vetAtrHandler);
+        networksFull.learnFullConection();
 
         int numAttr = coll - 1;
         int numEdges = numAttr + (numAttr*(numAttr-3))/2;
 
-      //  printNetwork(coll-1);
-
-        normalizeCorrelationsFullVersion(numEdges);
+        networksFull.normalizeCorrelationsFullVersion();  // normaliza correlações de arestas
 
         normalizeIntervalGain(coll-1);
 
@@ -1111,7 +1002,7 @@ public class DecisionNetwork {
 
                     if(it != te){         // pois te � conjunto de teste e nao pode ser incluido nesta fase
 
-                        networksFull = new NetworkFull[nroClasses];
+                       // networksFull = new NetworkFull[nroClasses];
                         contTreino = 0;
                         contValidacao = 0;
                         for(int i = 0; i < line; i++)
@@ -1175,20 +1066,22 @@ public class DecisionNetwork {
 
                         //#############################################
 
+                        networksFull = new NetworkFull(matrizTreino, nroClasses, vetAtrHandler);
+                        networksFull.learnFullConection();
 
-
-                        for(int i = 0; i < nroClasses; i++) {   // para experimento com 3 classe  - anda em classes
+                     /*   for(int i = 0; i < nroClasses; i++) {   // para experimento com 3 classe  - anda em classes
                             oneClassTrain = criaTreinamento(matrizTreino,Classes[i]);
                             networksFull[i] = new NetworkFull(oneClassTrain, Classes[i], matrizTreino.length);
                             networksFull[i].learnFullConection(vetAtrHandler);
                         }
 
+                    */
                         int numAttr = coll - 2;
                         int numEdges = numAttr + (numAttr*(numAttr-3))/2;
 
                         //  printNetwork(coll-1);
 
-                        normalizeCorrelationsFullVersion(numEdges);
+                        networksFull.normalizeCorrelationsFullVersion();
 
                         normalizeIntervalGain(coll-1);
 
@@ -1226,7 +1119,7 @@ public class DecisionNetwork {
                 // %%%%%%%%%%%%%%%%% cria nova rede
 
 
-                networksFull = new NetworkFull[nroClasses];
+              //  networksFull = new NetworkFull[nroClasses];
                 particionaAtributo(matrizTrVal);
 
                                       int[] auxAtr = new int[vetAtrHandler.length];
@@ -1266,20 +1159,20 @@ public class DecisionNetwork {
 
                                       //#############################################
 
-
-
-                                      for(int i = 0; i < nroClasses; i++) {   // para experimento com 3 classe  - anda em classes
+                                        networksFull = new NetworkFull(matrizTrVal, nroClasses, vetAtrHandler);
+                                        networksFull.learnFullConection();
+                                  /*    for(int i = 0; i < nroClasses; i++) {   // para experimento com 3 classe  - anda em classes
                                           oneClassTrain = criaTreinamento(matrizTrVal,Classes[i]);
                                           networksFull[i] = new NetworkFull(oneClassTrain, Classes[i], matrizTrVal.length);
                                           networksFull[i].learnFullConection(vetAtrHandler);
                                       }
-
+                                    */
                                       int numAttr = coll - 2;
                                       int numEdges = numAttr + (numAttr*(numAttr-3))/2;
 
                                       //  printNetwork(coll-1);
 
-                                      normalizeCorrelationsFullVersion(numEdges);
+                                      networksFull.normalizeCorrelationsFullVersion();
 
                                       normalizeIntervalGain(coll-1);
 
@@ -1349,7 +1242,7 @@ public class DecisionNetwork {
 
             while(it <= fold){
 
-                networksFull = new NetworkFull[nroClasses];
+               // networksFull = new NetworkFull[nroClasses];
                 coll = matriz[0].length;
                 contTreino = 0;
                 contTeste = 0;
@@ -1416,19 +1309,15 @@ public class DecisionNetwork {
                 //#############################################
 
 
-
-                for(int i = 0; i < nroClasses; i++) {   // para experimento com 3 classe  - anda em classes
-                    oneClassTrain = criaTreinamento(matrizTreino,Classes[i]);
-                    networksFull[i] = new NetworkFull(oneClassTrain, Classes[i], matrizTreino.length);
-                    networksFull[i].learnFullConection(vetAtrHandler);
-                }
+                networksFull = new NetworkFull(matrizTreino, nroClasses, vetAtrHandler);
+                networksFull.learnFullConection();
 
                 int numAttr = coll - 1;
                 int numEdges = numAttr + (numAttr*(numAttr-3))/2;
 
                 //  printNetwork(coll-1);
 
-                normalizeCorrelationsFullVersion(numEdges);
+                networksFull.normalizeCorrelationsFullVersion();
 
                 normalizeIntervalGain(coll-1);
 
@@ -1548,7 +1437,7 @@ public class DecisionNetwork {
 
           while(it <= fold){
 
-              networksFull = new NetworkFull[nroClasses];
+              //networksFull = new NetworkFull[nroClasses];
               coll = matriz[0].length;
               contTreino = 0;
               contTeste = 0;
@@ -1616,18 +1505,15 @@ public class DecisionNetwork {
 
 
 
-         for(int i = 0; i < nroClasses; i++) {   // para experimento com 3 classe  - anda em classes
-            oneClassTrain = criaTreinamento(matrizTreino,Classes[i]);
-            networksFull[i] = new NetworkFull(oneClassTrain, Classes[i], matrizTreino.length);
-            networksFull[i].learnFullConectionPAPER(vetAtrHandler);
-        }
+       networksFull = new NetworkFull(matrizTreino, nroClasses, vetAtrHandler);
+       networksFull.learnFullConection();
 
         int numAttr = coll - 1;
         int numEdges = numAttr + (numAttr*(numAttr-3))/2;
 
       //  printNetwork(coll-1);
 
-        normalizeCorrelationsFullVersion(numEdges);
+        networksFull.normalizeCorrelationsFullVersion();
 
         normalizeIntervalGain(coll-1);
 
@@ -1668,7 +1554,9 @@ public class DecisionNetwork {
    }
 
 
-    public double[][] refiningForTestAssumingAClassFull(double[][] testSet, double probChange){ // matriz teste e para refinar intervalos
+
+    // REFINING FOR TEST
+  /*  public double[][] refiningForTestAssumingAClassFull(double[][] testSet, double probChange){ // matriz teste e para refinar intervalos
         // atribui valor aleatorio do intervalo encontrado
         //   usar probs obtidas dos erros no treino
         int len = testSet.length;
@@ -1707,7 +1595,7 @@ public class DecisionNetwork {
                     flag2 = false;
                     for(int c = 0; c < nroClasses; c++) {          // encontra rede da classe da instacia que tem o atributo faltante
                         if(refInstance[c][j] == emptyValue){
-                            intervalo = networksFull[c].retrieveIntervalExperimenting(refInstance[c], j, vetAtrHandler[j].getNumInterval());
+                            intervalo = networksFull.retrieveIntervalExperimenting(refInstance[c], j, vetAtrHandler[j].getNumInterval());
                             if(testSet[k][j] > intervalo[0] && testSet[k][j] < intervalo[1]){ // valor original esta dentro do intervalo inferido
                                 refInstance[c][j] = testSet[k][j];
                                 flag2 = true;
@@ -1842,6 +1730,8 @@ public class DecisionNetwork {
 
     }
 
+    */
+
     public double[][] compactaConjunto(double[][] A, int numEl){
 
         int coll = A[0].length;
@@ -1854,157 +1744,7 @@ public class DecisionNetwork {
         return newA;
     }
 
-    public void mostraRede(double[][] matriz){
 
-          int coll = matriz[0].length;
-          double[][] oneClassTrain;
-          double acc = 0;
-          networks = new Networks[nroClasses];
-
-          particionaAtributo(matriz);
-
-             int[] auxAtr = new int[vetAtrHandler.length];
-             int[] ordem;
-             for(int o = 0; o < auxAtr.length; o++)
-                auxAtr[o] = 0;
-             int contAtrZero = 0;
-
-             for(int a = 0; a < coll - 1; a++){
-                if(attributeType[a] == 'n')         // atributo real - numerico
-                       vetAtrHandler[a].EDADB(nroClasses);  // vetAtrHandler[a].histogramPart(3); //  vetAtrHandler[a].MDLP();  //;  //  //     // vetAtrHandler[a].histogramPart(3);       // usa metodo EDA-DB para obter intervalos
-                    else
-                       vetAtrHandler[a].Categorical();                                // define intervalos - recursivamente - segundo criterio MDLPC - fayyad
-
-
-                 // Gambiarra
-
-             /*     if(a == 0){
-                     double[] novoAtr = new double[4];
-                     novoAtr[0] = 4.3;
-                     novoAtr[1] = 5.4;
-                     novoAtr[2] = 6.7;
-                     novoAtr[3] = 7.9;
-
-                   vetAtrHandler[a].setVetAtr(novoAtr);
-                 }
-              */
-          /*       if(a == 1){
-                     double[] novoAtr = new double[4];
-                     novoAtr[0] = 2.0;
-                     novoAtr[1] = 2.7;
-                     novoAtr[2] = 3.6;
-                     novoAtr[3] = 4.4;
-
-                   vetAtrHandler[a].setVetAtr(novoAtr);
-                 }
-
-                   if(a == 2){
-                     double[] novoAtr = new double[4];
-                     novoAtr[0] = 1.0;
-                     novoAtr[1] = 2.9;
-                     novoAtr[2] = 4.9;
-                     novoAtr[3] = 6.9;
-
-                   vetAtrHandler[a].setVetAtr(novoAtr);
-                 }
-             */
-
-                 //  vetAtrHandler[a].optmizeIntervals();
-                 //   vetAtrHandler[a].histogramPart(3);        // numero de intervalos n�o de thresholds.   retirar para o caso de info gain
-                 vetAtrHandler[a].calculateIntervalGain();    // calcula ganho de informa��o de intervalo atual
-                 if(vetAtrHandler[a].getIntervalGain() == 0){
-                     auxAtr[a] = 1;
-                     contAtrZero++;
-                 }
-
-            //    System.out.println(a + "  " + vetAtrHandler[a].getIntervalGain());
-                   vetAtrHandler[a].intervalWeights();         // calcula pesos dos intervalos
-               //  vetAtrHandler[a].intervalWeightsEntropy();
-             }
-
-             // atualiza matriz - retira atributos com ganho 0           // ************ tirar atrs com 0 de ganho
-           if(contAtrZero != 0){
-                 matriz = retiraAtributos(auxAtr, contAtrZero, matriz);
-                // matrizTeste = retiraAtributosTeste(auxAtr, contAtrZero, matrizTeste);
-                 coll = matriz[0].length;
-             }
-
-              ordem = ordenaVetorDeAtributos(coll);                // ordena atributos por ganho de informa��o
-              matriz = ordenaAtributosPorGanho(matriz,ordem);
-
-
-
-              // vetor que armazena correla��es de instancias independentes de suas classes
-             AttributeCorrelation[] vetAtrCorrAllClass = classIndependentCorrs(vetAtrHandler,matriz);
-
-
-             for(int i = 0; i < nroClasses; i++) {   //  anda em classes
-               //  ordem = ordenaAtributos(Classes[i]);
-                 oneClassTrain = criaTreinamento(matriz,Classes[i]);
-                 networks[i] = new Networks(oneClassTrain, Classes[i], matriz.length);
-                 networks[i].learn(vetAtrHandler);
-
-             }
-
-             normalizeCorrelations(coll-1);
-
-             normalizeIntervalGain(coll-1);
-
-
-            System.out.println("Pesos de intervalos ");
-            for(int v = 0; v < vetAtrHandler.length; v++)
-               vetAtrHandler[v].printWeightAtr();
-
-            for(int i = 0; i < nroClasses; i++) {
-              System.out.println(" Correla��o classe " + Classes[i]);
-              for(int j = 0; j < networks[i].getVetCorrelation().length; j++)
-                 networks[i].getVetCorrelation()[j].showCM();
-            }
-
-         acc = DnoClassifier(matriz,vetAtrCorrAllClass,0.5);
-
-         System.out.println("Erros " + acc);
-
-    }
-
-
-     public AttributeCorrelation[] classIndependentCorrs(AttributeHandler[] atr, double[][] matriz){
-        
-      int line = matriz.length;
-      int coll = matriz[0].length;
-
-      AttributeCorrelation[] vetAtrCorrAllClass = new AttributeCorrelation[coll-2];
-     //  int NroInterval = 6;
-     //  int intDescript = NroInterval + 1;
-     //  intervalos = new double[coll-1][intDescript];               // matriz que define intervalos linha = atributo/  col = valor de corte
-                                                // inicialmente histogramas tem mesmo valor 8;
-
-      for(int i = 0; i < coll-2; i++){
-         vetAtrCorrAllClass[i] = new AttributeCorrelation(i, i+1, atr[i].getVetAtr(), atr[i+1].getVetAtr());
-       }
-
-/*       int i1, i2;
-       correlation = new double[NroInterval][NroInterval];
-       for(int a = 0; a < NroInterval; a++)
-          for(int b = 0; b < NroInterval; b++)
-             correlation[a][b] = 0;
- */
-
-     // for(int i = 0; i < line; i++)
-
-
-
-      for(int j = 0; j < coll - 2; j++) {                        // separar por classe
-          for(int i = 0; i < line; i++)
-             vetAtrCorrAllClass[j].buildCorrelation(matriz[i][j],matriz[i][j+1]);
-     //    vetCorrelations[j].showCM();
-         vetAtrCorrAllClass[j].createWeights(line);
-     //     vetCorrelations[j].showCM();
-      }
-
-
-     return vetAtrCorrAllClass;
-     }
 
     public double[][] criaTreinamento(double[][] matriz, double classe){
         int cont = 0;
@@ -2429,7 +2169,7 @@ public class DecisionNetwork {
            int part10 = line / 10;
            int i1 = 0, i2 = 0;
            int[] validation = new int[10];
-           networksFull = new NetworkFull[nroClasses];                     // ###############
+         //  networksFull = new NetworkFull[nroClasses];                     // ###############
 
            int atrOff, it = 5;
            double rand, prob;
@@ -2461,13 +2201,12 @@ public class DecisionNetwork {
                coll = matriz[0].length;
            }
        */
-           for(int i = 0; i < nroClasses; i++) {   // anda em classes
+        //   for(int i = 0; i < nroClasses; i++) {   // anda em classes
              //  oneClassTrain = criaTreinamento(matriz,Classes[i]);
-               oneClassTrain = criaTreinamento(matriz,Classes[i]);                 // #####  matrizToInput ##############
-               networksFull[i] = new NetworkFull(oneClassTrain, Classes[i], matriz.length);
+          //     oneClassTrain = criaTreinamento(matriz,Classes[i]);                 // #####  matrizToInput ##############
+               networksFull = new NetworkFull(matriz, nroClasses, vetAtrHandler);
                //networksFull[i].learnFullConection(vetAtrHandler);
-               networksFull[i].learnFullConectionImputationPAPER(vetAtrHandler, matriz);  // #####  matrizToInput ##############
-           }
+               networksFull.learnFullConectionImputationPAPER();  // #####  matrizToInput ##############
 
 
            int numAttr = coll - 1;
@@ -2477,7 +2216,7 @@ public class DecisionNetwork {
 
         //   refineNetworkForImputation(matrizToImput);
 
-           normalizeCorrelationsFullVersion(numEdges);
+           networksFull.normalizeCorrelationsFullVersion();
 
            normalizeIntervalGain(coll-1);
 
@@ -2507,15 +2246,15 @@ public class DecisionNetwork {
 
 
 
-          for(int i = 0; i < nroClasses; i++) {   // anda em classes
+      //    for(int i = 0; i < nroClasses; i++) {   // anda em classes
              //  oneClassTrain = criaTreinamento(matriz,Classes[i]);
-               oneClassTrain = criaTreinamento(matrizImputed,Classes[i]);                 // #####  matrizToInput ##############
-               networksFull[i] = new NetworkFull(oneClassTrain, Classes[i], matriz.length);
-               networksFull[i].learnFullConectionPAPER(vetAtrHandler);
+          //     oneClassTrain = criaTreinamento(matrizImputed,Classes[i]);                 // #####  matrizToInput ##############
+               networksFull = new NetworkFull(matrizImputed, nroClasses, vetAtrHandler);
+               networksFull.learnFullConection();
              //  networksFull[i].learnFullConectionImputation(vetAtrHandler, matrizImputed);  // #####  matrizToInput ##############
-           }
+        //   }
 
-             normalizeCorrelationsFullVersion(numEdges);
+             networksFull.normalizeCorrelationsFullVersion();
 
              normalizeIntervalGain(coll-1);
 
@@ -2547,7 +2286,7 @@ public class DecisionNetwork {
 
 
 
-    public void criaDominioImputadoCppAbDG(double[][] matriz, String fileName){        // m�todo em duas vias para imputa��o  - metodo cria matriz completa
+    public void criaDominioImputadoCppAbDG(double[][] matriz, String fileName){        // metodo em duas vias para imputacao  - metodo cria matriz completa
 
         double[][] oneClassTrain;
         int line = matriz.length;
@@ -2563,7 +2302,7 @@ public class DecisionNetwork {
         int i1 = 0, i2 = 0;
         int contTreino = 0, contTeste = 0, it = 0, aux = 0;
         int[] validation = new int[10];
-        networksFull = new NetworkFull[nroClasses];                     // ###############
+        //networksFull = new NetworkFull[nroClasses];                     // ###############
 
         int atrOff, cont = 0;
         double rand, prob;
@@ -2613,12 +2352,12 @@ public class DecisionNetwork {
             coll = matriz[0].length;
         }
     */
-        for(int i = 0; i < nroClasses; i++) {   // anda em classes
+    //    for(int i = 0; i < nroClasses; i++) {   // anda em classes
           //  oneClassTrain = criaTreinamento(matriz,Classes[i]);
-            oneClassTrain = criaTreinamento(matrizToImput,Classes[i]);                 // #####  matrizToInput ##############
-            networksFull[i] = new NetworkFull(oneClassTrain, Classes[i], matriz.length);
+    //        oneClassTrain = criaTreinamento(matrizToImput,Classes[i]);                 // #####  matrizToInput ##############
+            networksFull = new NetworkFull(matrizToImput, nroClasses, vetAtrHandler);
             //networksFull[i].learnFullConection(vetAtrHandler);
-            networksFull[i].learnFullConectionImputationPAPER(vetAtrHandler, matrizToImput);  // #####  matrizToInput ##############
+            networksFull.learnFullConectionImputationPAPER();  // #####  matrizToInput ##############
         }
 
 
@@ -2629,7 +2368,7 @@ public class DecisionNetwork {
 
      //   refineNetworkForImputation(matrizToImput);    
 
-        normalizeCorrelationsFullVersion(numEdges);
+        networksFull.normalizeCorrelationsFullVersion();
 
         normalizeIntervalGain(coll-1);
 
@@ -2659,15 +2398,15 @@ public class DecisionNetwork {
 
 
 
-       for(int i = 0; i < nroClasses; i++) {   // anda em classes
+    //   for(int i = 0; i < nroClasses; i++) {   // anda em classes
           //  oneClassTrain = criaTreinamento(matriz,Classes[i]);
-            oneClassTrain = criaTreinamento(matrizImputed,Classes[i]);                 // #####  matrizToInput ##############
-            networksFull[i] = new NetworkFull(oneClassTrain, Classes[i], matriz.length);
-            networksFull[i].learnFullConectionPAPER(vetAtrHandler);
+      //      oneClassTrain = criaTreinamento(matrizImputed,Classes[i]);                 // #####  matrizToInput ##############
+            networksFull = new NetworkFull(matrizImputed, nroClasses, vetAtrHandler);
+            networksFull.learnFullConection();
           //  networksFull[i].learnFullConectionImputation(vetAtrHandler, matrizImputed);  // #####  matrizToInput ##############
-        }
+     //   }
 
-          normalizeCorrelationsFullVersion(numEdges);
+          networksFull.normalizeCorrelationsFullVersion();
 
           normalizeIntervalGain(coll-1);
 
@@ -2703,20 +2442,17 @@ public class DecisionNetwork {
 
     }
 
-    }
 
 
 
-    public void twoWayImputationAbDGClassifierFull(double[][] matriz){  // metodo interno para lidar com imputa��o (CpP-AbDG) - tnnls
+
+    public void twoWayImputationAbDGClassifierFull(double[][] matriz){  // metodo interno para lidar com imputacao (CpP-AbDG) - tnnls
 
         double[][] oneClassTrain;
         int line = matriz.length;
         int coll = matriz[0].length;
 
-        double[][] matrizTRTRTR;
-        double[][] matrizNANANA;
-        double[][] matrizTETETE;
-        double[][] matrizNENENE;
+
         double[][] matrizTreino;
         double[][] matrizTeste;
         int fold = 10;
@@ -2734,7 +2470,7 @@ public class DecisionNetwork {
         int i1 = 0, i2 = 0;
         int contTreino = 0, contTeste = 0, it = 0, aux = 0;
         int[] validation = new int[10];
-        networksFull = new NetworkFull[nroClasses];                     // ###############
+       // networksFull = new NetworkFull[nroClasses];                     // ###############
 
         int atrOff, cont = 0;
         matrizToImput = new double[line][coll];      // cria copia
@@ -2768,7 +2504,7 @@ public class DecisionNetwork {
 
             while(it <= fold){
 
-                networksFull = new NetworkFull[nroClasses];
+           //     networksFull = new NetworkFull[nroClasses];
                 coll = matriz[0].length;
                 contTreino = 0;
                 contTeste = 0;
@@ -2840,13 +2576,13 @@ public class DecisionNetwork {
               //#############################################
 
 
-                for(int i = 0; i < nroClasses; i++) {   // anda em classes
+           //     for(int i = 0; i < nroClasses; i++) {   // anda em classes
                     //  oneClassTrain = criaTreinamento(matriz,Classes[i]);
-                    oneClassTrain = criaTreinamento(matrizTreino,Classes[i]);                 // #####  matrizToInput ##############
-                    networksFull[i] = new NetworkFull(oneClassTrain, Classes[i], matrizTreino.length);
+           //         oneClassTrain = criaTreinamento(matrizTreino,Classes[i]);                 // #####  matrizToInput ##############
+                    networksFull = new NetworkFull(matrizTreino, nroClasses, vetAtrHandler);
                     //networksFull[i].learnFullConection(vetAtrHandler);
-                    networksFull[i].learnFullConectionImputationPAPER(vetAtrHandler, matrizTreino);  // #####  matrizToInput ##############
-                }
+                    networksFull.learnFullConectionImputationPAPER();  // #####  matrizToInput ##############
+            //    }
 
 
                 int numAttr = coll - 1;
@@ -2855,7 +2591,7 @@ public class DecisionNetwork {
                 //  printNetwork(coll-1);
                 //   refineNetworkForImputation(matrizToImput);
 
-                normalizeCorrelationsFullVersion(numEdges);
+                networksFull.normalizeCorrelationsFullVersion();
 
                 normalizeIntervalGain(coll-1);
                 //   trainClassification += classificationAccuracy(matrizTreino);
@@ -2894,15 +2630,15 @@ public class DecisionNetwork {
 
 
 
-                for(int i = 0; i < nroClasses; i++) {   // anda em classes
+       //         for(int i = 0; i < nroClasses; i++) {   // anda em classes
                     //  oneClassTrain = criaTreinamento(matriz,Classes[i]);
-                    oneClassTrain = criaTreinamento(matrizImputed,Classes[i]);                 // #####  matrizToInput ##############
-                    networksFull[i] = new NetworkFull(oneClassTrain, Classes[i], matrizImputed.length);
-                    networksFull[i].learnFullConectionPAPER(vetAtrHandler);
+         //           oneClassTrain = criaTreinamento(matrizImputed,Classes[i]);                 // #####  matrizToInput ##############
+                    networksFull = new NetworkFull(matrizImputed, nroClasses, vetAtrHandler);
+                    networksFull.learnFullConection();
                     //  networksFull[i].learnFullConectionImputation(vetAtrHandler, matrizImputed);  // #####  matrizToInput ##############
-                }
+           //     }
 
-                normalizeCorrelationsFullVersion(numEdges);
+                networksFull.normalizeCorrelationsFullVersion();
 
                 normalizeIntervalGain(coll-1);
 
@@ -3401,7 +3137,7 @@ public class DecisionNetwork {
           double[][] matrizImputed = new double[line][coll];
           int[][] refMaskMat;
           int contCorretos = 0;
-          networksFull = new NetworkFull[nroClasses];                     // ###############
+         // networksFull = new NetworkFull[nroClasses];                     // ###############
 
           int atrOff, cont = 0;
           double rand;
@@ -3463,13 +3199,13 @@ public class DecisionNetwork {
           }
 
 
-          for (int i = 0; i < nroClasses; i++) {   // anda em classes
+       //   for (int i = 0; i < nroClasses; i++) {   // anda em classes
               //  oneClassTrain = criaTreinamento(matriz,Classes[i]);
-              oneClassTrain = criaTreinamento(matrizToImput, Classes[i]);                 // #####  matrizToInput ##############
-              networksFull[i] = new NetworkFull(oneClassTrain, Classes[i], matriz.length);
+           //   oneClassTrain = criaTreinamento(matrizToImput, Classes[i]);                 // #####  matrizToInput ##############
+              networksFull = new NetworkFull(matrizToImput, nroClasses, vetAtrHandler);
               //networksFull[i].learnFullConection(vetAtrHandler);
-              networksFull[i].learnFullConectionPAPER(vetAtrHandler);  // #####  matrizToInput ##############
-          }
+              networksFull.learnFullConection();  // #####  matrizToInput ##############
+         // }
 
 
           numAttr = coll - 1;
@@ -3479,9 +3215,9 @@ public class DecisionNetwork {
 
           //   refineNetworkForImputation(matrizToImput);
 
-          normalizeCorrelationsFullVersion(numEdges);
+          networksFull.normalizeCorrelationsFullVersion();
           zeraCorrelacoesAbaixoThs(numEdges, cutW);
-          normalizeCorrelationsFullVersion(numEdges);
+          networksFull.normalizeCorrelationsFullVersion();
 
 
           matrizImputed = cleansingFromIntervalForTrainingFullGaussian(matriz, refMaskMat ,r+1);
@@ -3557,7 +3293,7 @@ public class DecisionNetwork {
         double[][] matrizImputed = new double[line][coll];
         int[][] refMaskMat;
         int contCorretos = 0;
-        networksFull = new NetworkFull[nroClasses];                     // ###############
+       // networksFull = new NetworkFull[nroClasses];                     // ###############
 
         int atrOff, cont = 0;
         double rand;
@@ -3604,13 +3340,13 @@ public class DecisionNetwork {
             }
 
 
-            for (int i = 0; i < nroClasses; i++) {   // anda em classes
+         //   for (int i = 0; i < nroClasses; i++) {   // anda em classes
                 //  oneClassTrain = criaTreinamento(matriz,Classes[i]);
-                oneClassTrain = criaTreinamento(matrizToImput, Classes[i]);                 // #####  matrizToInput ##############
-                networksFull[i] = new NetworkFull(oneClassTrain, Classes[i], matriz.length);
+          //      oneClassTrain = criaTreinamento(matrizToImput, Classes[i]);                 // #####  matrizToInput ##############
+                networksFull = new NetworkFull(matrizToImput, nroClasses, vetAtrHandler);
                 //networksFull[i].learnFullConection(vetAtrHandler);
-                networksFull[i].learnFullConectionPAPER(vetAtrHandler);  // #####  matrizToInput ##############
-            }
+                networksFull.learnFullConection();  // #####  matrizToInput ##############
+         //   }
 
 
             numAttr = coll - 1;
@@ -3620,9 +3356,9 @@ public class DecisionNetwork {
 
             //   refineNetworkForImputation(matrizToImput);
 
-            normalizeCorrelationsFullVersion(numEdges);
+            networksFull.normalizeCorrelationsFullVersion();
             zeraCorrelacoesAbaixoThs(numEdges, cutW);
-            normalizeCorrelationsFullVersion(numEdges);
+            networksFull.normalizeCorrelationsFullVersion();
 
 
             matrizImputed = cleansingFromIntervalForTrainingFullGaussian(matriz, refMaskMat, r + 1);
@@ -3794,7 +3530,7 @@ public class DecisionNetwork {
                int line = matriz.length;
                int coll = matriz[0].length;
                double[][] oneClassTrain;
-               networksFull = new NetworkFull[nroClasses];
+            //   networksFull = new NetworkFull[nroClasses];
 
                particionaAtributo(matriz);
 
@@ -3843,7 +3579,7 @@ public class DecisionNetwork {
                int line = matriz.length;
                int coll = matriz[0].length;
                double[][] oneClassTrain;
-               networksFull = new NetworkFull[nroClasses];
+             //  networksFull = new NetworkFull[nroClasses];
 
                particionaAtributo(matriz);
 
@@ -3870,27 +3606,27 @@ public class DecisionNetwork {
                    coll = matriz[0].length;
                }
    */
-               for(int i = 0; i < nroClasses; i++) {
-                   oneClassTrain = criaTreinamento(matriz,Classes[i]);
-                  if(oneClassTrain.length > 0){
-                   networksFull[i] = new NetworkFull(oneClassTrain, Classes[i], matriz.length);
-                   networksFull[i].learnFullConection(vetAtrHandler);
-                  }
-                   else
-                    System.out.println("uma classe");
-               }
+            //   for(int i = 0; i < nroClasses; i++) {
+              //     oneClassTrain = criaTreinamento(matriz,Classes[i]);
+              //    if(oneClassTrain.length > 0){
+                   networksFull = new NetworkFull(matriz, nroClasses, vetAtrHandler);
+                   networksFull.learnFullConection();
+               //   }
+               //    else
+               //     System.out.println("uma classe");
+              // }
 
                int numAttr = coll - 2;
                int numEdges = numAttr + numAttr*(numAttr-3)/2;
 
              //  printNetwork(coll-1);
 
-               normalizeCorrelationsFullVersion(numEdges);
+               networksFull.normalizeCorrelationsFullVersion();
 
     }
 
      public double[][] imputationFromIntervalSameClass(double[][] MFVA){ // matriz com valores de atributos faltantes
-                                          // utiliza informa��o de classe para encontra intervalo
+                                          // utiliza informaçao de classe para encontra intervalo
                                           // atribui a media dos valores pertencentes ao intervalo, no treino, como valor imputado 
         int len = MFVA.length;
         int col = MFVA[0].length;
@@ -3899,40 +3635,37 @@ public class DecisionNetwork {
         double[] intervalo;
 
 
-        for(int i = 0; i < len; i++)
-           for(int j = 0; j < col; j++)                            // atributo faltante � j
-              if(MFVA[i][j] == emptyValue){                       // procura por atributo faltante
-                 classe = MFVA[i][col-1];
-                 for(int c = 0; c < nroClasses; c++) {          // encontra rede da classe da instacia que tem o atributo faltante
-                     if(classe == networksFull[c].getClasse()){
-                          intervalo = networksFull[c].retrieveInterval(MFVA[i], j, vetAtrHandler[j].getNumInterval());
-                          soma = 0;
-                          cont = 0;
-                          somaTodos = 0;
-                          contTodos = 0;
-                          for(int h = 0; h < len; h++){
-                             if(MFVA[h][j] >= intervalo[0] && MFVA[h][j] < intervalo[1]){
-                                 if(MFVA[h][col -1] == classe){          //  de mesma classe
-                                     soma += MFVA[h][j];
-                                     cont++;
-                                 }
-                                 else{                                   // de qualquer classe
-                                     somaTodos += MFVA[h][j];
-                                     contTodos++;
-                                  }
+         for(int i = 0; i < len; i++)
+             for(int j = 0; j < col; j++)                            // atributo faltante � j
+                 if(MFVA[i][j] == emptyValue){                       // procura por atributo faltante
+                     classe = MFVA[i][col-1];
+                     intervalo = networksFull.retrieveInterval(MFVA[i], j, vetAtrHandler[j].getNumInterval(),(int)classe);
+                     soma = 0;
+                     cont = 0;
+                     somaTodos = 0;
+                     contTodos = 0;
+                     for(int h = 0; h < len; h++){
+                         if(MFVA[h][j] >= intervalo[0] && MFVA[h][j] < intervalo[1]){
+                             if(MFVA[h][col -1] == classe){          //  de mesma classe
+                                 soma += MFVA[h][j];
+                                 cont++;
+                             }
+                             else{                                   // de qualquer classe
+                                 somaTodos += MFVA[h][j];
+                                 contTodos++;
                              }
                          }
-                         System.out.println(somaTodos / contTodos + " " + soma / cont);
-                         if(cont == 0)
-                            impMatriz[i][j] = somaTodos / contTodos;
-                         else
-                            impMatriz[i][j] = soma / cont;
                      }
-                  }
-              }
-        else{
-              impMatriz[i][j] = MFVA[i][j];
-              }
+                     System.out.println(somaTodos / contTodos + " " + soma / cont);
+                     if(cont == 0)
+                         impMatriz[i][j] = somaTodos / contTodos;
+                     else
+                         impMatriz[i][j] = soma / cont;
+
+                 }
+                 else{
+                     impMatriz[i][j] = MFVA[i][j];
+                 }
 
       return impMatriz;
 
@@ -3959,15 +3692,14 @@ public class DecisionNetwork {
            for(int j = 0; j < col; j++)                            // atributo faltante � j
               if(MFVAcopy[i][j] == emptyValue){                       // procura por atributo faltante
                  sizeInt = 0;
-                 for(int c = 0; c < nroClasses; c++) {          // encontra rede da classe da instacia que tem o atributo faltante
-                     if(classe == networksFull[c].getClasse()){
-                          intervalo = networksFull[c].retrieveIntervalExperimenting(MFVAcopy[i], j, vetAtrHandler[j].getNumInterval());
-                          sizeInt = intervalo[1] - intervalo[0];
-                          impMatriz[i][j] = intervalo[0] + sizeInt/2;
-                          MFVAcopy[i][j] = impMatriz[i][j];  // para usar valor imputado no caso onde ocorre mais que um '?' em uma instancia
+                         // encontra rede da classe da instacia que tem o atributo faltante
+                     intervalo = networksFull.retrieveIntervalExperimenting(MFVAcopy[i], j, vetAtrHandler[j].getNumInterval(),(int)classe);
+                     sizeInt = intervalo[1] - intervalo[0];
+                     impMatriz[i][j] = intervalo[0] + sizeInt/2;
+                     MFVAcopy[i][j] = impMatriz[i][j];  // para usar valor imputado no caso onde ocorre mais que um '?' em uma instancia
                           // coloca no meio do intervalo - intevalo[0] menor; intervalo[1] maior.
-                     }
-                  }
+
+
               }
         else{
               impMatriz[i][j] = MFVAcopy[i][j];
@@ -3994,9 +3726,7 @@ public class DecisionNetwork {
               if(MFVA[i][j] == emptyValue){                       // procura por atributo faltante
                  classe = MFVA[i][col-1];
                  sizeInt = 0; 
-                 for(int c = 0; c < nroClasses; c++) {          // encontra rede da classe da instacia que tem o atributo faltante
-                     if(classe == networksFull[c].getClasse()){
-                          intervalo = networksFull[c].retrieveIntervalExperimenting(MFVA[i], j, vetAtrHandler[j].getNumInterval());
+                         intervalo = networksFull.retrieveIntervalExperimenting(MFVA[i], j, vetAtrHandler[j].getNumInterval(),(int)classe);
 
                            // atribui��o randomica
                           //rand = Math.random();
@@ -4014,14 +3744,14 @@ public class DecisionNetwork {
                                  cont++;
                              }
                          if(cont == 0)
-                             System.out.println("N�o h� valores no intervalo");
+                             System.out.println("Nao ha valores no intervalo");
                          impMatriz[i][j] = soma/cont;
 
 
                          MFVA[i][j] = impMatriz[i][j];  // para usar valor imputado no caso onde ocorre mais que um '?' em uma instancia
                           // coloca no meio do intervalo - intevalo[0] menor; intervalo[1] maior.
-                     }
-                  }
+
+
               }
         else{
               impMatriz[i][j] = MFVA[i][j];
@@ -4053,19 +3783,10 @@ public class DecisionNetwork {
               if(MFVA[i][vetInd[j]] == emptyValue){                       // procura por atributo faltante
                  classe = MFVA[i][col-1];
                  sizeInt = 0;
-                 for(int c = 0; c < nroClasses; c++) {          // encontra rede da classe da instacia que tem o atributo faltante
-                     if(classe == networksFull[c].getClasse()){
-                          intervalo = networksFull[c].retrieveIntervalExperimenting(MFVA[i], vetInd[j], vetAtrHandler[vetInd[j]].getNumInterval());
+                           // encontra rede da classe da instacia que tem o atributo faltante
 
-                           // atribui��o randomica
-                          //rand = Math.random();
-                          //impMatriz[i][j] = (rand*(intervalo[1] - intervalo[0]) + intervalo[0]);   // atribui valor aleat�rio no intervalo
-
-                         // atribui��o de ponto medio
-                         // sizeInt = intervalo[1] - intervalo[0];
-                         // impMatriz[i][j] = intervalo[0] + sizeInt/2;              // atribui ponto m�dio do intervalo
-
-                         // atribui��o da m�dia do intervalo
+                          intervalo = networksFull.retrieveIntervalExperimenting(MFVA[i], vetInd[j], vetAtrHandler[vetInd[j]].getNumInterval(),(int)classe);
+                     // atribuiçao da media do intervalo
 
                          soma = cont = contAll = 0;
                          for(int k = 0; k < len; k++)         // media dos valores dentro do intervalo pertencentes a mesma classe
@@ -4098,8 +3819,8 @@ public class DecisionNetwork {
 
                          MFVA[i][vetInd[j]] = impMatriz[i][vetInd[j]];  // para usar valor imputado no caso onde ocorre mais que um '?' em uma instancia
                           // coloca no meio do intervalo - intevalo[0] menor; intervalo[1] maior.
-                     }
-                  }
+
+
               }
         else{
               impMatriz[i][vetInd[j]] = MFVA[i][vetInd[j]];
@@ -4125,14 +3846,14 @@ public class DecisionNetwork {
         double aux, maior = 0;
         int indAux = 0;
         int maxSumClass = 0;
-        double[] vetTeste = new double[nroClasses];
+        double[] vetTeste = new double[nroClasses+1];
 
         for(int i = 0; i < len; i++)
            for(int j = 0; j < col; j++){                            // atributo faltante � j
               if(MFVA[i][j] == emptyValue){                       // procura por atributo faltante
                  sizeInt = 0;
-                 for(int c = 0; c < nroClasses; c++) {          // encontra rede da classe da instacia que tem o atributo faltante
-                     somaPesos = networksFull[c].retrieveSumExperimenting(MFVA[i], j, vetAtrHandler[j].getNumInterval()); // retorna indice do intervalo
+                 for(int c = 1; c < nroClasses + 1; c++) {          // encontra rede da classe da instacia que tem o atributo faltante
+                     somaPesos = networksFull.retrieveSumExperimenting(MFVA[i], j, vetAtrHandler[j].getNumInterval(),c); // retorna indice do intervalo
                      vetTeste[c] = somaPesos;
                      if(somaPesos > maiorSoma){
                          maiorSoma = somaPesos;
@@ -4155,7 +3876,7 @@ public class DecisionNetwork {
                          intervalo = vetAtrHandler[j].getInterval(vetAtrHandler[j].getIntFromHighestWeightofClass(indAux));
                      }
                      else
-                         intervalo = networksFull[maxSumClass].getIntervalTest(j);
+                         intervalo = networksFull.getIntervalTest(j,maxSumClass);
 
                   sizeInt = intervalo[1] - intervalo[0];
                 impMatriz[i][j] = intervalo[0] + sizeInt/2;   // coloca no meio do intervalo - intevalo[0] menor; intervalo[1] maior.
@@ -4563,20 +4284,18 @@ public class DecisionNetwork {
                  classe = MFVA[i][col-1];
                  contMissAtr++;
                  sizeInt = 0;
-                 for(int c = 0; c < nroClasses; c++) {          // encontra rede da classe da instacia que tem o atributo faltante
-                     if(classe == networksFull[c].getClasse()){
-                          intervalo = networksFull[c].retrieveIntervalExperimenting(MFVA[i], j, vetAtrHandler[j].getNumInterval());
-                          if(mask[i][j] != -100 && mask[i][j] > intervalo[0] && mask[i][j] < intervalo[1])
-                              impMatriz[i][j] = mask[i][j];
-                          else{
-                              rand = Math.random();
-                              impMatriz[i][j] = (rand*(intervalo[1] - intervalo[0]) + intervalo[0]);     // valor aleat�rio dentro do intervalo
-                              contAltAtrTR++;
-                          }
-                          MFVA[i][j] = impMatriz[i][j];  // para usar valor imputado no caso onde ocorre mais que um '?' em uma instancia
-                          // coloca no meio do intervalo - intevalo[0] menor; intervalo[1] maior.
-                     }
+                 intervalo = networksFull.retrieveIntervalExperimenting(MFVA[i], j, vetAtrHandler[j].getNumInterval(),(int)classe);
+                  if(mask[i][j] != -100 && mask[i][j] > intervalo[0] && mask[i][j] < intervalo[1])
+                      impMatriz[i][j] = mask[i][j];
+                  else{
+                      rand = Math.random();
+                      impMatriz[i][j] = (rand*(intervalo[1] - intervalo[0]) + intervalo[0]);     // valor aleat�rio dentro do intervalo
+                      contAltAtrTR++;
                   }
+                  MFVA[i][j] = impMatriz[i][j];  // para usar valor imputado no caso onde ocorre mais que um '?' em uma instancia
+                  // coloca no meio do intervalo - intevalo[0] menor; intervalo[1] maior.
+
+
               }
         else{
               impMatriz[i][j] = MFVA[i][j];
@@ -4609,26 +4328,25 @@ public class DecisionNetwork {
                     classe = MFVA[i][col - 1];
                     contMissAtr++;
                     sizeInt = 0;
-                    for (int c = 0; c < nroClasses; c++) {          // encontra rede da classe da instacia que tem o atributo faltante
-                        if (classe == networksFull[c].getClasse()) {
-                            intervalo = networksFull[c].retrieveIntervalExperimenting(MFVA[i], j, vetAtrHandler[j].getNumInterval());
-                            if (mask[i][j] != -100 && mask[i][j] >= intervalo[0] && mask[i][j] < intervalo[1])
-                                impMatriz[i][j] = mask[i][j];
-                            else {
 
-                                meioIntervalo = (intervalo[1] - intervalo[0]) / 2;
-                                pontoMedio = intervalo[0] + meioIntervalo;
-                                impMatriz[i][j] = (rand.nextGaussian() * meioIntervalo + pontoMedio);     // valor aleat�rio dentro do intervalo
+                    intervalo = networksFull.retrieveIntervalExperimenting(MFVA[i], j, vetAtrHandler[j].getNumInterval(),(int)classe);
+                    if (mask[i][j] != -100 && mask[i][j] >= intervalo[0] && mask[i][j] < intervalo[1])
+                        impMatriz[i][j] = mask[i][j];
+                    else {
 
-                                MFVA[i][j] = impMatriz[i][j];
+                        meioIntervalo = (intervalo[1] - intervalo[0]) / 2;
+                        pontoMedio = intervalo[0] + meioIntervalo;
+                        impMatriz[i][j] = (rand.nextGaussian() * meioIntervalo + pontoMedio);     // valor aleat�rio dentro do intervalo
+
+                        MFVA[i][j] = impMatriz[i][j];
 
 
-                                contAltAtrTR++;
-                            }
-                            //   MFVA[i][j] = impMatriz[i][j];  // para usar valor imputado no caso onde ocorre mais que um '?' em uma instancia
-                            // coloca no meio do intervalo - intevalo[0] menor; intervalo[1] maior.
-                        }
+                        contAltAtrTR++;
                     }
+                    //   MFVA[i][j] = impMatriz[i][j];  // para usar valor imputado no caso onde ocorre mais que um '?' em uma instancia
+                    // coloca no meio do intervalo - intevalo[0] menor; intervalo[1] maior.
+
+
                 } else {
                     impMatriz[i][j] = MFVA[i][j];
                 }
@@ -4664,26 +4382,25 @@ public class DecisionNetwork {
                     classe = MFVA[i][col - 1];
                     contMissAtr++;
                     sizeInt = 0;
-                    for (int c = 0; c < nroClasses; c++) {          // encontra rede da classe da instacia que tem o atributo faltante
-                        if (classe == networksFull[c].getClasse()) {
-                            intervalo = networksFull[c].retrieveIntervalExperimenting(MFVA[i], j, vetAtrHandler[j].getNumInterval());
-                            if (MFVA[i][j] >= intervalo[0] && MFVA[i][j] < intervalo[1])
-                                impMatriz[i][j] = MFVA[i][j];
-                            else {
 
-                                meioIntervalo = (intervalo[1] - intervalo[0]) / 2;
-                                pontoMedio = intervalo[0] + meioIntervalo;
-                                impMatriz[i][j] = intervalo[0] + Math.random()*(intervalo[1] - intervalo[0]); // pontoMedio;  (rand.nextGaussian() * meioIntervalo + pontoMedio);     // valor aleat�rio dentro do intervalo
+                    intervalo = networksFull.retrieveIntervalExperimenting(MFVA[i], j, vetAtrHandler[j].getNumInterval(),(int)classe);
+                    if (MFVA[i][j] >= intervalo[0] && MFVA[i][j] < intervalo[1])
+                        impMatriz[i][j] = MFVA[i][j];
+                    else {
 
-                              //  MFVA[i][j] = impMatriz[i][j];
+                        meioIntervalo = (intervalo[1] - intervalo[0]) / 2;
+                        pontoMedio = intervalo[0] + meioIntervalo;
+                        impMatriz[i][j] = intervalo[0] + Math.random()*(intervalo[1] - intervalo[0]); // pontoMedio;  (rand.nextGaussian() * meioIntervalo + pontoMedio);     // valor aleat�rio dentro do intervalo
+
+                        //  MFVA[i][j] = impMatriz[i][j];
 
 
-                                contAltAtrTR++;
-                            }
-                            //   MFVA[i][j] = impMatriz[i][j];  // para usar valor imputado no caso onde ocorre mais que um '?' em uma instancia
-                            // coloca no meio do intervalo - intevalo[0] menor; intervalo[1] maior.
-                        }
+                        contAltAtrTR++;
                     }
+                    //   MFVA[i][j] = impMatriz[i][j];  // para usar valor imputado no caso onde ocorre mais que um '?' em uma instancia
+                    // coloca no meio do intervalo - intevalo[0] menor; intervalo[1] maior.
+
+
                 } else {
                     impMatriz[i][j] = MFVA[i][j];
                 }
@@ -4820,28 +4537,7 @@ public class DecisionNetwork {
     }
 
 
-    public void normalizeCorrelationsFullVersion(int interAtrs){
 
-        int atrs1 = 0, atrs2 = 0;
-        double soma = 0;
-
-        for(int j = 0; j < interAtrs; j++){             // pq todas as redes usao mesmos intervalos de atributos
-            atrs1 = networksFull[0].getVetCorrelation()[j].getCMLen();     // numero de atributos 1
-            atrs2 = networksFull[0].getVetCorrelation()[j].getCMCol();     // numero de atributos 2
-            for(int k = 0; k < atrs1; k++){
-                for(int m = 0; m < atrs2; m++){
-                    soma = 0;
-                    for(int z = 0; z < nroClasses; z++ )
-                        soma += networksFull[z].getVetCorrelation()[j].getCMEx(k,m);
-
-                    if(soma != 0)
-                      for(int x = 0; x < nroClasses; x++ )
-                        networksFull[x].getVetCorrelation()[j].setCMEx(k,m,soma);
-                }
-            }
-
-        }
-    }
 
     public void zeraCorrelacoesAbaixoThs(int interAtrs, double cutW){
 
@@ -4849,13 +4545,13 @@ public class DecisionNetwork {
         double soma = 0;
 
         for(int j = 0; j < interAtrs; j++){             // pq todas as redes usao mesmos intervalos de atributos
-            atrs1 = networksFull[0].getVetCorrelation()[j].getCMLen();     // numero de atributos 1
-            atrs2 = networksFull[0].getVetCorrelation()[j].getCMCol();     // numero de atributos 2
+            atrs1 = networksFull.getVetCorrelation()[j][1].getCMLen();     // numero de atributos 1
+            atrs2 = networksFull.getVetCorrelation()[j][1].getCMCol();     // numero de atributos 2
             for(int k = 0; k < atrs1; k++){
                 for(int m = 0; m < atrs2; m++){
-                   for(int z = 0; z < nroClasses; z++ )
-                       if(networksFull[z].getVetCorrelation()[j].getCMEx(k,m) < cutW)
-                           networksFull[z].getVetCorrelation()[j].setCMEx(k,m,0);
+                   for(int z = 2; z < nroClasses+1; z++ )
+                       if(networksFull.getVetCorrelation()[j][z].getCMEx(k,m) < cutW)
+                           networksFull.getVetCorrelation()[j][z].setCMEx(k,m,0);
                 }
             }
 
@@ -5406,10 +5102,10 @@ public class DecisionNetwork {
 
                  //    AttributeCorrelation[] vetAux
 
-                     for(int b = 0; b < nroClasses; b++){                                  // vetAttrCorr
-                         networksFull[b].criaProbClassWeighted(matriz,attrGain);       // Weighted(matriz,attrGain);                // ############### classificador 3
+                                                      // vetAttrCorr
+                         networksFull.criaProbClassWeighted(matriz,attrGain);       // Weighted(matriz,attrGain);                // ############### classificador 3
                      //    vetAux = networks[b].getVetCorrelation();
-                      }
+
 
 
                for(int a = 0; a < line; a++){
@@ -5417,9 +5113,9 @@ public class DecisionNetwork {
 
                    somaProb = 0;
                    somaSum = 0;
-                   for(int b = 0; b < nroClasses; b++){
-                       somaProb += networksFull[b].getProb(a);
-                       somaSum += networksFull[b].getSum(a);
+                   for(int b = 1; b < nroClasses+1; b++){
+                       somaProb += networksFull.getProb(a,b);
+                       somaSum += networksFull.getSum(a,b);
                    }
 
                  n = 0.0;
@@ -5429,23 +5125,23 @@ public class DecisionNetwork {
                    if(somaSum == 0 && somaProb == 0)
                        maior = 0;
                    else if(somaSum == 0)
-                       maior = (networksFull[0].getProb(a)/somaProb);
+                       maior = (networksFull.getProb(a,1)/somaProb);
                    else if(somaProb == 0)
-                       maior = (networksFull[0].getSum(a)/somaSum);
+                       maior = (networksFull.getSum(a,1)/somaSum);
                    else
-                       maior = (n*(networksFull[0].getSum(a)/somaSum) + (1-n)*(networksFull[0].getProb(a)/somaProb));
+                       maior = (n*(networksFull.getSum(a,1)/somaSum) + (1-n)*(networksFull.getProb(a,1)/somaProb));
 
-                   indMaior = 0;
-                   for(int c = 1; c < nroClasses; c++){
+                   indMaior = 1;
+                   for(int c = 2; c < nroClasses+1; c++){
 
                        if(somaSum != 0 && somaProb != 0)
-                          aux = (n*(networksFull[c].getSum(a)/somaSum) + (1-n)*(networksFull[c].getProb(a)/somaProb));
+                          aux = (n*(networksFull.getSum(a,c)/somaSum) + (1-n)*(networksFull.getProb(a,c)/somaProb));
                        else if(somaSum == 0 && somaProb == 0)
                            aux = 0;
                        else if(somaSum == 0)
-                           aux = (networksFull[c].getProb(a)/somaProb);
+                           aux = (networksFull.getProb(a,c)/somaProb);
                        else if(somaProb == 0)
-                           aux = (networksFull[c].getSum(a)/somaSum);
+                           aux = (networksFull.getSum(a,c)/somaSum);
 
 
                        if(aux > maior){
@@ -5454,7 +5150,7 @@ public class DecisionNetwork {
                        }
                    }
 
-                    classe2 = networksFull[indMaior].getClasse();
+                    classe2 = indMaior;
 
               //      if(n == 0.5)
                //        System.out.println("C " + classe2);
@@ -5514,10 +5210,9 @@ public class DecisionNetwork {
 
                  //    AttributeCorrelation[] vetAux
 
-                     for(int b = 0; b < nroClasses; b++){                                  // vetAttrCorr
-                         networksFull[b].criaProbClassWeighted(matriz,attrGain);       // Weighted(matriz,attrGain);                // ############### classificador 3
-                     //    vetAux = networks[b].getVetCorrelation();
-                      }
+                                                      // vetAttrCorr
+                         networksFull.criaProbClassWeighted(matriz,attrGain);       // Weighted(matriz,attrGain);                // ############### classificador 3
+
 
 
                for(int a = 0; a < line; a++){
@@ -5526,8 +5221,8 @@ public class DecisionNetwork {
                    somaProb = 0;
                    somaSum = 0;
                    for(int b = 0; b < nroClasses; b++){
-                       somaProb += networksFull[b].getProb(a);
-                       somaSum += networksFull[b].getSum(a);
+                       somaProb += networksFull.getProb(a,b);
+                       somaSum += networksFull.getSum(a,b);
                    }
 
 
@@ -5535,23 +5230,23 @@ public class DecisionNetwork {
                    if(somaSum == 0 && somaProb == 0)
                        maior = 0;
                    else if(somaSum == 0)
-                       maior = (networksFull[0].getProb(a)/somaProb);
+                       maior = (networksFull.getProb(a,1)/somaProb);
                    else if(somaProb == 0)
-                       maior = (networksFull[0].getSum(a)/somaSum);
+                       maior = (networksFull.getSum(a,1)/somaSum);
                    else
-                       maior = (neta*(networksFull[0].getSum(a)/somaSum) + (1-neta)*(networksFull[0].getProb(a)/somaProb));
+                       maior = (neta*(networksFull.getSum(a,1)/somaSum) + (1-neta)*(networksFull.getProb(a,1)/somaProb));
 
                    indMaior = 0;
-                   for(int c = 1; c < nroClasses; c++){
+                   for(int c = 2; c < nroClasses+1; c++){
 
                        if(somaSum != 0 && somaProb != 0)
-                          aux = (neta*(networksFull[c].getSum(a)/somaSum) + (1-neta)*(networksFull[c].getProb(a)/somaProb));
+                           aux = (neta*(networksFull.getSum(a,c)/somaSum) + (1-neta)*(networksFull.getProb(a,c)/somaProb));
                        else if(somaSum == 0 && somaProb == 0)
                            aux = 0;
                        else if(somaSum == 0)
-                           aux = (networksFull[c].getProb(a)/somaProb);
+                           aux = (networksFull.getProb(a,c)/somaProb);
                        else if(somaProb == 0)
-                           aux = (networksFull[c].getSum(a)/somaSum);
+                           aux = (networksFull.getSum(a,c)/somaSum);
 
 
                        if(aux > maior){
@@ -5560,7 +5255,7 @@ public class DecisionNetwork {
                        }
                    }
 
-                    classe2 = networksFull[indMaior].getClasse();
+                   classe2 = indMaior;
 
 
 
@@ -5581,7 +5276,7 @@ public class DecisionNetwork {
 
                int line = matriz.length;
                int coll = matriz[0].length;
-               double somaCorretos = 0, maior, classe = 0, somaCorretos1 =  0, somaCorretos2 = 0, somaCorretos3 = 0;
+               double somaCorretos = 0, maior = 0, classe = 0, somaCorretos1 =  0, somaCorretos2 = 0, somaCorretos3 = 0;
                double somaProb = 0, somaSum = 0;
                int indMaior;
                double classe1 = 0, classe2 = 0,  aux = 0;
@@ -5607,10 +5302,7 @@ public class DecisionNetwork {
 
                  //    AttributeCorrelation[] vetAux
 
-                     for(int b = 0; b < nroClasses; b++){                                  // vetAttrCorr
-                         networksFull[b].criaProbClassWeighted(matriz,attrGain);       // Weighted(matriz,attrGain);                // ############### classificador 3
-                     //    vetAux = networks[b].getVetCorrelation();
-                      }
+                         networksFull.criaProbClassWeighted(matriz,attrGain);       // Weighted(matriz,attrGain);                // ############### classificador 3
 
 
                for(int a = 0; a < line; a++){
@@ -5619,31 +5311,32 @@ public class DecisionNetwork {
                    somaProb = 0;
                    somaSum = 0;
                    for(int b = 0; b < nroClasses; b++){
-                       somaProb += networksFull[b].getProb(a);
-                       somaSum += networksFull[b].getSum(a);
+                       somaProb += networksFull.getProb(a,b);
+                       somaSum += networksFull.getSum(a,b);
                    }
 
 
                    if(somaSum == 0 && somaProb == 0)
-                       maior = 0;
-                   else if(somaSum == 0)
-                       maior = (networksFull[0].getProb(a)/somaProb);
-                   else if(somaProb == 0)
-                       maior = (networksFull[0].getSum(a)/somaSum);
-                   else
-                       maior = (n*(networksFull[0].getSum(a)/somaSum) + (1-n)*(networksFull[0].getProb(a)/somaProb));
+                       if(somaSum == 0 && somaProb == 0)
+                           maior = 0;
+                       else if(somaSum == 0)
+                           maior = (networksFull.getProb(a,1)/somaProb);
+                       else if(somaProb == 0)
+                           maior = (networksFull.getSum(a,1)/somaSum);
+                       else
+                           maior = (n*(networksFull.getSum(a,1)/somaSum) + (1-n)*(networksFull.getProb(a,1)/somaProb));
 
                    indMaior = 0;
-                   for(int c = 1; c < nroClasses; c++){
+                   for(int c = 2; c < nroClasses+1; c++){
 
                        if(somaSum != 0 && somaProb != 0)
-                          aux = (n*(networksFull[c].getSum(a)/somaSum) + (1-n)*(networksFull[c].getProb(a)/somaProb));
+                           aux = (n*(networksFull.getSum(a,c)/somaSum) + (1-n)*(networksFull.getProb(a,c)/somaProb));
                        else if(somaSum == 0 && somaProb == 0)
                            aux = 0;
                        else if(somaSum == 0)
-                           aux = (networksFull[c].getProb(a)/somaProb);
+                           aux = (networksFull.getProb(a,c)/somaProb);
                        else if(somaProb == 0)
-                           aux = (networksFull[c].getSum(a)/somaSum);
+                           aux = (networksFull.getSum(a,c)/somaSum);
 
 
                        if(aux > maior){
@@ -5652,7 +5345,7 @@ public class DecisionNetwork {
                        }
                    }
 
-                    classe2 = networksFull[indMaior].getClasse();
+                   classe2 = indMaior;
 
 
 
@@ -5909,12 +5602,12 @@ public class DecisionNetwork {
 
                  //    AttributeCorrelation[] vetAux
 
-                     for(int b = 0; b < nroClasses; b++){         // pulo do gato
+                     for(int b = 1; b < nroClasses+1; b++){         // pulo do gato
 
                         imputedMatriz = null;
-                        imputedMatriz = classifierImputationFromIntervalForTrainingFull(matriz, networksFull[b].getClasse());
+                        imputedMatriz = classifierImputationFromIntervalForTrainingFull(matriz, b);
                         // cria probs com matriz imputada para cada classe
-                         networksFull[b].criaProbClassWeighted(imputedMatriz,attrGain);       // Weighted(matriz,attrGain);                // ############### classificador 3
+                         networksFull.criaProbClassWeighted(imputedMatriz,attrGain);       // Weighted(matriz,attrGain);                // ############### classificador 3
                      //    vetAux = networks[b].getVetCorrelation();
                       }
 
@@ -5925,8 +5618,8 @@ public class DecisionNetwork {
                    somaProb = 0;
                    somaSum = 0;
                    for(int b = 0; b < nroClasses; b++){
-                       somaProb += networksFull[b].getProb(a);
-                       somaSum += networksFull[b].getSum(a);
+                       somaProb += networksFull.getProb(a,b);
+                       somaSum += networksFull.getSum(a,b);
                    }
 
                  n = 0.0;
@@ -5936,23 +5629,23 @@ public class DecisionNetwork {
                    if(somaSum == 0 && somaProb == 0)
                        maior = 0;
                    else if(somaSum == 0)
-                       maior = (networksFull[0].getProb(a)/somaProb);
+                       maior = (networksFull.getProb(a,1)/somaProb);
                    else if(somaProb == 0)
-                       maior = (networksFull[0].getSum(a)/somaSum);
+                       maior = (networksFull.getSum(a,1)/somaSum);
                    else
-                       maior = (n*(networksFull[0].getSum(a)/somaSum) + (1-n)*(networksFull[0].getProb(a)/somaProb));
+                       maior = (n*(networksFull.getSum(a,1)/somaSum) + (1-n)*(networksFull.getProb(a,1)/somaProb));
 
                    indMaior = 0;
-                   for(int c = 1; c < nroClasses; c++){
+                   for(int c = 1; c < nroClasses+1; c++){
 
                        if(somaSum != 0 && somaProb != 0)
-                          aux = (n*(networksFull[c].getSum(a)/somaSum) + (1-n)*(networksFull[c].getProb(a)/somaProb));
+                          aux = (n*(networksFull.getSum(a,c)/somaSum) + (1-n)*(networksFull.getProb(a,c)/somaProb));
                        else if(somaSum == 0 && somaProb == 0)
                            aux = 0;
                        else if(somaSum == 0)
-                           aux = (networksFull[c].getProb(a)/somaProb);
+                           aux = (networksFull.getProb(a,c)/somaProb);
                        else if(somaProb == 0)
-                           aux = (networksFull[c].getSum(a)/somaSum);
+                           aux = (networksFull.getSum(a,c)/somaSum);
 
 
                        if(aux > maior){
@@ -5961,7 +5654,7 @@ public class DecisionNetwork {
                        }
                    }
 
-                    classe2 = networksFull[indMaior].getClasse();
+                    classe2 = indMaior;
 
                      n = n + 0.1;
 
@@ -6175,10 +5868,9 @@ public class DecisionNetwork {
 
         //    AttributeCorrelation[] vetAux
 
-        for(int b = 0; b < nroClasses; b++){                                  // vetAttrCorr
-            networksFull[b].criaProbClassWeighted(matriz,attrGain);       // Weighted(matriz,attrGain);                // ############### classificador 3
+            networksFull.criaProbClassWeighted(matriz,attrGain);       // Weighted(matriz,attrGain);                // ############### classificador 3
             //    vetAux = networks[b].getVetCorrelation();
-        }
+
 
 
         for(int a = 0; a < line; a++){
@@ -6187,8 +5879,8 @@ public class DecisionNetwork {
             somaProb = 0;
             somaSum = 0;
             for(int b = 0; b < nroClasses; b++){
-                somaProb += networksFull[b].getProb(a);
-                somaSum += networksFull[b].getSum(a);
+                somaProb += networksFull.getProb(a,b);
+                somaSum += networksFull.getSum(a,b);
             }
 
             n = 0.0;
@@ -6198,23 +5890,23 @@ public class DecisionNetwork {
                 if(somaSum == 0 && somaProb == 0)
                     maior = 0;
                 else if(somaSum == 0)
-                    maior = (networksFull[0].getProb(a)/somaProb);
+                    maior = (networksFull.getProb(a,1)/somaProb);
                 else if(somaProb == 0)
-                    maior = (networksFull[0].getSum(a)/somaSum);
+                    maior = (networksFull.getSum(a,1)/somaSum);
                 else
-                    maior = (n*(networksFull[0].getSum(a)/somaSum) + (1-n)*(networksFull[0].getProb(a)/somaProb));
+                    maior = (n*(networksFull.getSum(a,1)/somaSum) + (1-n)*(networksFull.getProb(a,1)/somaProb));
 
                 indMaior = 0;
-                for(int c = 1; c < nroClasses; c++){
+                for(int c = 1; c < nroClasses+1; c++){
 
                     if(somaSum != 0 && somaProb != 0)
-                        aux = (n*(networksFull[c].getSum(a)/somaSum) + (1-n)*(networksFull[c].getProb(a)/somaProb));
+                        aux = (n*(networksFull.getSum(a,c)/somaSum) + (1-n)*(networksFull.getProb(a,c)/somaProb));
                     else if(somaSum == 0 && somaProb == 0)
                         aux = 0;
                     else if(somaSum == 0)
-                        aux = (networksFull[c].getProb(a)/somaProb);
+                        aux = (networksFull.getProb(a,c)/somaProb);
                     else if(somaProb == 0)
-                        aux = (networksFull[c].getSum(a)/somaSum);
+                        aux = (networksFull.getSum(a,c)/somaSum);
 
 
                     if(aux > maior){
@@ -6223,7 +5915,7 @@ public class DecisionNetwork {
                     }
                 }
 
-                classe2 = networksFull[indMaior].getClasse();
+                classe2 = indMaior;
 
                 //      if(n == 0.5)
                 //        System.out.println("C " + classe2);
@@ -7495,7 +7187,7 @@ public class DecisionNetwork {
        return matrizToImput;
     }
 
-
+/*
     public void criaTreinoeTesteRefining(double[][] matriz, String fileName) {
 
         int noTXT = fileName.length() - 4;
@@ -7536,7 +7228,7 @@ public class DecisionNetwork {
 
                 while (it <= fold) {
 
-                    networksFull = new NetworkFull[nroClasses];
+                    //networksFull = new NetworkFull[nroClasses];
                     coll = matriz[0].length;
                     contTreino = 0;
                     contTeste = 0;
@@ -7631,9 +7323,9 @@ public class DecisionNetwork {
                     refMaskMat = criaMatrizRefineAll(rep, contTeste, coll - 1);
 
                     for (int i = 0; i < rep; i++) {
-
-                        matrizAuxTeste = refiningForTestAssumingAClassFull(matrizTeste, refMaskMat, i + 1);//refiningForTestAssumingAClassFull(matrizTeste, prob); // altera conjunto de teste de maneira similar a do treino
-
+//#############################################################################################
+                  //      matrizAuxTeste = refiningForTestAssumingAClassFull(matrizTeste, refMaskMat, i + 1);//refiningForTestAssumingAClassFull(matrizTeste, prob); // altera conjunto de teste de maneira similar a do treino
+//#############################################################################################
                         for (int j = 0; j < contTeste; j++)
                             for(int k = 0; k < coll - 1; k++)
                                if(refMaskMat[j][k] == i + 1)
@@ -7706,11 +7398,224 @@ public class DecisionNetwork {
 
     }
 
+    */
+
+    public void criaTreinoeTesteRefiningExtension(double[][] matriz, String fileName) {
+    // cria treino e teste, ambos com ruido. Para data quality enhancement - ainda não considera attr faltantes e versão para AbDG
+
+        int noTXT = fileName.length() - 4;
+        String auxFileName = fileName.substring(0, noTXT);
+        int line = matriz.length;
+        int coll = matriz[0].length;
+        double[][] matrizTreino;
+        double[][] matrizTeste, matrizAuxTeste, matrizTE, matrizNoise;
+        int[][] refMaskMat;
+        int fold = 8;
+        int contTreino = 0, contTeste = 0, it = 1;
+        // double prob = 0.5; // ########################################################
+
+        double[] mainClassification = new double[12];
+        double[] somaClassification = new double[12];
+        double[] desvio = new double[12];
+        double[] mediaClass = new double[12];
+
+        DecimalFormat show = new DecimalFormat("0.00");
+
+      //  matriz = simulateMissingAttributeMeans(matriz);  // coloca a media onde ha atributos faltantes
+
+        for (double prob = 0.0; prob <= 0.5; prob += 0.1){    // 0.1 a 0.5
+
+            contMissAtr = 0;
+            contAltAtrTR = 0;
+            atrAltRate = 0;
+
+
+            // matrizNoise = addNoiseAtrLimits(matriz,prob);
+
+            for (int ncv = 1; ncv < 11; ncv++) {         // numero de repeti��es valida��es
+
+                it = 1;
+                matriz = shuffle(matriz);
+                int[] stratification = indicesEstratificados(matriz, fold);
+
+
+                while (it <= fold) {
+
+               //     networksFull = new NetworkFull[nroClasses];
+                    coll = matriz[0].length;
+                    contTreino = 0;
+                    contTeste = 0;
+                    for (int i = 0; i < line; i++)
+                        if (stratification[i] == it)
+                            contTeste++;
+
+                    matrizTreino = new double[line - contTeste][coll];
+                    matrizTeste = new double[contTeste][coll];
+                    matrizTE = new double[contTeste][coll];
+
+                    contTeste = 0;
+                    contTreino = 0;
+                    for (int h = 0; h < line; h++)
+                        if (stratification[h] != it) {
+                            for (int y = 0; y < coll; y++)
+                                matrizTreino[contTreino][y] = matriz[h][y];  //  matrizTreino[contTreino][y] = matriz[h][y];
+                            contTreino++;
+                        } else {
+                            for (int y = 0; y < coll; y++)
+                                matrizTeste[contTeste][y] = matriz[h][y];
+                            contTeste++;
+                        }
+
+                    matrizTreino = addNoiseAtrLimits(matrizTreino,prob);
+                    matrizTeste = addNoiseAtrLimits(matrizTeste,prob);
+
+
+                    // imprime os dados com alteração aleatoria - Treino
+
+                    PrintWriter out2;
+                    FileOutputStream outputStream2 = null;
+                    try {
+
+                        outputStream2 = new FileOutputStream("C:\\Users\\João\\Documents\\EXPS\\dataset-noise\\" + auxFileName + "\\" +  (int)(prob*100) + "\\" + auxFileName + ncv + "_" + it + "TR.txt");  //
+
+                      //  outputStream2 = new FileOutputStream("C:\\Users\\João\\Documents\\EXPS\\" + auxFileName + "\\OR\\" + auxFileName + it + ncv + ".txt");  //
+
+                    } catch (java.io.IOException e) {
+                        System.out.println("Could not create result.txt");
+                    }
+
+                    out2 = new PrintWriter(outputStream2);
+
+
+                    for (int i = 0; i < contTreino; i++) {
+                        for (int j = 0; j < coll; j++)
+                            out2.print(show.format(matrizTreino[i][j]).replace(",",".") + " ");   //  round(matriz,2) imprimindo matriz original
+                        out2.println();
+                    }
+
+                    out2.close();
+
+
+                    // imprime os dados  com alteração aleatoria Teste
+                    PrintWriter out1;
+                    FileOutputStream outputStream1 = null;
+                    try {
+                         outputStream1 = new FileOutputStream("C:\\Users\\João\\Documents\\EXPS\\dataset-noise\\" + auxFileName + "\\" +  (int)(prob*100) + "\\" + auxFileName + ncv + "_" + it + "TE.txt");
+
+                       // outputStream1 = new FileOutputStream("C:\\Users\\João\\Documents\\MATLAB\\CleanseMulti\\" + auxFileName + "\\OR\\" + auxFileName + it +  ncv+ "TE.txt");  //
+
+                    } catch (java.io.IOException e) {
+                        System.out.println("Could not create result.txt");
+                    }
+
+                    out1 = new PrintWriter(outputStream1);
+
+
+                    for (int i = 0; i < contTeste; i++) {
+                        for (int j = 0; j < coll; j++)
+                            out1.print(show.format(matrizTeste[i][j]).replace(",",".") + " " + " ");   // imprimindo matriz original
+                        out1.println();
+                    }
+
+                    out1.close();
+
+/*
+                    //FileOutputStream("C:\\Users\\João\\Documents\\MATLAB\\CleanseMulti\\" + auxFileName + "\\" + (int)(prob*100) + "\\ML\\" + auxFileName + it + ncv + "TE.txt");  //
+
+
+                    //     RefiningStratifiedCrossValidationFull(matriz, fileName, it, prob);     // cria os conjuntos de treinamento
+
+                    //  criaDominioRefinadoCppAbDG(matrizTreino, fileName, it, (int)(prob*100));    // CleanseOne     // matriz
+
+                    criaDominioRefinadoCppAbDGMultiGenMode(matrizTreino, fileName, it, (int)(prob*100),  ncv);  // CleanseMulti
+
+                    // ,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,matrizes devem estar normalizadas!!!!!!!!!!!
+
+
+
+                    int rep = 20;
+                    refMaskMat = criaMatrizRefineAll(rep, contTeste, coll - 1);
+
+                    for (int i = 0; i < rep; i++) {
+
+                        matrizAuxTeste = refiningForTestAssumingAClassFull(matrizTeste, refMaskMat, i + 1);//refiningForTestAssumingAClassFull(matrizTeste, prob); // altera conjunto de teste de maneira similar a do treino
+
+                        for (int j = 0; j < contTeste; j++)
+                            for(int k = 0; k < coll - 1; k++)
+                                if(refMaskMat[j][k] == i + 1)
+                                    matrizTE[j][k] = matrizAuxTeste[j][k];
+
+                    }
+
+                    for (int j = 0; j < contTeste; j++)
+                        // for (int k = 0; k < coll; k++)
+                        matrizTE[j][coll - 1] = matrizTeste[j][coll-1];
+
+
+                    PrintWriter out;
+                    FileOutputStream outputStream = null;
+                    try {
+                        outputStream = new FileOutputStream("C:\\Users\\João\\Documents\\MATLAB\\CleanseMulti\\" + auxFileName + "\\" + (int)(prob*100) + "\\ML\\" + auxFileName + it + ncv + "TE.txt");  //
+
+                    } catch (java.io.IOException e) {
+                        System.out.println("Could not create result.txt");
+                    }
+
+                    out = new PrintWriter(outputStream);
+
+
+                    for (int i = 0; i < matrizTeste.length; i++) {
+                        for (int j = 0; j < coll; j++)
+                            out.print(matrizTeste[i][j] + " ");   // imprimindo matriz original
+                        out.println();
+                    }
+
+                    out.close();
+
+        */
+
+
+                    it++;
+
+                }
+            }
+            //         for(int i = 0; i < mainClassification.length; i++){
+            //   desvio1[i] = Math.sqrt((somaQuadClassification1[i] - (Math.pow(somaClassification1[i],2)/100))/99);
+            //   mediaClass[i] = somaClassification[i]/8;
+            //        System.out.println(show.format(i) + "  " + show.format(mediaClass[i]));
+
+
+        /*
+            PrintWriter out3;
+            FileOutputStream outputStream3 = null;
+            try {
+                outputStream3 = new FileOutputStream("C:\\Users\\João\\Documents\\MATLAB\\CleanseOne\\" + auxFileName + "\\taxaDeAlteracao" + (int)(prob*100) + ".txt");  //
+
+            } catch (java.io.IOException e) {
+                System.out.println("Could not create result.txt");
+            }
+
+            out3 = new PrintWriter(outputStream3);
+
+            out3.print("Taxa de alteraçoes TR " + atrAltRate/(double)fold);
+            //   System.out.println("Taxa de alteraçoes TE " + atrAltRateTE/(double)fold);
+            //   System.out.println("Taxa alteraçao de classe " + contAltClasses/(double)fold);
+
+            out3.close();
+
+        */
+
+        }
+
+        //   }
+
+
+    }
 
 
 
 
-     public void simulateRefiningAttributeRandom(double[][] A, String fileName, int itCv){
+    public void simulateRefiningAttributeRandom(double[][] A, String fileName, int itCv){
                                                   // troca alguns valores por valores aleat�rios de atributos
       //  int noTXT = fileName.length() - 4;
 	    String auxFileName = fileName; // fileName.substring(0, noTXT);
@@ -8218,7 +8123,7 @@ public class DecisionNetwork {
 
     double[] Classes;
     Networks[] networks;
-    NetworkFull[] networksFull;
+    NetworkFull networksFull;
     private AttributeHandler[] vetAtrHandler;
     private static double[] thresholds;
     private static int contThreshold;

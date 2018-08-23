@@ -61,10 +61,8 @@ public class Networks {               // cria rede de uma determinada classe
       for(int j = 0; j < coll - 2; j++) {                        // separar por classe
           for(int i = 0; i < line; i++)
              vetCorrelations[j].buildCorrelation(E[i][j],E[i][j+1]);
-     //    vetCorrelations[j].showCM();
-         vetCorrelations[j].createWeights(line);
-     //     vetCorrelations[j].showCM();
-      }
+    //     vetCorrelations[j].createWeights(line);
+     }
 
     }
 
@@ -85,9 +83,7 @@ public class Networks {               // cria rede de uma determinada classe
                 vetCorrelations[j].buildCorrelation(E[i][j],E[i][j+1]);
                 pairCount++;
              }
-     //    vetCorrelations[j].showCM();
-         vetCorrelations[j].createWeights(pairCount);
-     //     vetCorrelations[j].showCM();
+//         vetCorrelations[j].createWeights(pairCount);
       }
 
 

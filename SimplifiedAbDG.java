@@ -40,7 +40,7 @@ public class SimplifiedAbDG {
         this.classifierAccAcumulado = 0;
         this.Weight = 0.0001;
         alpha = 0.3;// 999;
-        networksFull = new NetworkFull[nroClasses];
+       // networksFull = new NetworkFull();
 
 
         if(granularidade != 0)
@@ -121,11 +121,10 @@ public class SimplifiedAbDG {
         }
 
         // cria conexoes entre intervalos de atributos diferentes
-        for(int i = 0; i < nroClasses; i++) {   // para experimento com 3 classe  - anda em classes
-            oneClassTrain = criaTreinamento(matriz,Classes[i]);
-            networksFull[i] = new NetworkFull(oneClassTrain, Classes[i], matriz.length);
-            networksFull[i].learnFullConection(vetAtrHandler);
-        }
+         // para experimento com 3 classe  - anda em classes
+            networksFull = new NetworkFull(matriz, nroClasses,vetAtrHandler);
+            //networksFull.learnFullConection(vetAtrHandler);
+
 
     }
     public void buildVertexMDLP(double[][] matriz){  //  cria AbDG simplificado - só considera vertices
@@ -228,14 +227,16 @@ public class SimplifiedAbDG {
 
         }
 
+        networksFull = new NetworkFull(matriz, nroClasses, vetAtrHandler);
+
         // cria conexoes entre intervalos de atributos diferentes
-        for(int i = 0; i < nroClasses; i++) {
-            oneClassTrain = criaTreinamento(matriz,Classes[i]);
-            networksFull[i] = new NetworkFull(oneClassTrain, Classes[i], matriz.length);
-            networksFull[i].learnFullConection(vetAtrHandler, attrMask, matriz.length);
+    //    for(int i = 0; i < nroClasses; i++) {
+      //      oneClassTrain = criaTreinamento(matriz,Classes[i]);
+           // networksFull[i] = new NetworkFull(oneClassTrain, Classes[i], matriz.length);
+         //   networksFull[i].learnFullConection(vetAtrHandler, attrMask, matriz.length);
            // networksFull[i].getCorrelation();
 
-        }
+       // }
 
               //  geraRegras();
     }
@@ -348,10 +349,8 @@ public class SimplifiedAbDG {
             for (int a = 0; a < coll - 1; a++)
                 vetAtrHandler[a].fastUpdateIntervalWeightsIncLearnWeightedIntervalsFadingFactorOnWeights(selecionaAtributoComClasse(matriz, a), predLabels, alpha);
 
-            for(int i = 0; i < nroClasses; i++) {   // para experimento com 3 classe  - anda em classes
-                oneClassTrain = criaTreinamento(matriz,Classes[i]);
-                networksFull[i].updateFullConection(oneClassTrain, alpha);
-            }
+                networksFull.updateFullConection(matriz, alpha);
+
 
         }
         else{                                           //fastUpdateIntervalWeightsIncLearnWeightedIntervalsFadingFactor
@@ -359,10 +358,8 @@ public class SimplifiedAbDG {
                 if(attrMask[a] == 1)
                     vetAtrHandler[a].fastUpdateIntervalWeightsIncLearnWeightedIntervalsFadingFactorOnWeights(selecionaAtributoComClasse(matriz,a),predLabels, alpha);
 
-            for(int i = 0; i < nroClasses; i++) {   // para experimento com 3 classe  - anda em classes
-                oneClassTrain = criaTreinamento(matriz,Classes[i]);
-                networksFull[i].updateFullConection(oneClassTrain,attrMask,alpha);
-            }
+                 networksFull.updateFullConection(matriz,attrMask,alpha);
+
 
         }
 
@@ -1016,6 +1013,44 @@ public class SimplifiedAbDG {
         return privateProbVector;
 
     }
+
+
+    public double[][] RuleClassifierFull(double[][] matriz, double neta){   // classificadores para testes
+        // classificador que recebe parametro ja escolhino na fase de sele��o de modelos
+
+        int line = matriz.length;
+        int coll = matriz[0].length;
+        double somaCorretos = 0, maior, classe = 0, somaCorretos1 =  0, somaCorretos2 = 0, somaCorretos3 = 0;
+        double somaProb = 0, somaSum = 0;
+        int indMaior;
+        double classe1 = 0, classe2 = 0,  aux = 0;
+        double classifications = 0;            // rotulos atribuidos     //   double[] classifications2 = new double[line];
+        predLabels = new double[line];
+        double soma = 0;
+        double[][] labels = new double[line][2];
+
+        if(isAttrRand)
+            networksFull.criaProbClassWeighted(matriz,attrMask);       // Weighted(matriz,attrGain);                // ############### classificador 3
+        else
+            networksFull.criaProbClassWeightedSA(matriz);       // Weighted(matriz,attrGain);                // ############### classificador 3
+
+
+        for(int a = 0; a < line; a++){
+
+
+// codigo classificador
+
+
+        } // for-line
+
+        classifierAcertos = classifications/line;
+
+
+        return labels;
+
+    }
+
+
     public double[] sAbDGClassifier(double[][] matriz){   // classificador
 
         int line = matriz.length;
@@ -1128,15 +1163,15 @@ public class SimplifiedAbDG {
         double[][] labels = new double[line][2];
 
         if(isAttrRand)
-           for(int b = 0; b < nroClasses; b++){                                  // vetAttrCorr
-                networksFull[b].criaProbClassWeighted(matriz,attrMask);       // Weighted(matriz,attrGain);                // ############### classificador 3
+           //for(int b = 0; b < nroClasses; b++){                                  // vetAttrCorr
+                networksFull.criaProbClassWeighted(matriz,attrMask);       // Weighted(matriz,attrGain);                // ############### classificador 3
             //    vetAux = networks[b].getVetCorrelation();
-             }
+        //     }
          else
-            for(int b = 0; b < nroClasses; b++){                                  // vetAttrCorr
-                networksFull[b].criaProbClassWeightedSA(matriz);       // Weighted(matriz,attrGain);                // ############### classificador 3
+          //  for(int b = 0; b < nroClasses; b++){                                  // vetAttrCorr
+                networksFull.criaProbClassWeightedSA(matriz);       // Weighted(matriz,attrGain);                // ############### classificador 3
                 //    vetAux = networks[b].getVetCorrelation();
-            }
+          //  }
 
 
 
@@ -1146,32 +1181,31 @@ public class SimplifiedAbDG {
             somaProb = 0;
             somaSum = 0;
             for(int b = 0; b < nroClasses; b++){
-                somaProb += networksFull[b].getProb(a);
-                somaSum += networksFull[b].getSum(a);
+                somaProb += networksFull.getProb(a,b);  // a - indice x, b - classe
+                somaSum += networksFull.getSum(a,b);
             }
-
 
 
             if(somaSum == 0 && somaProb == 0)
                 maior = 0;
             else if(somaSum == 0)
-                maior = (networksFull[0].getProb(a)/somaProb);
+                maior = (networksFull.getProb(a,1)/somaProb);
             else if(somaProb == 0)
-                maior = (networksFull[0].getSum(a)/somaSum);
+                maior = (networksFull.getSum(a,1)/somaSum);
             else
-                maior = (neta*(networksFull[0].getSum(a)/somaSum) + (1-neta)*(networksFull[0].getProb(a)/somaProb));
+                maior = (neta*(networksFull.getSum(a,1)/somaSum) + (1-neta)*(networksFull.getProb(a,1)/somaProb));
 
             indMaior = 0;
-            for(int c = 1; c < nroClasses; c++){
+            for(int c = 2; c < nroClasses+1; c++){
 
                 if(somaSum != 0 && somaProb != 0)
-                    aux = (neta*(networksFull[c].getSum(a)/somaSum) + (1-neta)*(networksFull[c].getProb(a)/somaProb));
+                    aux = (neta*(networksFull.getSum(a,c)/somaSum) + (1-neta)*(networksFull.getProb(a,c)/somaProb));
                 else if(somaSum == 0 && somaProb == 0)
                     aux = 0;
                 else if(somaSum == 0)
-                    aux = (networksFull[c].getProb(a)/somaProb);
+                    aux = (networksFull.getProb(a,c)/somaProb);
                 else if(somaProb == 0)
-                    aux = (networksFull[c].getSum(a)/somaSum);
+                    aux = (networksFull.getSum(a,c)/somaSum);
 
 
                 if(aux > maior){
@@ -1180,7 +1214,7 @@ public class SimplifiedAbDG {
                 }
             }
 
-            classe2 = networksFull[indMaior].getClasse();
+            classe2 = indMaior;
             labels[a][0] = classe2;
             labels[a][1] = maior; // prob do maior
             predLabels[a] = classe2;
@@ -1199,90 +1233,7 @@ public class SimplifiedAbDG {
     }
 
 
-    public double[][] RuleClassifierFull(double[][] matriz, double neta){   // classificadores para testes
-        // classificador que recebe parametro ja escolhino na fase de sele��o de modelos
 
-        int line = matriz.length;
-        int coll = matriz[0].length;
-        double somaCorretos = 0, maior, classe = 0, somaCorretos1 =  0, somaCorretos2 = 0, somaCorretos3 = 0;
-        double somaProb = 0, somaSum = 0;
-        int indMaior;
-        double classe1 = 0, classe2 = 0,  aux = 0;
-        double classifications = 0;            // rotulos atribuidos     //   double[] classifications2 = new double[line];
-        predLabels = new double[line];
-        double soma = 0;
-        double[][] labels = new double[line][2];
-
-        if(isAttrRand)
-            for(int b = 0; b < nroClasses; b++){                                  // vetAttrCorr
-                networksFull[b].criaProbClassWeighted(matriz,attrMask);       // Weighted(matriz,attrGain);                // ############### classificador 3
-                //    vetAux = networks[b].getVetCorrelation();
-            }
-        else
-            for(int b = 0; b < nroClasses; b++){                                  // vetAttrCorr
-                networksFull[b].criaProbClassWeightedSA(matriz);       // Weighted(matriz,attrGain);                // ############### classificador 3
-                //    vetAux = networks[b].getVetCorrelation();
-            }
-
-
-
-        for(int a = 0; a < line; a++){
-
-
-            somaProb = 0;
-            somaSum = 0;
-            for(int b = 0; b < nroClasses; b++){
-                somaProb += networksFull[b].getProb(a);
-                somaSum += networksFull[b].getSum(a);
-            }
-
-
-
-            if(somaSum == 0 && somaProb == 0)
-                maior = 0;
-            else if(somaSum == 0)
-                maior = (networksFull[0].getProb(a)/somaProb);
-            else if(somaProb == 0)
-                maior = (networksFull[0].getSum(a)/somaSum);
-            else
-                maior = (neta*(networksFull[0].getSum(a)/somaSum) + (1-neta)*(networksFull[0].getProb(a)/somaProb));
-
-            indMaior = 0;
-            for(int c = 1; c < nroClasses; c++){
-
-                if(somaSum != 0 && somaProb != 0)
-                    aux = (neta*(networksFull[c].getSum(a)/somaSum) + (1-neta)*(networksFull[c].getProb(a)/somaProb));
-                else if(somaSum == 0 && somaProb == 0)
-                    aux = 0;
-                else if(somaSum == 0)
-                    aux = (networksFull[c].getProb(a)/somaProb);
-                else if(somaProb == 0)
-                    aux = (networksFull[c].getSum(a)/somaSum);
-
-
-                if(aux > maior){
-                    maior = aux;
-                    indMaior = c;
-                }
-            }
-
-            classe2 = networksFull[indMaior].getClasse();
-            labels[a][0] = classe2;
-            labels[a][1] = maior; // prob do maior
-            predLabels[a] = classe2;
-
-            if(classe2 == matriz[a][coll-1])
-                classifications++;
-
-
-        } // for-line
-
-        classifierAcertos = classifications/line;
-
-
-        return labels;
-
-    }
 
     public void setWeight(double W){
         Weight = W;
@@ -1320,7 +1271,7 @@ public class SimplifiedAbDG {
     double[] Classes;
     Networks[] networks;
     private AttributeHandler[] vetAtrHandler;
-    NetworkFull[] networksFull;
+    NetworkFull networksFull;
     private int nroClasses;
     private char[] attributeType;
     private double[][] initialData;

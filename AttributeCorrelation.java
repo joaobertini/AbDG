@@ -149,32 +149,17 @@ public class AttributeCorrelation {
 
     }
 
-    public void createWeightsProb(int line, int lineTr){ // line é tamanho da classe
-
-        double Pc = line/(double)lineTr;
-
-        for(int i = 0; i < correlations.length; i++)
-            for(int j = 0; j < correlations[0].length; j++)
-                correlations[i][j] = (correlations[i][j]/line)*Pc;    // joint P(I1,I2,c)
 
 
-    }
-
-    public void createWeights(int line){
+    public void updateWeights(int line, double pw, double alpha){
+      //  double alpha = 0.99;  // line é tamanho da classe; pw é a priori da classe
+        double aux;
 
         for(int i = 0; i < correlations.length; i++)
-           for(int j = 0; j < correlations[0].length; j++)
-               correlations[i][j] /= line;
-
-   //     System.out.println();
-    }
-
-    public void updateWeights(int line, double alpha){
-      //  double alpha = 0.99;
-
-        for(int i = 0; i < correlations.length; i++)
-            for(int j = 0; j < correlations[0].length; j++)
-                updateCorrelations[i][j] /= line;
+            for(int j = 0; j < correlations[0].length; j++) {
+                aux = updateCorrelations[i][j];
+                updateCorrelations[i][j] = (aux/(double)line)*pw;
+            }
 
         for(int i = 0; i < correlations.length; i++)
             for(int j = 0; j < correlations[0].length; j++)

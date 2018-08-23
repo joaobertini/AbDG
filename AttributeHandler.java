@@ -1193,7 +1193,7 @@ public class AttributeHandler {    // classe com objetivo de lidar com os atribu
         double weight;
 
         // for time
-        double partSize = 1/(double)(atrLen-1);
+        double partSize = 1/(double)(atrLen-1);  // para valores normalizados entre [0,1]
 
         intervalo = (int)Math.floor(value/partSize);
         if(intervalo >= atrLen-1)
@@ -1218,6 +1218,7 @@ public class AttributeHandler {    // classe com objetivo de lidar com os atribu
        // weight = classesWeights[intervalo][classe] * intervalGain; // + beta* probAccInterval[intervalo];
 
       //  if(probAccInterval[intervalo] > 0.5)
+            System.out.println(intervalo + " " + classe);
             weight = classesWeights[intervalo][classe];// * probAccIntervalMat[intervalo][classe]; // * intervalGain;//* probAccInterval[intervalo];//
       //  else
           //  weight = 0;
