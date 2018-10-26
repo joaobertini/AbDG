@@ -1218,7 +1218,7 @@ public class AttributeHandler {    // classe com objetivo de lidar com os atribu
        // weight = classesWeights[intervalo][classe] * intervalGain; // + beta* probAccInterval[intervalo];
 
       //  if(probAccInterval[intervalo] > 0.5)
-            System.out.println(intervalo + " " + classe);
+      //      System.out.println(intervalo + " " + classe);
             weight = classesWeights[intervalo][classe];// * probAccIntervalMat[intervalo][classe]; // * intervalGain;//* probAccInterval[intervalo];//
       //  else
           //  weight = 0;
@@ -2469,9 +2469,10 @@ public class AttributeHandler {    // classe com objetivo de lidar com os atribu
 
            // somaAcertoIntervalo[i] = auxAcertoIntervalo[i] + alpha*somaAcertoIntervalo[i];
            // contaCftIntervalo[i] = auxSomaIntervalo[i] + alpha*contaCftIntervalo[i];
-            //teste
+
+            //teste  - acuracia é medida somente no ultimo batch
             if(auxSomaIntervalo[i] != 0)
-                probAccInterval[i] = auxAcertoIntervalo[i]/auxSomaIntervalo[i] + alpha*probAccInterval[i];
+                probAccInterval[i] = auxAcertoIntervalo[i]/auxSomaIntervalo[i]; //  + alpha*probAccInterval[i];
 
 
             for (int j = 0; j < nroClasses + 1; j++)
@@ -2491,7 +2492,7 @@ public class AttributeHandler {    // classe com objetivo de lidar com os atribu
               if(normTerm != 1)
                 coverageInterval[i] = normTerm;
               else
-                coverageInterval[i] = -2;
+                coverageInterval[i] = 0;
 
 
         }

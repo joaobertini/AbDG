@@ -55,7 +55,10 @@ public class NetworkFull {
                     for (int k = 0; k < lineA; k++)
                         fullVetCorrelations[cont][c].buildCorrelation(A[k][i], A[k][j]);
                     //    vetCorrelations[j].showCM();
-                    fullVetCorrelations[cont][c].createWeightsPAPER(lineA,((double)lineA/line));
+                    if(lineA != 0)
+                        fullVetCorrelations[cont][c].createWeightsPAPER(lineA,((double)lineA/line));
+                    else
+                        System.out.println("Erro - classe inexistente");
                     cont++;
                     //     vetCorrelations[j].showCM();
                 }
@@ -87,7 +90,7 @@ public class NetworkFull {
             for (int i = 0; i < numAttr; i++) {
                 for (int j = i + 1; j < numAttr; j++) {
                     if (atrMask[i] == 1 && atrMask[j] == 1) {// separar por classe
-                        for (int k = 0; k < line; k++)
+                        for (int k = 0; k < lineA; k++)
                             fullVetCorrelations[cont][c].buildCorrelation(A[k][i], A[k][j]);
                         //    vetCorrelations[j].showCM();
                         //fullVetCorrelations[cont].createWeights(line);
@@ -103,7 +106,7 @@ public class NetworkFull {
     }
 
 
-    public void updateFullConection(double[][] E, double alpha){   // conecta cada atributo com todos os outros - resulta em
+    public void updateFullConection(double[][] E, double alpha, double[] lastClassifications){   // conecta cada atributo com todos os outros - resulta em
       int cont = 0;
       int line = E.length;
       double[][] A;
@@ -116,10 +119,9 @@ public class NetworkFull {
 
         for(int i = 0; i < numAttr; i++){
             for(int j = i + 1; j < numAttr; j++){
-                fullVetCorrelations[cont][c].initUpdate(); // cria matriz de atualização em Attribute Correlation
 
-                    for (int k = 0; k < line; k++)
-                        fullVetCorrelations[cont][c].updateCorrelation(A[k][i], A[k][j]);
+                    for (int k = 0; k < lineA; k++)
+                        fullVetCorrelations[cont][c].updateCorrelation(A[k][i], A[k][j], (int)(lastClassifications[k]) == c);
                     //    vetCorrelations[j].showCM();
                     fullVetCorrelations[cont][c].updateWeights(lineA, ((double)lineA/line), alpha);
                 }
@@ -131,7 +133,7 @@ public class NetworkFull {
         //     System.out.println();
     }
 
-    public void updateFullConection(double[][] E, int[] atrMask, double alpha) {   // conecta cada atributo com todos os outros - resulta em
+    public void updateFullConection(double[][] E, int[] atrMask, double alpha, double[] lastClassifications) {   // conecta cada atributo com todos os outros - resulta em
         int cont = 0;
         int line = E.length;
         double[][] A;
@@ -146,9 +148,8 @@ public class NetworkFull {
             for (int i = 0; i < numAttr; i++) {
                 for (int j = i + 1; j < numAttr; j++) {                        // separar por classe
                     if (atrMask[i] == 1 && atrMask[j] == 1) {
-                        fullVetCorrelations[cont][c].initUpdate();
-                        for (int k = 0; k < line; k++)
-                            fullVetCorrelations[cont][c].updateCorrelation(A[k][i], A[k][j]);
+                        for (int k = 0; k < lineA; k++)
+                            fullVetCorrelations[cont][c].updateCorrelation(A[k][i], A[k][j],(int)(lastClassifications[k]) == c);
                         //    vetCorrelations[j].showCM();
                         fullVetCorrelations[cont][c].updateWeights(lineA, ((double)lineA/line), alpha);
                     }
@@ -227,6 +228,223 @@ public class NetworkFull {
 
         }
     }
+
+
+    public void normalizeCorrelationsFullVersionInc() {
+        // normaliza pesos e calcula ent, coverage e define acc = 1.
+        // como medidas não são diferentes para as classes, são armazenadas apenas na class 1
+
+        int atr1Len = 0, atr2Len = 0, cont = 0;
+        double soma = 0;
+
+        for (int i = 0; i < numAttr; i++) {
+            for (int j = i + 1; j < numAttr; j++) {
+                atr1Len = vetAtr[i].getVetAtr().length;
+                atr2Len = vetAtr[j].getVetAtr().length;
+                for (int k = 0; k < atr1Len - 1; k++) {
+                    for (int m = 0; m < atr2Len - 1; m++) {
+                        soma = 0;
+                        for (int z = 1; z < nroClasses + 1; z++)
+                            soma += fullVetCorrelations[cont][z].getCMEx(k, m);
+
+                        if (soma != 0)
+                            for (int x = 1; x < nroClasses + 1; x++)
+                                fullVetCorrelations[cont][x].setCMEx(k, m, soma);
+
+                        // calculo de coverage
+                      //  if(soma != 0)
+                      //      fullVetCorrelations[cont][1].setCoverage(k,m,);
+                     //   else
+                        fullVetCorrelations[cont][1].setCoverage(k,m,soma);
+
+                        double ent = 0;
+                        for (int z = 1; z < nroClasses + 1; z++)
+                            if(fullVetCorrelations[cont][z].getFullCorrelation()[k][m] != 0)
+                                ent += fullVetCorrelations[cont][z].getFullCorrelation()[k][m] * (Math.log(fullVetCorrelations[cont][z].getFullCorrelation()[k][m])/Math.log(2));
+
+
+                        fullVetCorrelations[cont][1].setEntropy(k,m,ent);
+                      //  fullVetCorrelations[cont][1].setAccInterval(k,m,1);
+                    }
+                }
+                cont++;
+            }
+
+        }
+    }
+
+    public void updateNormalizeCorrelationsFullVersionInc() {
+        // normaliza pesos e calcula ent, coverage e define acc = 1.
+        // como medidas não são diferentes para as classes, são armazenadas apenas na class 1
+
+        int atr1Len = 0, atr2Len = 0, cont = 0;
+        double soma = 0;
+
+        for (int i = 0; i < numAttr; i++) {
+            for (int j = i + 1; j < numAttr; j++) {
+                atr1Len = vetAtr[i].getVetAtr().length;
+                atr2Len = vetAtr[j].getVetAtr().length;
+                for (int k = 0; k < atr1Len - 1; k++) {
+                    for (int m = 0; m < atr2Len - 1; m++) {
+                        soma = 0;
+                        for (int z = 1; z < nroClasses + 1; z++)
+                            soma += fullVetCorrelations[cont][z].getCMEx(k, m);
+
+                        if (soma != 0)
+                            for (int x = 1; x < nroClasses + 1; x++)
+                                fullVetCorrelations[cont][x].setCMEx(k, m, soma);
+
+                        // calculo de coverage
+                        // coverage e entropia são recalculados a cada batch
+                        fullVetCorrelations[cont][1].setCoverage(k,m,soma);
+
+                        double ent = 0;
+                        for (int z = 1; z < nroClasses + 1; z++)
+                            if(fullVetCorrelations[cont][z].getFullCorrelation()[k][m] != 0)
+                                ent += fullVetCorrelations[cont][z].getFullCorrelation()[k][m] * (Math.log(fullVetCorrelations[cont][z].getFullCorrelation()[k][m])/Math.log(2));
+
+
+                        fullVetCorrelations[cont][1].setEntropy(k,m,ent);
+                        //  fullVetCorrelations[cont][1].setAccInterval(k,m,1);
+                    }
+                }
+
+                // acuracia está dividida por classe - soma acuraria das demais classes na classe 1, onde é acessada sem dependencia de classe
+                for(int h = 2; h < nroClasses + 1; h++)
+                    fullVetCorrelations[cont][1].sumAccOverClasses(fullVetCorrelations[cont][h].getAccEdge(),fullVetCorrelations[cont][h].getDeNumEdge());
+
+                fullVetCorrelations[cont][1].normalizaAccEdge();
+
+                    cont++;
+            }
+
+        }
+
+    }
+
+
+    public void updateNormalizeCorrelationsFullVersionInc(int[] atrMask) {
+        // normaliza pesos e calcula ent, coverage e define acc = 1.
+        // como medidas não são diferentes para as classes, são armazenadas apenas na class 1
+
+        int atr1Len = 0, atr2Len = 0, cont = 0;
+        double soma = 0;
+
+        for (int i = 0; i < numAttr; i++) {
+            for (int j = i + 1; j < numAttr; j++) {
+                if (atrMask[i] == 1 && atrMask[j] == 1){
+                atr1Len = vetAtr[i].getVetAtr().length;
+                atr2Len = vetAtr[j].getVetAtr().length;
+                for (int k = 0; k < atr1Len - 1; k++) {
+                    for (int m = 0; m < atr2Len - 1; m++) {
+                        soma = 0;
+                        for (int z = 1; z < nroClasses + 1; z++)
+                            soma += fullVetCorrelations[cont][z].getCMEx(k, m);
+
+                        if (soma != 0)
+                            for (int x = 1; x < nroClasses + 1; x++)
+                                fullVetCorrelations[cont][x].setCMEx(k, m, soma);
+
+                        // calculo de coverage
+                        // coverage e entropia são recalculados a cada batch
+                        fullVetCorrelations[cont][1].setCoverage(k, m, soma);
+
+                        double ent = 0;
+                        for (int z = 1; z < nroClasses + 1; z++)
+                            if (fullVetCorrelations[cont][z].getFullCorrelation()[k][m] != 0)
+                                ent += fullVetCorrelations[cont][z].getFullCorrelation()[k][m] * (Math.log(fullVetCorrelations[cont][z].getFullCorrelation()[k][m]) / Math.log(2));
+
+
+                        fullVetCorrelations[cont][1].setEntropy(k, m, ent);
+                        //  fullVetCorrelations[cont][1].setAccInterval(k,m,1);
+                    }
+                }
+
+                for (int h = 2; h < nroClasses + 1; h++)
+                    fullVetCorrelations[cont][1].sumAccOverClasses(fullVetCorrelations[cont][h].getAccEdge(), fullVetCorrelations[cont][h].getDeNumEdge());
+
+                fullVetCorrelations[cont][1].normalizaAccEdge();
+            }
+                cont++;
+            }
+
+        }
+
+    }
+    public void normalizeCorrelationsFullVersionInc(int[] atrMask) {
+        // normaliza pesos e calcula ent, coverage e define acc = 1.
+        // como medidas não são diferentes para as classes, são armazenadas apenas na class 1
+
+        int atr1Len = 0, atr2Len = 0, cont = 0;
+        double soma = 0;
+
+        for (int i = 0; i < numAttr; i++)
+            for (int j = i + 1; j < numAttr; j++){
+                if (atrMask[i] == 1 && atrMask[j] == 1){
+                    atr1Len = vetAtr[i].getVetAtr().length;
+                    atr2Len = vetAtr[j].getVetAtr().length;
+                    for (int k = 0; k < atr1Len - 1; k++) {
+                        for (int m = 0; m < atr2Len - 1; m++) {
+                            soma = 0;
+                            for (int z = 1; z < nroClasses + 1; z++)
+                                soma += fullVetCorrelations[cont][z].getCMEx(k, m);
+
+                            if (soma != 0)
+                                for (int x = 1; x < nroClasses + 1; x++)
+                                    fullVetCorrelations[cont][x].setCMEx(k, m, soma);
+
+                            // calculo de coverage
+                            //  if(soma != 0)
+                            //      fullVetCorrelations[cont][1].setCoverage(k,m,);
+                            //   else
+                            fullVetCorrelations[cont][1].setCoverage(k,m,soma);
+
+                            double ent = 0;
+                            for (int z = 1; z < nroClasses + 1; z++)
+                                if(fullVetCorrelations[cont][z].getFullCorrelation()[k][m] != 0)
+                                    ent += fullVetCorrelations[cont][z].getFullCorrelation()[k][m] * (Math.log(fullVetCorrelations[cont][z].getFullCorrelation()[k][m])/Math.log(2));
+
+
+                            fullVetCorrelations[cont][1].setEntropy(k,m,ent);
+                           // fullVetCorrelations[cont][1].setAccInterval(k,m,1);
+                        }
+                    }
+
+                }
+                cont++;
+        }
+    }
+
+/*
+    // calcula coverage para cada intervalo
+    if(normTerm != 1)
+    coverageInterval[i] = normTerm;
+    else
+    coverageInterval[i] = -2;
+
+
+}
+
+// calcula entropia
+for(int e = 0; e < nroIntervals-1; e++) {
+        for (int c = 1; c < nroClasses + 1; c++)
+        if(classesWeights[e][c] != 0)
+        entropyInterval[e] += classesWeights[e][c] * (Math.log(classesWeights[e][c]) / Math.log(2));
+        else
+        entropyInterval[e] = 1;
+
+        entropyInterval[e] *= -1;
+        }
+
+        for(int a = 0; a < nroIntervals - 1; a++) {
+        // probAccInterval[a] = 1;
+        for (int b = 1; b < nroClasses + 1; b++)
+        probAccIntervalMat[a][b] = 1;
+        }
+
+*/
+
+// System.out.println();
 
 /*    public double[] probClass(double[][] A){           // retorna vetor de probabilidades da rede corrente
 

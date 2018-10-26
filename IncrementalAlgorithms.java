@@ -107,10 +107,10 @@ public class IncrementalAlgorithms {
 
 
         // correção necessaria para execução de C45  -  trocar as classes -1 por 2
-    /*    for(int c = 0; c < line; c++)
+        for(int c = 0; c < line; c++)
             if(matriz[c][coll-1] == 0)                                 // 10  POKER - LED
-                matriz[c][coll-1] = 10;                                  //       2 airlines
-*/
+                matriz[c][coll-1] = 2;                                  //       2 airlines
+
 
 
 
@@ -146,7 +146,7 @@ public class IncrementalAlgorithms {
      //   SimplifiedAbDG f = new SimplifiedAbDG(matriz, attributeType, Classes);
      //   f.crossValidation();
        // sAbDGEBIEnsembleReal(matriz,50,1000,"ELEC",5,1);
-        sAbDGRULEEnsembleReal(matriz,50,100,"ELEC",5,1);
+        sAbDGRULEEnsembleReal(matriz,50,100,"AIR",1,1);
         //sAbDGEBIEnsemble(matriz,100, 100, "ELEC", 1);
 
     }
@@ -2128,10 +2128,10 @@ public double resolveComite(int[] mBestClf, int commeetteSize, double[][] matriz
                         double maiorR = 0;
                         int indMaiorR = 0;
 
-                        for(k = 0; k < commetteeSize; k++){
-                            testClassification = comite[k].sinlgeRulesAbDGVertexClassifier(matrizTreino); // DnoClassifierFull(matrizTreino, 0.5);
+                        for(k = 0; k < commetteeSize; k++){ // RuleClassifierFull
+                            testClassification = comite[k].RuleClassifierFull(matrizTreino);  //sinlgeRulesAbDGVertexClassifier(matrizTreino); // DnoClassifierFull(matrizTreino, 0.5);
 
-                        if(mBestClf[k] == 1)
+                      //  if(mBestClf[k] == 1)
                            for(int c = 0; c < testClassification.length; c++){
                                if(testClassification[c][0] > comiteOutput[c][0]){
                                    for(int d = 0; d < nroClasses+1; d++)

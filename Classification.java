@@ -70,7 +70,7 @@ public class Classification
         //      DecisionNetwork net = new DecisionNetwork(input);
 
 
-            DecisionNetwork net = new DecisionNetwork(input, args[0]);
+         //   DecisionNetwork net = new DecisionNetwork(input, args[0]);
 
         //      DecisionNetwork net = new DecisionNetwork();
            // ID3Like tree = new ID3Like(input);
@@ -79,7 +79,7 @@ public class Classification
          //  IncrementalAlgorithms inca = new IncrementalAlgorithms();
           // SEA sea = new SEA();
 
-          // IncrementalAlgorithms inca = new IncrementalAlgorithms(input, args[0]);
+           IncrementalAlgorithms inca = new IncrementalAlgorithms(input, args[0]);
 
          }
      }

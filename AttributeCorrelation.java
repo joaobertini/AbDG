@@ -21,8 +21,15 @@ public class AttributeCorrelation {
         this.atr2Len = vetAtr2.length;
         correlations = new double[atr1Len-1][atr2Len-1];
 
+        // rule incremental
+        updateCorrelations = new double[atr1Len-1][atr2Len-1];
+        entropyEdge = new double[atr1Len-1][atr2Len-1];
+        coverageEdge = new double[atr1Len-1][atr2Len-1];
+        accEdge = new double[atr1Len-1][atr2Len-1];
+        denumEdge = new double[atr1Len-1][atr2Len-1]; // numero de instancias que passa em determinada aresta/classe =updatecorrelation
+
         // flow graph
-        correlationsFlowGraph = new double[atr1Len-1][atr2Len-1];
+       // correlationsFlowGraph = new double[atr1Len-1][atr2Len-1];
    }
 
 
@@ -56,7 +63,7 @@ public class AttributeCorrelation {
        //  System.out.println();
     }
 
-    public void updateCorrelation(double v1, double v2){ // usado na versão incremental
+    public void updateCorrelation(double v1, double v2, boolean correct){ // usado na versão incremental
 
                 int i1 = -1, i2 = -1;
 
@@ -82,6 +89,12 @@ public class AttributeCorrelation {
 
         if(i1 != -1 && i2 != -1)
             updateCorrelations[i1][i2]++;
+
+
+        if(correct)
+           accEdge[i1][i2]++; // acertos do intervalo
+
+        denumEdge[i1][i2]++;  // classificados do intervalo
 
         //  System.out.println();
     }
@@ -166,11 +179,11 @@ public class AttributeCorrelation {
                 correlations[i][j] = updateCorrelations[i][j] + alpha*correlations[i][j];
 
         //     System.out.println(); somaClassIL[s] = auxSomaClass[s] + alpha*somaClassIL[s];
-        normalizaCorrelations();
+       // normalizaCorrelations();
     }
 
 
-    public void normalizaCorrelations(){
+    public void normalizaCorrelations(){  // normalização interna, valida para update
 
         int line = correlations.length;
         int coll = correlations[0].length;
@@ -249,9 +262,9 @@ public class AttributeCorrelation {
 
     }
 
-    public void initUpdate(){
-        updateCorrelations = new double[atr1Len-1][atr2Len-1];
-    }
+ //   public void initUpdate(){
+ //       updateCorrelations = new double[atr1Len-1][atr2Len-1];
+ //   }
 
       public double getCMEx(int lin, int col){
           return correlations[lin][col];
@@ -357,6 +370,7 @@ public class AttributeCorrelation {
 
     }
 
+
      public double[] getInterval(int intervalo, int atr){
 
         double[] edges = new double[2];
@@ -418,11 +432,166 @@ public class AttributeCorrelation {
 
     }
 
+    public void setEntropy(int k, int m, double ent){
+        if(ent != 0)
+            entropyEdge[k][m] = -1*ent;
+        else
+            entropyEdge[k][m] = 0;
+
+    }
+
+    public void setCoverage(int k, int m, double cov){
+        coverageEdge[k][m] = cov;
+
+    }
+
+    public void setAccEdge(int k, int m, double acc){
+        accEdge[k][m] = acc;
+
+    }
+
+    public double getEntropyEdge(double v1, double v2){
+
+        int i1 = -1, i2 = -1;
+
+        for(int i = 0; i < atr1Len-1; i++)
+            if(v1 > vetAtr1[i] && v1 <= vetAtr1[i+1])
+                i1 = i;
+
+        if(i1 == -1)                            // condicoes de fronteira
+            if(v1 <= vetAtr1[0])
+                i1 = 0;
+            else if (v1 > vetAtr1[atr1Len-1])
+                i1 = atr1Len-2;
+
+        for(int j = 0; j < atr2Len-1; j++)                            // implementar busca binaria
+            if(v2 > vetAtr2[j] && v2 <= vetAtr2[j+1])
+                i2 = j;
+
+        if(i2 == -1)                            // condicoes de fronteira
+            if(v2 <= vetAtr2[0])
+                i2 = 0;
+            else if (v2 > vetAtr2[atr2Len-1])
+                i2 = atr2Len-2;
+
+        if(i1 == -1 || i2 == -1)
+            return 0;
+        else
+            return entropyEdge[i1][i2];
+
+     }
+
+    public double getCoverageEdge(double v1, double v2){
+
+        int i1 = -1, i2 = -1;
+
+        for(int i = 0; i < atr1Len-1; i++)
+            if(v1 > vetAtr1[i] && v1 <= vetAtr1[i+1])
+                i1 = i;
+
+        if(i1 == -1)                            // condicoes de fronteira
+            if(v1 <= vetAtr1[0])
+                i1 = 0;
+            else if (v1 > vetAtr1[atr1Len-1])
+                i1 = atr1Len-2;
+
+        for(int j = 0; j < atr2Len-1; j++)                            // implementar busca binaria
+            if(v2 > vetAtr2[j] && v2 <= vetAtr2[j+1])
+                i2 = j;
+
+        if(i2 == -1)                            // condicoes de fronteira
+            if(v2 <= vetAtr2[0])
+                i2 = 0;
+            else if (v2 > vetAtr2[atr2Len-1])
+                i2 = atr2Len-2;
+
+        if(i1 == -1 || i2 == -1)
+            return 0;
+        else
+            return coverageEdge[i1][i2];
+
+
+    }
+
+    public double getAccEdge(double v1, double v2){
+
+        int i1 = -1, i2 = -1;
+
+        for(int i = 0; i < atr1Len-1; i++)
+            if(v1 > vetAtr1[i] && v1 <= vetAtr1[i+1])
+                i1 = i;
+
+        if(i1 == -1)                            // condicoes de fronteira
+            if(v1 <= vetAtr1[0])
+                i1 = 0;
+            else if (v1 > vetAtr1[atr1Len-1])
+                i1 = atr1Len-2;
+
+        for(int j = 0; j < atr2Len-1; j++)                            // implementar busca binaria
+            if(v2 > vetAtr2[j] && v2 <= vetAtr2[j+1])
+                i2 = j;
+
+        if(i2 == -1)                            // condicoes de fronteira
+            if(v2 <= vetAtr2[0])
+                i2 = 0;
+            else if (v2 > vetAtr2[atr2Len-1])
+                i2 = atr2Len-2;
+
+        if(i1 == -1 || i2 == -1)
+            return 0;
+        else
+            return accEdge[i1][i2];
+
+    }
+
+
+    public double[][] getAccEdge(){
+        return accEdge;
+    }
+
+
+   public double[][] getDeNumEdge(){
+       return denumEdge;
+   }
+
+
+    public void sumAccOverClasses(double[][] Acc, double[][] numE){
+        // soma accEdge de todas as clases. Metodo acessado somente pela classe 1// numE é matriz com todos, corretos e errados.
+        int line = accEdge.length;
+        int coll = accEdge[0].length;
+
+        for(int i = 0; i < line; i++)
+            for(int j = 0; j < coll; j++) {
+                accEdge[i][j] += Acc[i][j];
+                denumEdge[i][j] += numE[i][j];
+            }
+
+    }
+
+    public void normalizaAccEdge(){
+
+        int line = accEdge.length;
+        int coll = accEdge[0].length;
+
+        for(int i = 0; i < line; i++)
+            for(int j = 0; j < coll; j++)
+                if(denumEdge[i][j] != 0)
+                    accEdge[i][j] /= denumEdge[i][j];
+
+    }
+
+
     private int atr1, atr2;
     private int atr1Len, atr2Len;
     private double[] vetAtr1, vetAtr2;
     private double[][] correlations;         // criar duas matrizes - contagem e pesos
     private double[][] updateCorrelations;
+    private double[][] denumEdge;
+
+    private double[][] entropyEdge;
+    private double[][] accEdge;
+    private double[][] coverageEdge;
+
                                             // Flow graphs
     private double[][] correlationsFlowGraph;
     private int total = 0;
