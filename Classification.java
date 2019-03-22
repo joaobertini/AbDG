@@ -70,7 +70,7 @@ public class Classification
         //      DecisionNetwork net = new DecisionNetwork(input);
 
 
-         //   DecisionNetwork net = new DecisionNetwork(input, args[0]);
+         //  DecisionNetwork net = new DecisionNetwork(input, args[0]);
 
         //      DecisionNetwork net = new DecisionNetwork();
            // ID3Like tree = new ID3Like(input);

@@ -219,14 +219,17 @@ public class NetworkFull {
                             soma += fullVetCorrelations[cont][z].getCMEx(k, m);
 
                         if (soma != 0)
-                            for (int x = 1; x < nroClasses + 1; x++)
+                            for (int x = 1; x < nroClasses + 1; x++) {
+                                System.out.println(cont + " " + k + " " + m + " " + soma);
                                 fullVetCorrelations[cont][x].setCMEx(k, m, soma);
+                            }
                     }
                 }
                 cont++;
             }
 
         }
+        System.out.println();
     }
 
 

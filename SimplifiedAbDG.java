@@ -39,7 +39,8 @@ public class SimplifiedAbDG {
         this.nroClasses = classes.length;
         this.classifierAccAcumulado = 0;
         this.Weight = 0.0001;
-        alpha = 0.3;// 999;
+        alpha = 0.999;
+        ruleSize = 1 + (int)(Math.random()*5);
        // networksFull = new NetworkFull();
 
 
@@ -189,7 +190,7 @@ public class SimplifiedAbDG {
         attrMask = new int[coll-1];
         int soma = 0;
         int granularidade;
-        int grMax = 5;
+        int grMax = 8;
        // networks = new Networks[nroClasses];
        // para dois atributos
       //  for(int i = 0; i < coll-1; i++)
@@ -344,7 +345,7 @@ public class SimplifiedAbDG {
         int line = matriz.length;
         int[] somaClassIL = new int[nroClasses+1];
         double[][] oneClassTrain;
-        alpha *= 1;//0.9; // taxa de decremento de alpha
+       // alpha *= 1;//0.9; // taxa de decremento de alpha
 
         for(int j = 0; j < line; j++)             // P(Ci)      -   porcentagem de elementos da classe i no conjunto de treinamento
             somaClassIL[(int)matriz[j][coll-1]]++;
@@ -1100,7 +1101,7 @@ public class SimplifiedAbDG {
         classifierAcertos = 0;
         //double soma, somaAnt = 0;
         int[] somaClassIL = new int[nroClasses+1];
-        int ruleSize = 3;
+        //int ruleSize = 1 + (int) (Math.random() * 5); // gera regras de tamanhos de 1 a 5
         int cont;
 
         for(int z = 0; z < line; z++)
@@ -1155,7 +1156,7 @@ public class SimplifiedAbDG {
         }
 
         // Encontra os maiores valores de força tanto para ruleIntVector quanto para ruleEdgeVector
-        // soma peso dos intervalos, do maior para o menor até certo ths. Retorna tambem a força da regra
+        // soma peso dos intervalos, do maior para o menor até certo ths ou tamanho de regra. Retorna tambem a força da regra
         if (!isAttrRand) {
             for (int i = 0; i < line; i++) {
                // soma = 0;
@@ -1195,7 +1196,10 @@ public class SimplifiedAbDG {
 
                        privateProbVector[i][0] += ruleIntVector[i][indMaior];    // força da regra
                        for (int classe = 1; classe < nroClasses + 1; classe++)
-                           privateProbVector[i][classe] += Math.log(vetAtrHandler[indMaior].getWeightedInterval(matriz[i][indMaior], classe));
+                           if(vetAtrHandler[indMaior].getWeightedInterval(matriz[i][indMaior], classe) != 0)
+                               privateProbVector[i][classe] += Math.log(vetAtrHandler[indMaior].getWeightedInterval(matriz[i][indMaior], classe));
+                            else
+                               privateProbVector[i][classe] += Math.log(0.0001);
 
                        ruleIntVector[i][indMaior] = -2; // para sair da comparação de maior
                    }
@@ -1203,7 +1207,10 @@ public class SimplifiedAbDG {
 
                        privateProbVector[i][0] += ruleEdgeVector[i][indMaiorA];    // força da regra
                        for (int classe = 1; classe < nroClasses + 1; classe++)
-                           privateProbVector[i][classe] += Math.log(networksFull.getVetCorrelation()[indMaiorA][classe].findCorrelation(matriz[i][indA], matriz[i][indB]));
+                           if(networksFull.getVetCorrelation()[indMaiorA][classe].findCorrelation(matriz[i][indA], matriz[i][indB]) != 0)
+                                privateProbVector[i][classe] += Math.log(networksFull.getVetCorrelation()[indMaiorA][classe].findCorrelation(matriz[i][indA], matriz[i][indB]));
+                            else
+                                privateProbVector[i][classe] +=  Math.log(0.0001);
 
                        ruleEdgeVector[i][indMaiorA] = -2; // para sair da comparação de maior
 
@@ -1255,14 +1262,20 @@ public class SimplifiedAbDG {
 
                         privateProbVector[i][0] += ruleIntVector[i][indMaior];    // força da regra
                         for (int classe = 1; classe < nroClasses + 1; classe++)
-                            privateProbVector[i][classe] += Math.log(vetAtrHandler[indMaior].getWeightedInterval(matriz[i][indMaior], classe));
+                            if(vetAtrHandler[indMaior].getWeightedInterval(matriz[i][indMaior], classe) != 0)
+                                privateProbVector[i][classe] += Math.log(vetAtrHandler[indMaior].getWeightedInterval(matriz[i][indMaior], classe));
+                            else
+                                privateProbVector[i][classe] += Math.log(0.0001);
 
                         ruleIntVector[i][indMaior] = -2; // para sair da comparação de maior
                     } else { // caso em que força de aresta é maior
 
                         privateProbVector[i][0] += ruleEdgeVector[i][indMaiorA];    // força da regra
                         for (int classe = 1; classe < nroClasses + 1; classe++)
-                            privateProbVector[i][classe] += Math.log(networksFull.getVetCorrelation()[indMaiorA][classe].findCorrelation(matriz[i][indA], matriz[i][indB]));
+                            if(networksFull.getVetCorrelation()[indMaiorA][classe].findCorrelation(matriz[i][indA], matriz[i][indB]) != 0)
+                                privateProbVector[i][classe] += Math.log(networksFull.getVetCorrelation()[indMaiorA][classe].findCorrelation(matriz[i][indA], matriz[i][indB]));
+                            else
+                                privateProbVector[i][classe] += Math.log(0.0001);
 
                         ruleEdgeVector[i][indMaiorA] = -2; // para sair da comparação de maior
 
@@ -1282,6 +1295,13 @@ public class SimplifiedAbDG {
         }
 
 
+        // para a versão aleatoria de ruleSize
+        for(int i = 0; i < line; i++){
+            for (int classe = 0; classe < nroClasses + 1; classe++)
+                privateProbVector[i][classe] /= ruleSize;
+        }
+
+
         //  Math.exp(-1*privateProbVector[i][b])
 /*
         for(int j = 0; j < line; j++) {
@@ -1293,10 +1313,19 @@ public class SimplifiedAbDG {
                 privateProbVector[j][classe] /= soma;
         }
 */
-
+        double soma = 0;
         for(int i = 0; i < line; i++){
             indMaior = 0;
             maior = 0;
+            soma = 0;
+            // normaliza prob das classes
+            for(int b = 1; b < nroClasses + 1; b++)
+                soma += privateProbVector[i][b];
+
+            for (int b = 1; b < nroClasses + 1; b++)
+                if(soma != 0)
+                    privateProbVector[i][b] /= soma;
+
 
             for(int b = 1; b < nroClasses + 1; b++)
                 if(maior < privateProbVector[i][b]) {
@@ -1326,10 +1355,7 @@ public class SimplifiedAbDG {
 
         } // for-line
 
-        // classifierAccAcumulado = classifierAcertos/numTe;
-        //  System.out.println(acertos/line);
-
-
+        // [0] - força da regra [1,...] prob da classe
         return privateProbVector;
 
     }
@@ -1516,8 +1542,9 @@ public class SimplifiedAbDG {
 
     }
 
-
-
+    public double[] getStrenghtAndProbVector(int example){
+        return privateProbVector[example];
+    }
 
     public void setWeight(double W){
         Weight = W;
@@ -1544,12 +1571,32 @@ public class SimplifiedAbDG {
         return predLabels;
     }
 
+    public double getProbPredLabel(int ex){
+        // retorna a prob. do exemplo ex para a classe que este foi classificado
+        return privateProbVector[ex][(int)predLabels[ex]];
+    }
+
     public int[] getOracle(){
         return oracle;
     }
 
     public void resetAlpha(){
         alpha = 0.999;
+    }
+
+    public void updateAlpha(){
+        double diff = lastAcc - classifierAcertos;
+
+        if(diff > 0)
+           alpha *= 0.999;  // piorou
+        if(diff < 0)
+            alpha *= 1.001; // melhorou
+
+        // limites inferior e superior para alpha
+        if(alpha > 1)
+            alpha = 0.99;
+        if(alpha < 0.001)
+            alpha = 0.1;
     }
 
     double[] Classes;
@@ -1560,13 +1607,13 @@ public class SimplifiedAbDG {
     private char[] attributeType;
     private double[][] initialData;
     private int[] ordem; // para possibilitar atualização incremental
-    private double Weight, alpha;
+    private double Weight, alpha, ruleSize;
 
     // incremental learning
     private int classifierAgeUpdate;
     private double classifierAccAcumulado = 0;
     private double classifierAcertos = 0;
-    private double numTe = 0, lastAcc = 1;
+    private double numTe = 0, lastAcc;
     private double[][] privateProbVector;
     private int[] oracle;
     private double[] predLabels, errorModel;

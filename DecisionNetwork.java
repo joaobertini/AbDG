@@ -342,7 +342,6 @@ public class DecisionNetwork {
 
 
 
-  //   mostraRede(matriz);                  // para fazer o exemplo do paper
 
 
     //  criaMatrizMissingAttrubute(matriz,filename);
@@ -350,6 +349,9 @@ public class DecisionNetwork {
    //    criaMatrizMissingAttrubuteNA(matriz,filename);        // atualmente rodando com prob = 0
 
       matriz = normalizacaoMaiorMenor(matriz);    // normaliza��o para AbDG
+
+
+      //exemploAbDG(matriz); // constroi um AbDG com matriz
 
    //   criaMatrizMissingAttrubuteNALinXCol(matriz,filename);       // gera as 5 versoes com prob 0.1 a 0.5
 
@@ -410,7 +412,7 @@ public class DecisionNetwork {
 
 //      stratifiedCrossValidation(matriz,0);           // ordenado
 
-      stratifiedCrossValidationFull(matriz,0);    //  full-connected
+     // stratifiedCrossValidationFull(matriz,0);    //  full-connected
 
    //     stratifiedCrossValidationGeneticallyDefinedStructure(matriz,0);    //  geneticamente definido
 
@@ -1731,6 +1733,77 @@ public class DecisionNetwork {
     }
 
     */
+
+  public void exemploAbDG(double[][] matriz){
+
+      int line = matriz.length;
+      int coll = matriz[0].length;
+      double[][] matrizTreino;
+      double[][] matrizTeste;
+      int fold = 10;
+      int contTreino = 0, contTeste = 0, it = 1;
+      int compAux = 0;
+      double[] mainClassification, mainClassification1;
+      double[] somaQuadClassification = new double[3];
+      double[] somaClassification = new double[3];
+      double[] desvio = new double[3];
+      double[] mediaClass = new double[3];
+
+      double[] somaQuadClassification1 = new double[12];
+      double[] somaClassification1 = new double[12];
+      double[] desvio1 = new double[12];
+      double[] mediaClass1 = new double[12];
+      double newDesvio = 0, newMediaClass = 0;
+      double[] classDesvio = new double[2];
+      double[][] oneClassTrain;
+      // networks = new Networks[nroClasses];
+
+      DecimalFormat show = new DecimalFormat("0.00");
+
+
+
+              coll = matriz[0].length;
+
+              particionaAtributo(matriz);
+
+              int[] auxAtr = new int[vetAtrHandler.length];
+              for(int o = 0; o < auxAtr.length; o++)
+                  auxAtr[o] = 0;
+
+              /* #### AbDG no exemplo do paper RuleAbDG - para o conjunto Iris #### */
+        // atr 1
+      vetAtrHandler[0].histogramPart(3);
+     // vetAtrHandler[0].calculateIntervalGain();
+      vetAtrHandler[0].intervalWeights();
+
+        // atr2
+      vetAtrHandler[1].histogramPart(2);
+      //vetAtrHandler[1].calculateIntervalGain();
+      vetAtrHandler[1].intervalWeights();
+
+      vetAtrHandler[2].histogramPart(2);
+      //vetAtrHandler[2].calculateIntervalGain();
+      vetAtrHandler[2].intervalWeights();
+
+      vetAtrHandler[3].histogramPart(4);
+      //vetAtrHandler[3].calculateIntervalGain();
+      vetAtrHandler[3].intervalWeights();
+
+
+
+     networksFull = new NetworkFull(matriz, nroClasses, vetAtrHandler);
+     networksFull.learnFullConection();
+     int numAttr = coll - 1;
+     int numEdges = numAttr + (numAttr*(numAttr-3))/2;
+
+     networksFull.normalizeCorrelationsFullVersion();  // normaliza correlações de arestas
+
+     normalizeIntervalGain(coll-1);
+
+
+
+
+  }
 
     public double[][] compactaConjunto(double[][] A, int numEl){
 

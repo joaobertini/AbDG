@@ -918,10 +918,10 @@ public class AttributeHandler {    // classe com objetivo de lidar com os atribu
                    classesWeights[i][c] = (jointP[c]/normTerm);         //  Math.pow(normTerm,2);
             }
 
-
+            System.out.println("int" + i + " " + normTerm);  // mostra termo normalizador para cada vertice - coverage
         }
 
-          // System.out.println();
+           System.out.println();
     }
 
     public void intervalWeightsRefining(double cutW){               // calcula peso de intervalos para todas classes e para um atributo
