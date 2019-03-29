@@ -2508,6 +2508,131 @@ public class AttributeHandler {    // classe com objetivo de lidar com os atribu
       //  normalizaClassesWeights();
         //   System.out.println();
     }
+    public void fastUpdateIntervalWeightsKullbackLeibler(double[][] attrCl, double[] lastClassifications){
+        // Testa média de cada intervalo para considerar atualizar
+        // atualiza pesos de intervalos e considera confiabilidade de cada intervalo, usando os resultado de classificacao passados
+
+        int line = attrCl.length;
+        //  double alpha = 0.99; // fading rate
+        //numTrain = line + alpha*numTrain; //
+        // numTrain += line;  // atualiza numero de intancias processadas
+        int nroClasses = classes.length;
+        int nroIntervals = vetAtr.length;
+        double[] PC = new double[classes.length +1];
+        double[] jointP = new double[nroClasses +1];
+        double[] auxSomaClass = new double[somaClassIL.length];
+        double[][] auxSomaInterClass = new double[nroIntervals-1][somaClassIL.length];
+        double[] auxAcertoIntervalo = new double[somaAcertoIntervalo.length];
+        double[] auxSomaIntervalo = new double[somaAcertoIntervalo.length];
+        double normTerm;
+        boolean hasChanged = false;
+
+        double partSize;
+        int intervalo;
+
+        for(int j = 0; j < line; j++)             // |Ci|      - numero de elementos da classe i no conjunto de treinamento
+            auxSomaClass[(int)attrCl[j][1]]++;  // conta o numero de instancias por classe
+
+        for(int s = 0; s < nroClasses+1; s++) {
+            // somaClassIL[s] = auxSomaClass[s] + alpha*somaClassIL[s];
+            PC[s] = auxSomaClass[s]/line; // somaClassIL[s] / numTrain;   // P(Ci)  prob da classe i.
+        }
+
+        // zera vetores auxiliares
+        for(int k = 0; k < auxAcertoIntervalo.length; k++) {
+            auxAcertoIntervalo[k] = 0;
+            auxSomaIntervalo[k] = 0;
+        }
+
+        partSize = 1/(double)(vetAtr.length-1);
+
+        for(int j = 0; j < line; j++) {
+            intervalo = (int)Math.floor(attrCl[j][0]/partSize);
+            //  System.out.println(partSize + " " + atrClass[j][0] + " " + intervalo);
+
+            if(intervalo >= nroIntervals-1)
+                intervalo--;
+
+            auxSomaInterClass[intervalo][(int)attrCl[j][1]]++;    // numero de el. por intervalo e classe - dividir por line
+            auxSomaIntervalo[intervalo]++;
+        }
+
+        // Hoeffding test
+        double soma = 0;
+        double thrs = 0;
+        double aux1, aux2;
+
+        for(int j = 0; j < nroClasses; j++) {
+            soma = 0;
+            for(int i = 0; i < nroIntervals-1; i++){
+                aux1 = auxSomaInterClass[i][j]/line;  // P(x)
+                aux2 = somaIntervalClassIL[i][j]/line;  // Q(x)
+                if(aux1 != 0 && aux2 != 0){
+                    soma += aux1*Math.log(aux1/aux2);
+                }
+                else if(aux2 == 0)
+                    soma += aux1*Math.log(aux1/0.00000001);
+
+            }
+            if(soma > thrs)
+                hasChanged = true;
+                break;
+        }
+
+        if(hasChanged) {
+            contaCftIntervalo = new double[nroIntervals - 1];
+
+            entropyInterval = new double[nroIntervals - 1];
+            coverageInterval = new double[nroIntervals - 1];
+
+
+            for (int i = 0; i < nroIntervals - 1; i++) {
+                normTerm = 0;
+
+                for (int j = 0; j < auxSomaClass.length; j++)
+                    somaIntervalClassIL[i][j] = auxSomaInterClass[i][j];// +  somaIntervalClassIL[i][j];
+
+                // somaAcertoIntervalo[i] = auxAcertoIntervalo[i] + alpha*somaAcertoIntervalo[i];
+                // contaCftIntervalo[i] = auxSomaIntervalo[i] + alpha*contaCftIntervalo[i];
+
+                //teste  - acuracia é medida somente no ultimo batch
+                if (auxSomaIntervalo[i] != 0)
+                    probAccInterval[i] = auxAcertoIntervalo[i] / auxSomaIntervalo[i]; //  + alpha*probAccInterval[i];
+
+
+                for (int j = 0; j < nroClasses + 1; j++)
+                    if (auxSomaClass[j] != 0) {
+                        jointP[j] = (auxSomaInterClass[i][j] / auxSomaClass[j]) * PC[j]; // joint
+                        normTerm += jointP[j];
+                    } else
+                        jointP[j] = 0;
+
+                for (int c = 1; c < nroClasses + 1; c++) {
+                    if (normTerm != 0)
+                        classesWeights[i][c] = (jointP[c] / normTerm);// + alpha * classesWeights[i][c];         //  Math.pow(normTerm,2);
+                }
+
+
+                // calcula coverage para cada intervalo
+                if (normTerm != 1)
+                    coverageInterval[i] = normTerm;
+                else
+                    coverageInterval[i] = 0;
+
+
+            }
+
+            // calcula entropia
+            for (int e = 0; e < nroIntervals - 1; e++) {
+                for (int c = 1; c < nroClasses + 1; c++)
+                    entropyInterval[e] += classesWeights[e][c] * (Math.log(classesWeights[e][c]) / Math.log(2));
+
+                entropyInterval[e] *= -1;
+            }
+        }
+        //  normalizaClassesWeights();
+        //   System.out.println();
+    }
 
 
     public void updateIntervalWeightsIncLearnWeightedIntervalsFadingFactor(double[][] attrCl, double[] lastClassifications){

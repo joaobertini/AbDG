@@ -146,8 +146,8 @@ public class IncrementalAlgorithms {
      //   SimplifiedAbDG f = new SimplifiedAbDG(matriz, attributeType, Classes);
      //   f.crossValidation();
        // sAbDGEBIEnsembleReal(matriz,50,1000,"ELEC",5,1);
-        sAbDGRULEEnsembleArtificialVarK(50,10000, 100,1,10);
-     //   sAbDGRULEEnsembleArtificial(50,10000, 100,1,1);
+      //  sAbDGRULEEnsembleArtificialVarK(50,10000, 100,1,10);
+        sAbDGRULEEnsembleArtificial(50,10000, 100,1,1);
        // sAbDGRULEEnsembleReal(matriz,50,100,"ELEC",1,1);
         //sAbDGEBIEnsemble(matriz,100, 100, "ELEC", 1);
 
@@ -2512,15 +2512,15 @@ public double resolveComite(int[] mBestClf, int commeetteSize, double[][] matriz
                         int kr = 25;
                         // avaliação do comite para o exemplo e
                         // avaliações que usam uma unica regra
-                         // comiteOutput[e] = highestStrengh(testClassification,e);
+                        //  comiteOutput[e] = highestStrengh(testClassification,e);
                             //    comiteOutput[e] = highestProb(testClassification,e);
-                           //     comiteOutput[e] = highestStrengTimesProb(testClassification,e);
+                                comiteOutput[e] = highestStrengTimesProb(testClassification,e);
                         // avaliaçãoes multi-regra
-                              //    comiteOutput[e] = votingMajority(testClassification,kr,e); // k ou thr
-                               //  comiteOutput[e] = votingMajorityProb(testClassification,kr,e);
+                              //  comiteOutput[e] = votingMajority(testClassification,kr,e); // k ou thr
+                              //  comiteOutput[e] = votingMajorityProb(testClassification,kr,e);
                               //  comiteOutput[e] = votingStrengthWeigth(testClassification, kr, e);
                               //  comiteOutput[e] = votingProbWeigth(testClassification, kr, e);
-                                comiteOutput[e] = votingStrengthProbWeigth(testClassification, kr, e);
+                              //  comiteOutput[e] = votingStrengthProbWeigth(testClassification, kr, e);
                     }
 
 
@@ -2571,10 +2571,12 @@ public double resolveComite(int[] mBestClf, int commeetteSize, double[][] matriz
 
                     }
 
-
+                    // Update
                     for(int c = 0; c < commetteeSize; c++) {   // atializa peso de todos
                         //   if(mBestClf[c] != 1)  //(comite[c].getClassAcc() < meanClfAcc)  //(mBestClf[c] != 1)
-                        comite[c].updateFadingFactor(matrizTreino);  //boosting(matrizTreino,weights)
+                        //comite[c].updateFadingFactor(matrizTreino);  //boosting(matrizTreino,weights)
+
+                        comite[c].updateKL(matrizTreino);  //boosting(matrizTreino,weights)
                     }
 
 

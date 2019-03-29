@@ -374,6 +374,40 @@ public class SimplifiedAbDG {
   }
 
 
+  public void updateKL(double[][] matriz){
+
+      int coll = matriz[0].length;
+      int line = matriz.length;
+      int[] somaClassIL = new int[nroClasses+1];
+      double[][] oneClassTrain;
+      // alpha *= 1;//0.9; // taxa de decremento de alpha
+
+      for(int j = 0; j < line; j++)             // P(Ci)      -   porcentagem de elementos da classe i no conjunto de treinamento
+          somaClassIL[(int)matriz[j][coll-1]]++;
+
+      if(!isAttrRand) {
+          for (int a = 0; a < coll - 1; a++)
+              vetAtrHandler[a].fastUpdateIntervalWeightsKullbackLeibler(selecionaAtributoComClasse(matriz, a), predLabels);
+
+          networksFull.updateFullConection(matriz, alpha, predLabels);
+          networksFull.updateNormalizeCorrelationsFullVersionInc();
+
+
+      }
+      else{                                           //fastUpdateIntervalWeightsIncLearnWeightedIntervalsFadingFactor
+          for(int a = 0; a < coll - 1; a++)
+              if(attrMask[a] == 1)
+                  vetAtrHandler[a].fastUpdateIntervalWeightsKullbackLeibler(selecionaAtributoComClasse(matriz,a),predLabels);
+
+          networksFull.updateFullConection(matriz,attrMask,alpha,predLabels);
+          networksFull.updateNormalizeCorrelationsFullVersionInc(attrMask);
+
+          // ver se é necessario criar updateNormali...
+
+      }
+
+
+  }
 
     public double[][] ordenaAtributosPorOrdem(double[][] matriz, int[] ordem){
         // recebe matriz e ordem de troca de colunas
