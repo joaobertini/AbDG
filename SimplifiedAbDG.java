@@ -41,7 +41,7 @@ public class SimplifiedAbDG {
         this.Weight = 0.0001;
         alpha = 0.999;
         ruleSize = 1 + (int)(Math.random()*5);
-       // networksFull = new NetworkFull();
+        // networksFull = new NetworkFull();
 
 
         if(granularidade != 0)
@@ -1136,6 +1136,7 @@ public class SimplifiedAbDG {
         //double soma, somaAnt = 0;
         int[] somaClassIL = new int[nroClasses+1];
         //int ruleSize = 1 + (int) (Math.random() * 5); // gera regras de tamanhos de 1 a 5
+        rule = new int[line][2*(ruleSize)]; //  vetor para armazenar regra; 2 posições para cada termo, se for regra de vertice v e -1; e se for de aresta v1 e v2
         int cont;
 
         for(int z = 0; z < line; z++)
@@ -1147,7 +1148,7 @@ public class SimplifiedAbDG {
             somaClassIL[(int)matriz[j][coll-1]]++;
 
         // ############## calcula força de vertices ########################
-        // ruleIntVector armazena a força da de cada intervalo de atributo relativo aos vertices
+        // ruleIntVector armazena a força da cada intervalo de atributo relativo aos vertices
         for(int i = 0; i < line; i++) {
             if(!isAttrRand)
                 for (int j = 0; j < coll - 1; j++) {
@@ -1235,6 +1236,8 @@ public class SimplifiedAbDG {
                             else
                                privateProbVector[i][classe] += Math.log(0.0001);
 
+                       rule[i][2*r] = indMaior;
+                       rule[i][2*r + 1] = -1; // notação para regra de vertice; vertice e -1
                        ruleIntVector[i][indMaior] = -2; // para sair da comparação de maior
                    }
                    else{ // caso em que força de aresta é maior
@@ -1246,6 +1249,8 @@ public class SimplifiedAbDG {
                             else
                                 privateProbVector[i][classe] +=  Math.log(0.0001);
 
+                       rule[i][2*r] = indA;
+                       rule[i][2*r+1] = indB; // notação para regra de aresta; vertice1 e vertice2
                        ruleEdgeVector[i][indMaiorA] = -2; // para sair da comparação de maior
 
                    }
@@ -1301,6 +1306,8 @@ public class SimplifiedAbDG {
                             else
                                 privateProbVector[i][classe] += Math.log(0.0001);
 
+                        rule[i][2*r] = indMaior;
+                        rule[i][2*r + 1] = -1; // notação para regra de vertice; vertice e -1
                         ruleIntVector[i][indMaior] = -2; // para sair da comparação de maior
                     } else { // caso em que força de aresta é maior
 
@@ -1311,6 +1318,8 @@ public class SimplifiedAbDG {
                             else
                                 privateProbVector[i][classe] += Math.log(0.0001);
 
+                        rule[i][2*r] = indA;
+                        rule[i][2*r + 1] = indB; // notação para regra de aresta; vertice1 e vertice2
                         ruleEdgeVector[i][indMaiorA] = -2; // para sair da comparação de maior
 
                     }
@@ -1324,16 +1333,17 @@ public class SimplifiedAbDG {
 
 
         for(int i = 0; i < line; i++){
+            privateProbVector[i][0] /= ruleSize;              // ########################################
             for (int classe = 1; classe < nroClasses + 1; classe++)
                 privateProbVector[i][classe] = Math.exp(privateProbVector[i][classe]);
         }
 
 
         // para a versão aleatoria de ruleSize
-        for(int i = 0; i < line; i++){
-            for (int classe = 0; classe < nroClasses + 1; classe++)
-                privateProbVector[i][classe] /= ruleSize;
-        }
+    //    for(int i = 0; i < line; i++){
+     //       for (int classe = 0; classe < nroClasses + 1; classe++)
+    //            privateProbVector[i][classe] /= ruleSize;
+ //       }
 
 
         //  Math.exp(-1*privateProbVector[i][b])
@@ -1394,6 +1404,22 @@ public class SimplifiedAbDG {
 
     }
 
+    public void printRule(int example, double[] matriz){  // rule[exemplo][intervalo]
+
+        for(int i = 0; i < ruleSize; i++)
+            if(rule[example][2*i+1] == -1) { // vertice
+                System.out.print(" attr " + rule[example][2*i] + " in ");
+                vetAtrHandler[rule[example][2*i]].printInterval(matriz[rule[example][2*i]]);
+            }
+            else{  // aresta
+                System.out.print(" attr " + rule[example][2*i] + " in ");
+                vetAtrHandler[rule[example][2*i]].printInterval(matriz[rule[example][2*i]]);
+                System.out.print(" and attr " + rule[example][2*i+1] + " in ");
+                vetAtrHandler[rule[example][2*i+1]].printInterval(matriz[rule[example][2*i+1]]);
+            }
+
+
+    }
 
     public double[] sAbDGClassifier(double[][] matriz){   // classificador
 
@@ -1637,12 +1663,12 @@ public class SimplifiedAbDG {
     Networks[] networks;
     private AttributeHandler[] vetAtrHandler;
     NetworkFull networksFull;
-    private int nroClasses;
+    private int nroClasses, ruleSize;
     private char[] attributeType;
     private double[][] initialData;
     private int[] ordem; // para possibilitar atualização incremental
-    private double Weight, alpha, ruleSize;
-
+    private double Weight, alpha;
+    private int[][] rule;
     // incremental learning
     private int classifierAgeUpdate;
     private double classifierAccAcumulado = 0;

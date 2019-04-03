@@ -2397,12 +2397,12 @@ public double resolveComite(int[] mBestClf, int commeetteSize, double[][] matriz
         for(int c = 0; c < commetteeSize; c++)
             correctClassification[c][0] = 1;  // primeira iteração
 
-        String auxFileName = "HYP";   //#########################################
+        String auxFileName = "SEA";   //#########################################
         deciding = 2113; //#####################################
 
         for(int r = 0; r < rep; r++){
 
-            double[][] m = hyperplane(line); // SEAconcept(line); //    //     // gaussData(line); // // SEAconcept(line); // hyperplane(line);//SEAconcept(line);//  // // gaussData(line); // SEAconcept(line); // sineData(line);//   //circleData(line); // //  //  //  mixedData(line); //
+            double[][] m =  SEAconcept(line); /// hyperplane(line); //  //  // gaussData(line); // // SEAconcept(line); // hyperplane(line);//SEAconcept(line);//  // // gaussData(line); // SEAconcept(line); // sineData(line);//   //circleData(line); // //  //  //  mixedData(line); //
 
             int coll = m[0].length;
 
@@ -2509,18 +2509,29 @@ public double resolveComite(int[] mBestClf, int commeetteSize, double[][] matriz
                                 testClassification[c][d] = testClassBaseModel[d];
                         }
 
+                        for(int j = 0; j < coll-1; j++)
+                            System.out.print(" Atr " + j + " " + matrizTreino[e][j]);
+                        System.out.println();
+
+
                         int kr = 25;
+                        int aux;
                         // avaliação do comite para o exemplo e
                         // avaliações que usam uma unica regra
-                        //  comiteOutput[e] = highestStrengh(testClassification,e);
-                            //    comiteOutput[e] = highestProb(testClassification,e);
-                                comiteOutput[e] = highestStrengTimesProb(testClassification,e);
+                                 aux = highestStrengh(testClassification,e);
+                               //  aux = highestProb(testClassification,e);
+                               //  aux = highestStrengTimesProb(testClassification,e);
+
+
                         // avaliaçãoes multi-regra
                               //  comiteOutput[e] = votingMajority(testClassification,kr,e); // k ou thr
                               //  comiteOutput[e] = votingMajorityProb(testClassification,kr,e);
                               //  comiteOutput[e] = votingStrengthWeigth(testClassification, kr, e);
                               //  comiteOutput[e] = votingProbWeigth(testClassification, kr, e);
                               //  comiteOutput[e] = votingStrengthProbWeigth(testClassification, kr, e);
+                            comiteOutput[e] = comite[aux].getPredLabels()[e]; // retorna a classe
+                            comite[aux].printRule(e,matrizTreino[e]);
+                            System.out.println(comiteOutput[e] +  " Correta " + matrizTreino[e][coll-1] );
                     }
 
 
@@ -2574,7 +2585,7 @@ public double resolveComite(int[] mBestClf, int commeetteSize, double[][] matriz
                     // Update
                     for(int c = 0; c < commetteeSize; c++) {   // atializa peso de todos
                         //   if(mBestClf[c] != 1)  //(comite[c].getClassAcc() < meanClfAcc)  //(mBestClf[c] != 1)
-                        //comite[c].updateFadingFactor(matrizTreino);  //boosting(matrizTreino,weights)
+                      //  comite[c].updateFadingFactor(matrizTreino);  //boosting(matrizTreino,weights)
 
                         comite[c].updateKL(matrizTreino);  //boosting(matrizTreino,weights)
                     }
@@ -3049,7 +3060,7 @@ public double resolveComite(int[] mBestClf, int commeetteSize, double[][] matriz
 
     // métodos para avaliação do comite baseado em regras
 
-    public double highestStrengh(double[][] classifications, int example){
+    public int highestStrengh(double[][] classifications, int example){
         // retorna a classificação correspondente à regra de maior força para a instancia example
         int line = classifications.length;
         int coll = classifications[0].length;
@@ -3064,18 +3075,19 @@ public double resolveComite(int[] mBestClf, int commeetteSize, double[][] matriz
                 indMaior = i;
             }
 
-        classe = comite[indMaior].getPredLabels()[example];
+       // classe = comite[indMaior].getPredLabels()[example];
 
-        return classe;
+        return indMaior;
 
     }
 
 
-    public double highestProb(double[][] classifications, int example){
+    public int highestProb(double[][] classifications, int example){
         // retorna a classificação correspondente à regra de maior prob. para a instancia example
         int line = classifications.length;
         int coll = classifications[0].length;
-        double maior, classe, prob;
+        double maior, prob;
+        int bestClf = 0;  //[indMaior, classe]
         int indMaior;
 
         maior = comite[0].getProbPredLabel(example);
@@ -3087,31 +3099,35 @@ public double resolveComite(int[] mBestClf, int commeetteSize, double[][] matriz
                 indMaior = i;
             }
         }
-        classe = comite[indMaior].getPredLabels()[example];
 
-        return classe;
+        //classe = comite[indMaior].getPredLabels()[example];
+
+        return bestClf; // retorna o melhor classificador
 
     }
 
-    public double highestStrengTimesProb(double[][] classifications, int example){
+    public int highestStrengTimesProb(double[][] classifications, int example){
         // retorna a classificação correspondente à regra de maior forçaxprob para a instancia example
         int line = classifications.length;
-        int coll = classifications[0].length;
-        double maior, classe, prob;
+        //int coll = matriz[0].length;
+        double maior, prob;
+        double classe;// = new double[2];  // [indMaior][classe]
         int indMaior;
 
-        maior = comite[0].getProbPredLabel(example)*classifications[0][0];
+        maior = comite[0].getProbPredLabel(example)*classifications[0][0];  // prob x força
         indMaior = 0;
         for(int i = 1; i < line; i++) {
             prob = comite[i].getProbPredLabel(example)*classifications[i][0];
             if (prob > maior) {  // compara probs das regras
-                maior = comite[i].getProbPredLabel(example)*classifications[i][0];
+                maior = prob; //comite[i].getProbPredLabel(example)*classifications[i][0];
                 indMaior = i;
             }
         }
-        classe = comite[indMaior].getPredLabels()[example];
+        //classe = comite[indMaior].getPredLabels()[example];
+        //comite[indMaior].printRule(example,matriz);
+        //System.out.println(classe +  " Correta " + matriz[example][coll-1] );
 
-        return classe;
+        return indMaior;
     }
 
 // multi-rules

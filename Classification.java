@@ -7,15 +7,15 @@ import java.io.IOException;
 public class Classification
 {
 
-/*
-    public static void main( String []args ) {
+
+ /*   public static void main( String []args ) {
 
         IncrementalAlgorithms inca = new IncrementalAlgorithms();
         //  SEA sea = new SEA();
 
     }
-
 */
+
     public static void main( String []args ) {
 
          File file;
@@ -67,25 +67,24 @@ public class Classification
 
             String outputFileName;
 
-        //      DecisionNetwork net = new DecisionNetwork(input);
+         //     DecisionNetwork net = new DecisionNetwork(input);
 
 
-         //  DecisionNetwork net = new DecisionNetwork(input, args[0]);
+         //   DecisionNetwork net = new DecisionNetwork(input, args[0]);
 
         //      DecisionNetwork net = new DecisionNetwork();
            // ID3Like tree = new ID3Like(input);
           //  OutrosMetodosImputacao others = new OutrosMetodosImputacao(input, args[0]);
 
-         //  IncrementalAlgorithms inca = new IncrementalAlgorithms();
+          // IncrementalAlgorithms inca = new IncrementalAlgorithms();
           // SEA sea = new SEA();
 
            IncrementalAlgorithms inca = new IncrementalAlgorithms(input, args[0]);
-             // ultima versao
 
          }
      }
 
-//*/
+
 
         // #################################### main 2 arquivos #########################
  /*
