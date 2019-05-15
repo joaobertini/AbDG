@@ -23,6 +23,7 @@ public class AttributeCorrelation {
 
         // rule incremental
         updateCorrelations = new double[atr1Len-1][atr2Len-1];
+        currentCorrelations = new double[atr1Len-1][atr2Len-1];
         entropyEdge = new double[atr1Len-1][atr2Len-1];
         coverageEdge = new double[atr1Len-1][atr2Len-1];
         accEdge = new double[atr1Len-1][atr2Len-1];
@@ -65,7 +66,7 @@ public class AttributeCorrelation {
 
     public void updateCorrelation(double v1, double v2, boolean correct){ // usado na versão incremental
 
-                int i1 = -1, i2 = -1;
+        int i1 = -1, i2 = -1;
 
         for(int i = 0; i < atr1Len-1; i++)
             if(v1 > vetAtr1[i] && v1 <= vetAtr1[i+1])
@@ -88,7 +89,7 @@ public class AttributeCorrelation {
                 i2 = atr2Len-2;
 
         if(i1 != -1 && i2 != -1)
-            updateCorrelations[i1][i2]++;
+            currentCorrelations[i1][i2]++;           // updateCorrelations[i1][i2]++;
 
 
         if(correct)
@@ -162,22 +163,30 @@ public class AttributeCorrelation {
 
     }
 
-
+    public void zeraCorrelacoes(){
+        currentCorrelations = new double[atr1Len-1][atr2Len-1];
+    }
 
     public void updateWeights(int line, double pw, double alpha){
       //  double alpha = 0.99;  // line é tamanho da classe; pw é a priori da classe
         double aux;
-
-        for(int i = 0; i < correlations.length; i++)
-            for(int j = 0; j < correlations[0].length; j++) {
-                aux = updateCorrelations[i][j];
-                updateCorrelations[i][j] = (aux/(double)line)*pw;
-            }
+        // updateCorrelations  N_{a,k,b,q}^j
+        // currentCorrelations  N_{a,k,b,q}^j|X^t
+        // line N .. e N = N^t + alpha N
+        linePreq = line + alpha*linePreq;
 
         for(int i = 0; i < correlations.length; i++)
             for(int j = 0; j < correlations[0].length; j++)
-                correlations[i][j] = updateCorrelations[i][j] + alpha*correlations[i][j];
+                updateCorrelations[i][j] = currentCorrelations[i][j] + alpha*updateCorrelations[i][j];
 
+        //correlations[i][j] = updateCorrelations[i][j] + alpha*correlations[i][j];
+
+        for(int i = 0; i < correlations.length; i++)
+            for(int j = 0; j < correlations[0].length; j++) {
+                correlations[i][j] = updateCorrelations[i][j]/linePreq;  // joint
+                //aux = updateCorrelations[i][j];
+                //updateCorrelations[i][j] = (aux/(double)line)*pw;
+            }
         //     System.out.println(); somaClassIL[s] = auxSomaClass[s] + alpha*somaClassIL[s];
        // normalizaCorrelations();
     }
@@ -513,7 +522,7 @@ public class AttributeCorrelation {
 
     }
 
-    public double getAccEdge(double v1, double v2){
+       public double getAccEdge(double v1, double v2){
 
         int i1 = -1, i2 = -1;
 
@@ -583,9 +592,10 @@ public class AttributeCorrelation {
 
     private int atr1, atr2;
     private int atr1Len, atr2Len;
+    private double linePreq;
     private double[] vetAtr1, vetAtr2;
     private double[][] correlations;         // criar duas matrizes - contagem e pesos
-    private double[][] updateCorrelations;
+    private double[][] currentCorrelations, updateCorrelations;
     private double[][] denumEdge;
 
     private double[][] entropyEdge;

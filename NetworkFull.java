@@ -119,7 +119,7 @@ public class NetworkFull {
 
         for(int i = 0; i < numAttr; i++){
             for(int j = i + 1; j < numAttr; j++){
-
+                fullVetCorrelations[cont][c].zeraCorrelacoes();
                     for (int k = 0; k < lineA; k++)
                         fullVetCorrelations[cont][c].updateCorrelation(A[k][i], A[k][j], (int)(lastClassifications[k]) == c);
                     //    vetCorrelations[j].showCM();
@@ -892,6 +892,18 @@ for(int e = 0; e < nroIntervals-1; e++) {
 
      }
 
+     public double getMaxCorrelation(int indVec, double v1, double v2){
+
+        double maior = 0, aux;
+        for(int classe = 1; classe < nroClasses + 1; classe++) {
+            aux = fullVetCorrelations[indVec][classe].findCorrelation(v1, v2);
+            if (aux > maior)
+                maior = aux;
+        }
+
+        return maior;
+     }
+
     public double[] getIntervalTest(int atr, int classe){
 
         return fullVetCorrelations[indiceVetCorr][classe].getInterval(indiceIntervalo,atr);
@@ -1097,6 +1109,8 @@ for(int e = 0; e < nroIntervals-1; e++) {
     public AttributeCorrelation[][] getVetCorrelation(){
         return fullVetCorrelations;
     }
+
+
 
     public  AttributeHandler[] getVetAtr(){
         return vetAtr;

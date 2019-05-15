@@ -1228,6 +1228,31 @@ public class AttributeHandler {    // classe com objetivo de lidar com os atribu
     }
 
 
+    public double getMaxWeightInterval(double value){ // retorna o maior peso para o intervalo dentre as classes
+        int atrLen = vetAtr.length;
+        int intervalo = -1;
+        double weight, maior;
+        int numClass = classes.length;
+
+        // for time
+        double partSize = 1/(double)(atrLen-1);  // para valores normalizados entre [0,1]
+
+        intervalo = (int)Math.floor(value/partSize);
+        if(intervalo >= atrLen-1)
+            intervalo--;
+
+        maior = 0;
+        for(int classe = 1; classe < numClass + 1; classe++) {
+            weight = classesWeights[intervalo][classe];// * probAccIntervalMat[intervalo][classe]; // * intervalGain;//* probAccInterval[intervalo];//
+            if (maior < weight)
+                maior = weight;
+        }
+        //  weight = 0;
+
+
+        return maior;// ((weight > 0.2) ? weight: 0.0);
+    }
+
     public double getCoverageInterval(double value){ // retorna a cobertura do intervalo
         int atrLen = vetAtr.length;
         int intervalo = -1;
@@ -1806,6 +1831,17 @@ public class AttributeHandler {    // classe com objetivo de lidar com os atribu
 
          }
 
+        // calcula entropia com base no numero de instancias em cada intervalo
+        for(int e = 0; e < nroIntervals-1; e++) {
+            for (int c = 1; c < nroClasses + 1; c++)
+                if(classesWeights[e][c] != 0)
+                    entropyInterval[e] += (somaIntervalClassIL[e][c]/line) * (Math.log(somaIntervalClassIL[e][c]/line) / Math.log(2));
+                else
+                    entropyInterval[e] = 1;
+
+            entropyInterval[e] *= -1;
+        }
+
 
         for(int i = 0; i < nroIntervals-1; i++){
             normTerm = 0;
@@ -1836,7 +1872,7 @@ public class AttributeHandler {    // classe com objetivo de lidar com os atribu
         }
 
         // calcula entropia
-        for(int e = 0; e < nroIntervals-1; e++) {
+   /*     for(int e = 0; e < nroIntervals-1; e++) {
             for (int c = 1; c < nroClasses + 1; c++)
                 if(classesWeights[e][c] != 0)
                     entropyInterval[e] += classesWeights[e][c] * (Math.log(classesWeights[e][c]) / Math.log(2));
@@ -1845,7 +1881,7 @@ public class AttributeHandler {    // classe com objetivo de lidar com os atribu
 
         entropyInterval[e] *= -1;
         }
-
+*/
         for(int a = 0; a < nroIntervals - 1; a++) {
            // probAccInterval[a] = 1;
             for (int b = 1; b < nroClasses + 1; b++)
@@ -2422,12 +2458,12 @@ public class AttributeHandler {    // classe com objetivo de lidar com os atribu
 
     public void fastUpdateIntervalWeightsIncLearnWeightedIntervalsFadingFactorOnWeights(double[][] attrCl, double[] lastClassifications, double alpha){
         // Fading factors
-        // atualiza pesos de intervalos e considera confiabilidade de cada intervalo, usando os resultado de classificacao passados
+        // faz alteração diretamente nos pesos. classesWeights[i][c] = (jointP[c] / normTerm) + alpha*classesWeights[i][c];
 
         int line = attrCl.length;
       //  double alpha = 0.99; // fading rate
         //numTrain = line + alpha*numTrain; //
-        numTrain += line;  // atualiza numero de intancias processadas
+        numTrain = line + alpha*numTrain;  // atualiza numero de intancias processadas
         int nroClasses = classes.length;
         int nroIntervals = vetAtr.length;
         double[] PC = new double[classes.length +1];
@@ -2451,8 +2487,8 @@ public class AttributeHandler {    // classe com objetivo de lidar com os atribu
             auxSomaClass[(int)attrCl[j][1]]++;  // conta o numero de instancias por classe
 
         for(int s = 0; s < nroClasses+1; s++) {
-           // somaClassIL[s] = auxSomaClass[s] + alpha*somaClassIL[s];
-            PC[s] = auxSomaClass[s]/line; // somaClassIL[s] / numTrain;   // P(Ci)  prob da classe i.
+            somaClassIL[s] = auxSomaClass[s] + alpha*somaClassIL[s];
+            PC[s] = somaClassIL[s] / numTrain;   // P(Ci)  prob da classe i.
         }
 
 
@@ -2487,6 +2523,15 @@ public class AttributeHandler {    // classe com objetivo de lidar com os atribu
             for(int j = 0; j < auxSomaClass.length; j++)
                 somaIntervalClassIL[i][j] = auxSomaInterClass[i][j] + alpha*somaIntervalClassIL[i][j];
 
+
+            // calcula entropia
+            for(int e = 0; e < nroIntervals-1; e++) {
+                for (int c = 1; c < nroClasses + 1; c++)
+                    entropyInterval[e] += (somaIntervalClassIL[e][c]/numTrain) * (Math.log(somaIntervalClassIL[e][c]/numTrain) / Math.log(2));
+
+                entropyInterval[e] *= -1;
+            }
+
            // somaAcertoIntervalo[i] = auxAcertoIntervalo[i] + alpha*somaAcertoIntervalo[i];
            // contaCftIntervalo[i] = auxSomaIntervalo[i] + alpha*contaCftIntervalo[i];
 
@@ -2497,14 +2542,14 @@ public class AttributeHandler {    // classe com objetivo de lidar com os atribu
 
             for (int j = 0; j < nroClasses + 1; j++)
                 if (auxSomaClass[j] != 0) {
-                    jointP[j] = (auxSomaInterClass[i][j] / auxSomaClass[j]) * PC[j]; // joint
+                    jointP[j] = (somaIntervalClassIL[i][j] / somaClassIL[j]) * PC[j]; // joint  (auxSomaInterClass[i][j] / auxSomaClass[j]) * PC[j]; // joint
                     normTerm += jointP[j];
                 } else
                     jointP[j] = 0;
 
             for (int c = 1; c < nroClasses + 1; c++) {
                 if (normTerm != 0)
-                    classesWeights[i][c] = (jointP[c] / normTerm) + alpha*classesWeights[i][c];         //  Math.pow(normTerm,2);
+                    classesWeights[i][c] = (jointP[c] / normTerm);// + alpha*classesWeights[i][c];         //  Math.pow(normTerm,2);
             }
 
 
@@ -2518,13 +2563,13 @@ public class AttributeHandler {    // classe com objetivo de lidar com os atribu
         }
 
         // calcula entropia
-        for(int e = 0; e < nroIntervals-1; e++) {
+   /*     for(int e = 0; e < nroIntervals-1; e++) {
             for (int c = 1; c < nroClasses + 1; c++)
                 entropyInterval[e] += classesWeights[e][c] * (Math.log(classesWeights[e][c]) / Math.log(2));
 
             entropyInterval[e] *= -1;
         }
-
+*/
       //  normalizaClassesWeights();
         //   System.out.println();
     }
