@@ -80,7 +80,7 @@ public class IncrementalAlgorithms {
                         j++;
                         tokenPos++;
                     } else {
-                      //  System.out.println(number.toString());
+                        //  System.out.println(number.toString());
                         matriz[i][j] = Double.valueOf(number.toString()).doubleValue();
                         runningAvg[j] += matriz[i][j];
                         j++;
@@ -101,17 +101,14 @@ public class IncrementalAlgorithms {
         }
 
 
-
         int line = matriz.length;     // numero de elementos
         int coll = matriz[0].length;  // numero de atrbutos
 
 
         // correção necessaria para execução de C45  -  trocar as classes -1 por 2
-        for(int c = 0; c < line; c++)
-            if(matriz[c][coll-1] == 0)                                 // 10  POKER - LED
-                matriz[c][coll-1] = 2;                                  //       2 airlines
-
-
+        for (int c = 0; c < line; c++)
+            if (matriz[c][coll - 1] == 0)                                 // 10  POKER - LED
+                matriz[c][coll - 1] = 2;                                  //       2 airlines
 
 
         double[] tempClass = new double[line];
@@ -120,13 +117,13 @@ public class IncrementalAlgorithms {
         boolean newClass = true;
 
         // descobre quantas classes possui E
-        for(int p = 0; p < line; p++){
+        for (int p = 0; p < line; p++) {
             newClass = true;
-            for(int q = 0; q < cont; q++)
-                if(matriz[p][coll - 1] == tempClass[q])
+            for (int q = 0; q < cont; q++)
+                if (matriz[p][coll - 1] == tempClass[q])
                     newClass = false;
 
-            if(newClass){
+            if (newClass) {
                 tempClass[cont] = matriz[p][coll - 1];
                 cont++;
             }
@@ -134,40 +131,38 @@ public class IncrementalAlgorithms {
 
         Classes = new double[cont]; //declara vetor de classes
         // em Classes estao as classes originais
-        for(int c = 0; c < cont; c++)
+        for (int c = 0; c < cont; c++)
             Classes[c] = tempClass[c];
 
 
         nroClasses = cont;
 
 
-
-
-     //   SimplifiedAbDG f = new SimplifiedAbDG(matriz, attributeType, Classes);
-     //   f.crossValidation();
-       // sAbDGEBIEnsembleReal(matriz,50,1000,"ELEC",5,1);
-      //  sAbDGRULEEnsembleArtificialVarK(50,10000, 100,1,10);
-        sAbDGRULEEnsembleArtificial(50,100000, 100,5,1);
-       // sAbDGRULEEnsembleReal(matriz,50,100,"ELEC",1,1);
+        //   SimplifiedAbDG f = new SimplifiedAbDG(matriz, attributeType, Classes);
+        //   f.crossValidation();
+        // sAbDGEBIEnsembleReal(matriz,50,1000,"ELEC",5,1);
+        //  sAbDGRULEEnsembleArtificialVarK(50,10000, 100,1,10);
+        sAbDGRULEEnsembleArtificial(50, 100000, 100, 5, 1);
+        // sAbDGRULEEnsembleReal(matriz,50,100,"ELEC",1,1);
         //sAbDGEBIEnsemble(matriz,100, 100, "ELEC", 1);
 
     }
 
 
-    public IncrementalAlgorithms(){
+    public IncrementalAlgorithms() {
 
         Classes = new double[2];
         Classes[0] = 1;
         Classes[1] = 2;
         nroClasses = 2;
-      //  sAbDGStaticEnsemble(50, 100, "GAU", 100000, 1);
+        //  sAbDGStaticEnsemble(50, 100, "GAU", 100000, 1);
         sAbDGEBIEnsemble(50, 100, "HYP", 1000000, 1);
-      //  sAbDGEBIEnsembleAuto(50, 100, "HYP", 100000, 1);
+        //  sAbDGEBIEnsembleAuto(50, 100, "HYP", 100000, 1);
         //sAbDGEnsemble(15, 100, "SEA", 5000, 10);
-      //  sAbDGEnsembleChu(15, 100, "SEA", 5000, 10);
+        //  sAbDGEnsembleChu(15, 100, "SEA", 5000, 10);
     }
 
-    public double sAbDGEBIEnsemble(int commetteeSize, int NumPrev, String auxFileName, int len, int rep){
+    public double sAbDGEBIEnsemble(int commetteeSize, int NumPrev, String auxFileName, int len, int rep) {
 
         int trainFold;
         int fold;
@@ -182,7 +177,7 @@ public class IncrementalAlgorithms {
         double somaNeuronios = 0, somaQuadNeuronios = 0;
         double desvioNeuronios = 0;
         int contTreino = 0, indMaior;
-        int k, i=0, i1 = 0, i2 = 0;
+        int k, i = 0, i1 = 0, i2 = 0;
         double errorSum = 0, mediaErro = 0;
         double maior = 0;
         // double[] saida = new double[NumPrev];
@@ -192,7 +187,7 @@ public class IncrementalAlgorithms {
         double somaTempoTreino = 0, somaTempoTeste = 0, somaQuadTempoTreino = 0, somaQuadTempoTeste = 0;
         double desvioTempoTreino, desvioTempoTeste;
         double erroComiteTreino = 0;
-        long t0 = 0,t1;
+        long t0 = 0, t1;
 
 
         double[][] m;
@@ -206,8 +201,8 @@ public class IncrementalAlgorithms {
         // Prequential para todos
         //  double[] prequential = new double[len - NumPrev + 1];
         // prequantial em intervalos
-        double[] prequential = new double[(int)((len - NumPrev)/sampleSize + 1)];
-        long[] time = new long[(int)((len - NumPrev)/sampleSize + 1)];
+        double[] prequential = new double[(int) ((len - NumPrev) / sampleSize + 1)];
+        long[] time = new long[(int) ((len - NumPrev) / sampleSize + 1)];
         double somaNom, somaDenom, alpha = 0.998;
 
         int[] mBestClf = new int[commetteeSize];
@@ -216,18 +211,18 @@ public class IncrementalAlgorithms {
         int line = len;
 
         int it = 0;
-        if( line % NumPrev == 0)
-            it = (int)Math.ceil(line/NumPrev);
+        if (line % NumPrev == 0)
+            it = (int) Math.ceil(line / NumPrev);
         else
-            it = (int)Math.ceil(line/NumPrev) + 1;                  // define numero de iteraçoes
+            it = (int) Math.ceil(line / NumPrev) + 1;                  // define numero de iteraçoes
 
         double[][] saidaTotal = new double[it][2];
 
         double[][] correctClassification = new double[commetteeSize][it];
-        for(int c = 0; c < commetteeSize; c++)
+        for (int c = 0; c < commetteeSize; c++)
             correctClassification[c][0] = 1;  // primeira iteração
 
-        for(int r = 0; r < rep; r++){
+        for (int r = 0; r < rep; r++) {
 
             m = hyperplane(line); // gaussData(line); // // SEAconcept(line); // hyperplane(line);//SEAconcept(line);//  // // gaussData(line); // SEAconcept(line); // sineData(line);//   //circleData(line); // //  //  //  mixedData(line); //
 
@@ -239,14 +234,14 @@ public class IncrementalAlgorithms {
 
             for (i = 0; i < it; i++) {
 
-                if(i == 0){   // constroi comite
+                if (i == 0) {   // constroi comite
                     redesNoComite = 0;
                     trainFold = NumPrev; //  numero de instancias no primeiro conjunto, no caso deve ser igual a N
                     matrizTreino = new double[trainFold][coll];
                     contTreino = 0;
-                    for(int h = 0; h < trainFold; h++){
+                    for (int h = 0; h < trainFold; h++) {
                         //   if((h >= 0) && (h < trainFold)){            //if(h < i*fold + testFold){
-                        for(int y = 0; y < coll; y++ ){
+                        for (int y = 0; y < coll; y++) {
                             matrizTreino[contTreino][y] = m[h][y];
                         }
                         contTreino++;
@@ -255,17 +250,17 @@ public class IncrementalAlgorithms {
 
                     int initGranu = 3;
 
-                    t0 =  System.currentTimeMillis();
+                    t0 = System.currentTimeMillis();
                     matrizTreino = normalizacaoMaiorMenor(matrizTreino);
 
                     // ################# TESTE
                     int aleatorios = 45;
-                    for(int j = 0; j < commetteeSize-aleatorios; j++) {
+                    for (int j = 0; j < commetteeSize - aleatorios; j++) {
                         comite[j] = new SimplifiedAbDG(matrizTreino, Classes, initGranu + j);    // cria comitê
                         contaRedesCriadas++;
                     }
 
-                    for(int j = commetteeSize-aleatorios; j < commetteeSize; j++) {
+                    for (int j = commetteeSize - aleatorios; j < commetteeSize; j++) {
                         comite[j] = new SimplifiedAbDG(matrizTreino, Classes, 0);    // cria comitê
                         contaRedesCriadas++;
                     }
@@ -273,8 +268,7 @@ public class IncrementalAlgorithms {
                     t1 = System.currentTimeMillis();
                     time[0] = (t1 - t0);
 
-                }
-                else{
+                } else {
                     fold = NumPrev;  // tamanho dos demais conjuntos
 
                     matrizTreino = new double[fold][coll];
@@ -282,44 +276,44 @@ public class IncrementalAlgorithms {
                     contTreino = 0;
 
                     // train folds
-                    i1 = i*fold;
-                    i2 = (i+1)*fold;
-                    if(i == (it-1)){        // ultimo conjunto pode ser menor que demais
+                    i1 = i * fold;
+                    i2 = (i + 1) * fold;
+                    if (i == (it - 1)) {        // ultimo conjunto pode ser menor que demais
                         i2 = line;
-                        NumPrev = line - (it-1)*NumPrev;
+                        NumPrev = line - (it - 1) * NumPrev;
                         matrizTreino = new double[NumPrev][coll];
                     }
 
-                    for(int h = i1; h < i2; h++){
-                        if((h >= (i*fold) && (h < i2))){              //if(h < i*fold + testFold){
-                            for(int y = 0; y < coll; y++ )
+                    for (int h = i1; h < i2; h++) {
+                        if ((h >= (i * fold) && (h < i2))) {              //if(h < i*fold + testFold){
+                            for (int y = 0; y < coll; y++)
                                 matrizTreino[contTreino][y] = m[h][y];
-                            weights[contTreino] = 1/(double)fold;
+                            weights[contTreino] = 1 / (double) fold;
                             contTreino++;
                         }
                     }
 
                     matrizTreino = normalizacaoMaiorMenor(matrizTreino);
-                    double[][] comiteOutput = new double[contTreino][nroClasses+1];  // resultado do comite
+                    double[][] comiteOutput = new double[contTreino][nroClasses + 1];  // resultado do comite
 
 
-                   if(i == 1)
-                        for(int t = 0; t <commetteeSize; t++)
+                    if (i == 1)
+                        for (int t = 0; t < commetteeSize; t++)
                             mBestClf[t] = 1;
 
-                    for(k = 0; k < commetteeSize; k++){
+                    for (k = 0; k < commetteeSize; k++) {
                         testClassification = comite[k].DnoClassifierFull(matrizTreino, 0.5); //sAbDGVertexClassifier(matrizTreino);
 
                         // correctClassification[][k] = 0;
-                        for(int c = 0; c < testClassification.length; c++){
-                              if(mBestClf[k] == 1){  // comite[k].getClassAcc() >  meanClfAcc) {// mBestClf[k] == 1) //if(correctClassification[k][i-1] > 0.7)
+                        for (int c = 0; c < testClassification.length; c++) {
+                            if (mBestClf[k] == 1) {  // comite[k].getClassAcc() >  meanClfAcc) {// mBestClf[k] == 1) //if(correctClassification[k][i-1] > 0.7)
                                 comiteOutput[c][(int) testClassification[c][0]]++;// += Math.abs(Math.log(1 / comite[k].getWeight())); // comiteOutput[c][(int)testClassification[c][0]]++;//  testClassification[c][1]; // comite[k].getClassAcc(); //  //
                                 correctClassification[k][i] = 1;
                                 // mBestClf[k]++;
                             }
-                         }
+                        }
 
-                          comite[k].calculateLastAcc();
+                        comite[k].calculateLastAcc();
                     }
 
 
@@ -327,7 +321,7 @@ public class IncrementalAlgorithms {
                     maior = 0;
                     indMaior = -1;
                     erroComiteTreino = 0;
-                    for(int a = 0; a < contTreino; a++) {
+                    for (int a = 0; a < contTreino; a++) {
                         maior = 0;
                         indMaior = 0;
                         for (int b = 1; b < nroClasses + 1; b++)
@@ -350,7 +344,7 @@ public class IncrementalAlgorithms {
 
                         t1 = System.currentTimeMillis();
                         mcnemar[contPrequential] = erro;
-                           if(contPrequential % sampleSize == 0) {
+                        if (contPrequential % sampleSize == 0) {
                             somaNom = 0;
                             somaDenom = 0;
 
@@ -359,41 +353,37 @@ public class IncrementalAlgorithms {
                                 somaDenom += Math.pow(alpha, ((double) contPrequential - p));
                             }
 
-                           prequential[(int)(contPrequential / sampleSize)] = (somaNom / somaDenom);
+                            prequential[(int) (contPrequential / sampleSize)] = (somaNom / somaDenom);
 
-                            time[(int)(contPrequential / sampleSize)] = (t1 - t0);
+                            time[(int) (contPrequential / sampleSize)] = (t1 - t0);
                         }
-
-
 
 
                     }
 
 
-                    for(int c = 0; c < commetteeSize; c++) {   // atializa peso de todos
-                           if(mBestClf[c] != 1)  //(comite[c].getClassAcc() < meanClfAcc)  //(mBestClf[c] != 1)
+                    for (int c = 0; c < commetteeSize; c++) {   // atializa peso de todos
+                        if (mBestClf[c] != 1)  //(comite[c].getClassAcc() < meanClfAcc)  //(mBestClf[c] != 1)
                             comite[c].updateFadingFactor(matrizTreino);  //boosting(matrizTreino,weights)
                     }
 
 
-
                     double[] clfAcc = new double[commetteeSize];
-                    for(int h = 0; h < commetteeSize; h++) {
-                  //     System.out.print( " " + comite[h].getClassAcc()); //.getWeight());
+                    for (int h = 0; h < commetteeSize; h++) {
+                        //     System.out.print( " " + comite[h].getClassAcc()); //.getWeight());
                         clfAcc[h] = comite[h].getClassAcc();
 
                     }
-                   // System.out.println();
-                    mBestClf = encontraMelhores(clfAcc,5);
+                    // System.out.println();
+                    mBestClf = encontraMelhores(clfAcc, 5);
 
 
-                    saidaTotal[i][0] = i+1;//*NumPrev;
-                    saidaTotal[i][1] += (errorSum/(double)contTreino) * 100;
-                    somaErro += errorSum/(double)contTreino * 100;
-                    somaErroQuad += Math.pow(errorSum/(double)contTreino,2);
+                    saidaTotal[i][0] = i + 1;//*NumPrev;
+                    saidaTotal[i][1] += (errorSum / (double) contTreino) * 100;
+                    somaErro += errorSum / (double) contTreino * 100;
+                    somaErroQuad += Math.pow(errorSum / (double) contTreino, 2);
 
                 }
-
 
 
             }  // fim it
@@ -401,7 +391,7 @@ public class IncrementalAlgorithms {
         }  // fim rep
 
 
-        mediaErro = (somaErro/(double)((it-1)*rep));
+        mediaErro = (somaErro / (double) ((it - 1) * rep));
 
 
         //  System.out.println(mediaErro);
@@ -410,8 +400,8 @@ public class IncrementalAlgorithms {
         PrintWriter out;
         FileOutputStream outputStream = null;
         try {
-            outputStream = new FileOutputStream ("C:\\Java\\AbDG\\SAbDGEnsemble\\" + auxFileName + commetteeSize + NumPrev + "DISCO.txt");    // ############# tr - testfold; test trainFold    ###############
-        } catch ( java.io.IOException e) {
+            outputStream = new FileOutputStream("C:\\Java\\AbDG\\SAbDGEnsemble\\" + auxFileName + commetteeSize + NumPrev + "DISCO.txt");    // ############# tr - testfold; test trainFold    ###############
+        } catch (java.io.IOException e) {
             System.out.println("Could not create result.txt");
 
         }
@@ -419,8 +409,7 @@ public class IncrementalAlgorithms {
         out = new PrintWriter(outputStream);
 
 
-
-        desvio = Math.sqrt((somaErroQuad - (Math.pow(somaErro,2)/(double)it*rep))/(double)(it*rep-1));
+        desvio = Math.sqrt((somaErroQuad - (Math.pow(somaErro, 2) / (double) it * rep)) / (double) (it * rep - 1));
         out.println("Erro medio " + mediaErro + " Desvio " + desvio);
 
         //     desvioNeuronios = Math.sqrt((somaQuadNeuronios - (Math.pow(somaNeuronios,2)/(double)contaRedesCriadas))/(double)(contaRedesCriadas-1));
@@ -431,8 +420,8 @@ public class IncrementalAlgorithms {
 
         // out.println("################################################################################");
 
-        for(int s = 0; s < prequential.length; s++)
-            out.println( prequential[s]);
+        for (int s = 0; s < prequential.length; s++)
+            out.println(prequential[s]);
 
 //       out.println("################################################################################");
         //        for(int s = 0; s < prequential.length; s++)
@@ -461,22 +450,20 @@ public class IncrementalAlgorithms {
 */
 
 
-
-
         // rodar uma unica vez
         PrintWriter out2;
         FileOutputStream outputStream2 = null;
         try {
-            outputStream2 = new FileOutputStream ("C:\\Java\\AbDG\\SAbDGEnsemble\\" + auxFileName + commetteeSize + NumPrev + "TIME.txt");    // ############# tr - testfold; test trainFold    ###############
-        } catch ( java.io.IOException e) {
+            outputStream2 = new FileOutputStream("C:\\Java\\AbDG\\SAbDGEnsemble\\" + auxFileName + commetteeSize + NumPrev + "TIME.txt");    // ############# tr - testfold; test trainFold    ###############
+        } catch (java.io.IOException e) {
             System.out.println("Could not create result.txt");
 
         }
         out2 = new PrintWriter(outputStream2);
 
 
-        for(int t = 0; t < time.length; t++)
-            out2.println(time[t]*0.001);
+        for (int t = 0; t < time.length; t++)
+            out2.println(time[t] * 0.001);
 
         out2.close();
 
@@ -493,7 +480,7 @@ public class IncrementalAlgorithms {
         return mediaErro;
     }
 
-    public double sAbDGEBIEnsembleAuto(int commetteeSize, int NumPrev, String auxFileName, int len, int rep){
+    public double sAbDGEBIEnsembleAuto(int commetteeSize, int NumPrev, String auxFileName, int len, int rep) {
 
         int trainFold;
         int fold;
@@ -508,7 +495,7 @@ public class IncrementalAlgorithms {
         double somaNeuronios = 0, somaQuadNeuronios = 0;
         double desvioNeuronios = 0;
         int contTreino = 0, indMaior;
-        int k, i=0, i1 = 0, i2 = 0;
+        int k, i = 0, i1 = 0, i2 = 0;
         double errorSum = 0, mediaErro = 0;
         double maior = 0;
         // double[] saida = new double[NumPrev];
@@ -530,7 +517,7 @@ public class IncrementalAlgorithms {
         // Prequential para todos
         //  double[] prequential = new double[len - NumPrev + 1];
         // prequantial em intervalos
-        double[] prequential = new double[(int)((len - NumPrev)/sampleSize + 1)];
+        double[] prequential = new double[(int) ((len - NumPrev) / sampleSize + 1)];
         double somaNom, somaDenom, alpha = 0.998;
 
         int[] mBestClf = new int[commetteeSize];
@@ -539,37 +526,37 @@ public class IncrementalAlgorithms {
         int line = len;
 
         int it = 0;
-        if( line % NumPrev == 0)
-            it = (int)Math.ceil(line/NumPrev);
+        if (line % NumPrev == 0)
+            it = (int) Math.ceil(line / NumPrev);
         else
-            it = (int)Math.ceil(line/NumPrev) + 1;                  // define numero de iteraçoes
+            it = (int) Math.ceil(line / NumPrev) + 1;                  // define numero de iteraçoes
 
         double[][] saidaTotal = new double[it][2];
 
         double[][] correctClassification = new double[commetteeSize][it];
-        for(int c = 0; c < commetteeSize; c++)
+        for (int c = 0; c < commetteeSize; c++)
             correctClassification[c][0] = 1;  // primeira iteração
 
-        for(int r = 0; r < rep; r++){
+        for (int r = 0; r < rep; r++) {
 
             m = hyperplane(line); // gaussData(line); // // SEAconcept(line); // hyperplane(line);//SEAconcept(line);//  // // gaussData(line); // SEAconcept(line); // sineData(line);//   //circleData(line); // //  //  //  mixedData(line); //
 
             int coll = m[0].length;
 
             comite = new SimplifiedAbDG[commetteeSize];
-           // forest = new Tree[commetteeSize];
+            // forest = new Tree[commetteeSize];
             int contPrequential = 0;
 
             for (i = 0; i < it; i++) {
 
-                if(i == 0){   // constroi comite
+                if (i == 0) {   // constroi comite
                     redesNoComite = 0;
                     trainFold = NumPrev; //  numero de instancias no primeiro conjunto, no caso deve ser igual a N
                     matrizTreino = new double[trainFold][coll];
                     contTreino = 0;
-                    for(int h = 0; h < trainFold; h++){
+                    for (int h = 0; h < trainFold; h++) {
                         //   if((h >= 0) && (h < trainFold)){            //if(h < i*fold + testFold){
-                        for(int y = 0; y < coll; y++ ){
+                        for (int y = 0; y < coll; y++) {
                             matrizTreino[contTreino][y] = m[h][y];
                         }
                         contTreino++;
@@ -586,20 +573,19 @@ public class IncrementalAlgorithms {
 
                     // ################# TESTE
                     int aleatorios = 30;
-                    for(int j = 0; j < commetteeSize-aleatorios; j++) {
+                    for (int j = 0; j < commetteeSize - aleatorios; j++) {
                         comite[j] = new SimplifiedAbDG(matrizTreino, Classes, initGranu + j);    // cria comitê
-                       // forest[j] = new Tree(C45(matrizTreino));
+                        // forest[j] = new Tree(C45(matrizTreino));
                         contaRedesCriadas++;
                     }
 
-                    for(int j = commetteeSize-aleatorios; j < commetteeSize; j++) {
+                    for (int j = commetteeSize - aleatorios; j < commetteeSize; j++) {
                         comite[j] = new SimplifiedAbDG(matrizTreino, Classes, 0);    // cria comitê
                         contaRedesCriadas++;
                     }
                     //###########################
 
-                }
-                else{
+                } else {
                     fold = NumPrev;  // tamanho dos demais conjuntos
 
                     matrizTreino = new double[fold][coll];
@@ -607,48 +593,48 @@ public class IncrementalAlgorithms {
                     contTreino = 0;
 
                     // train folds
-                    i1 = i*fold;
-                    i2 = (i+1)*fold;
-                    if(i == (it-1)){        // ultimo conjunto pode ser menor que demais
+                    i1 = i * fold;
+                    i2 = (i + 1) * fold;
+                    if (i == (it - 1)) {        // ultimo conjunto pode ser menor que demais
                         i2 = line;
-                        NumPrev = line - (it-1)*NumPrev;
+                        NumPrev = line - (it - 1) * NumPrev;
                         matrizTreino = new double[NumPrev][coll];
                     }
 
-                    for(int h = i1; h < i2; h++){
-                        if((h >= (i*fold) && (h < i2))){              //if(h < i*fold + testFold){
-                            for(int y = 0; y < coll; y++ )
+                    for (int h = i1; h < i2; h++) {
+                        if ((h >= (i * fold) && (h < i2))) {              //if(h < i*fold + testFold){
+                            for (int y = 0; y < coll; y++)
                                 matrizTreino[contTreino][y] = m[h][y];
-                                weights[contTreino] = 1/(double)fold;
+                            weights[contTreino] = 1 / (double) fold;
                             contTreino++;
                         }
                     }
 
                     matrizTreino = normalizacaoMaiorMenor(matrizTreino);
-                    double[][] comiteOutput = new double[contTreino][nroClasses+1];  // resultado do comite
+                    double[][] comiteOutput = new double[contTreino][nroClasses + 1];  // resultado do comite
 
 
-                    if(i == 1)
-                        for(int t = 0; t <commetteeSize; t++)
+                    if (i == 1)
+                        for (int t = 0; t < commetteeSize; t++)
                             mBestClf[t] = 1;
 
-                    for(k = 0; k < commetteeSize; k++){
+                    for (k = 0; k < commetteeSize; k++) {
                         testClassification = comite[k].sAbDGVertexClassifier(matrizTreino);
 
-                            // correctClassification[][k] = 0;
-                            for(int c = 0; c < testClassification.length; c++){
-                               // for(int j = 1; j < nroClasses + 1; j++)
-                               // comiteOutput[c][j] += testClassification[c][j];
-                                if(mBestClf[k] == 1){  // comite[k].getClassAcc() >  meanClfAcc) {// mBestClf[k] == 1) //if(correctClassification[k][i-1] > 0.7)
-                                    comiteOutput[c][(int) testClassification[c][0]]++;// += Math.abs(Math.log(1 / comite[k].getWeight())); // comiteOutput[c][(int)testClassification[c][0]]++;//  testClassification[c][1]; // comite[k].getClassAcc(); //  //
-                                    correctClassification[k][i] = 1;
-                                   // mBestClf[k]++;
-                                }
-                                    //   if(testClassification[c][0] == matrizTreino[c][coll-1])    // para encontrar pior arvore
-                              //      correctClassification[k][i]++;
+                        // correctClassification[][k] = 0;
+                        for (int c = 0; c < testClassification.length; c++) {
+                            // for(int j = 1; j < nroClasses + 1; j++)
+                            // comiteOutput[c][j] += testClassification[c][j];
+                            if (mBestClf[k] == 1) {  // comite[k].getClassAcc() >  meanClfAcc) {// mBestClf[k] == 1) //if(correctClassification[k][i-1] > 0.7)
+                                comiteOutput[c][(int) testClassification[c][0]]++;// += Math.abs(Math.log(1 / comite[k].getWeight())); // comiteOutput[c][(int)testClassification[c][0]]++;//  testClassification[c][1]; // comite[k].getClassAcc(); //  //
+                                correctClassification[k][i] = 1;
+                                // mBestClf[k]++;
                             }
+                            //   if(testClassification[c][0] == matrizTreino[c][coll-1])    // para encontrar pior arvore
+                            //      correctClassification[k][i]++;
+                        }
 
-                 //       correctClassification[k][i] /= matrizTreino.length;
+                        //       correctClassification[k][i] /= matrizTreino.length;
                         comite[k].calculateLastAcc();
                     }
 
@@ -657,7 +643,7 @@ public class IncrementalAlgorithms {
                     maior = 0;
                     indMaior = -1;
                     erroComiteTreino = 0;
-                    for(int a = 0; a < contTreino; a++) {
+                    for (int a = 0; a < contTreino; a++) {
                         maior = 0;
                         indMaior = 0;
                         for (int b = 1; b < nroClasses + 1; b++)
@@ -680,7 +666,7 @@ public class IncrementalAlgorithms {
 
 
                         mcnemar[contPrequential] = erro;
-                          if(contPrequential % sampleSize == 0) {
+                        if (contPrequential % sampleSize == 0) {
                             somaNom = 0;
                             somaDenom = 0;
 
@@ -689,24 +675,21 @@ public class IncrementalAlgorithms {
                                 somaDenom += Math.pow(alpha, ((double) contPrequential - p));
                             }
 
-                            prequential[(int)(contPrequential / sampleSize)] = (somaNom / somaDenom);
+                            prequential[(int) (contPrequential / sampleSize)] = (somaNom / somaDenom);
                         }
 
 
                     }
 
 
-
-                    for(int c = 0; c < commetteeSize; c++) {   // atializa peso de todos
-                        if(mBestClf[c] != 1)  //(comite[c].getClassAcc() < meanClfAcc)  //(mBestClf[c] != 1)
-                           comite[c].updateFadingFactor(matrizTreino);  //boosting(matrizTreino,weights)
-                  }
-
-
+                    for (int c = 0; c < commetteeSize; c++) {   // atializa peso de todos
+                        if (mBestClf[c] != 1)  //(comite[c].getClassAcc() < meanClfAcc)  //(mBestClf[c] != 1)
+                            comite[c].updateFadingFactor(matrizTreino);  //boosting(matrizTreino,weights)
+                    }
 
 
                     double[] clfAcc = new double[commetteeSize];
-                    for(int h = 1; h < commetteeSize; h++) {
+                    for (int h = 1; h < commetteeSize; h++) {
                         //              System.out.print( " " + comite[h].getClassAcc()); //.getWeight());
                         clfAcc[h] = comite[h].getClassAcc();
 
@@ -714,7 +697,7 @@ public class IncrementalAlgorithms {
                     }
 
                     // IMPLEMENTAR - TAMANHO DO COMITE ONDE AS LINHAS DE ENTROPIA E MEDIA DOS CLASSIFICADORES SE CRUZAM
-                    int decidingComite = heuristicHowManyDecide(clfAcc,commetteeSize,matrizTreino.length);
+                    int decidingComite = heuristicHowManyDecide(clfAcc, commetteeSize, matrizTreino.length);
                     // mBestClf = encontraMelhores(clfAcc,decidingComite);
 
                    /*
@@ -730,16 +713,15 @@ public class IncrementalAlgorithms {
                         System.out.println();
                     */
 
-                   mBestClf = encontraMelhores(clfAcc,decidingComite);
+                    mBestClf = encontraMelhores(clfAcc, decidingComite);
 
 
-                    saidaTotal[i][0] = i+1;//*NumPrev;
-                    saidaTotal[i][1] += (errorSum/(double)contTreino) * 100;
-                    somaErro += errorSum/(double)contTreino * 100;
-                    somaErroQuad += Math.pow(errorSum/(double)contTreino,2);
+                    saidaTotal[i][0] = i + 1;//*NumPrev;
+                    saidaTotal[i][1] += (errorSum / (double) contTreino) * 100;
+                    somaErro += errorSum / (double) contTreino * 100;
+                    somaErroQuad += Math.pow(errorSum / (double) contTreino, 2);
 
                 }
-
 
 
             }  // fim it
@@ -747,7 +729,7 @@ public class IncrementalAlgorithms {
         }  // fim rep
 
 
-        mediaErro = (somaErro/(double)((it-1)*rep));
+        mediaErro = (somaErro / (double) ((it - 1) * rep));
 
 
         //  System.out.println(mediaErro);
@@ -756,8 +738,8 @@ public class IncrementalAlgorithms {
         PrintWriter out;
         FileOutputStream outputStream = null;
         try {
-            outputStream = new FileOutputStream ("C:\\Java\\AbDG\\SAbDGEnsemble\\" + auxFileName + commetteeSize + NumPrev + "GRANU_EBI.txt");    // ############# tr - testfold; test trainFold    ###############
-        } catch ( java.io.IOException e) {
+            outputStream = new FileOutputStream("C:\\Java\\AbDG\\SAbDGEnsemble\\" + auxFileName + commetteeSize + NumPrev + "GRANU_EBI.txt");    // ############# tr - testfold; test trainFold    ###############
+        } catch (java.io.IOException e) {
             System.out.println("Could not create result.txt");
 
         }
@@ -765,20 +747,19 @@ public class IncrementalAlgorithms {
         out = new PrintWriter(outputStream);
 
 
-
-        desvio = Math.sqrt((somaErroQuad - (Math.pow(somaErro,2)/(double)it*rep))/(double)(it*rep-1));
+        desvio = Math.sqrt((somaErroQuad - (Math.pow(somaErro, 2) / (double) it * rep)) / (double) (it * rep - 1));
         out.println("Erro medio " + mediaErro + " Desvio " + desvio);
 
         //     desvioNeuronios = Math.sqrt((somaQuadNeuronios - (Math.pow(somaNeuronios,2)/(double)contaRedesCriadas))/(double)(contaRedesCriadas-1));
         //     out.println("Numero medio neuronios " + somaNeuronios/(double)contaRedesCriadas + " Desvio " + desvioNeuronios);
 
-       // for(int s = 0; s < it; s++)
+        // for(int s = 0; s < it; s++)
         //    out.println(saidaTotal[s][0] + "  " + saidaTotal[s][1]/rep);
 
-       // out.println("################################################################################");
+        // out.println("################################################################################");
 
-          for(int s = 0; s < prequential.length; s++)
-             out.println( prequential[s]);
+        for (int s = 0; s < prequential.length; s++)
+            out.println(prequential[s]);
 
 //       out.println("################################################################################");
         //        for(int s = 0; s < prequential.length; s++)
@@ -840,20 +821,20 @@ public class IncrementalAlgorithms {
     }
 
 
-public double resolveComite(int[] mBestClf, int commeetteSize, double[][] matrizTreino) {
+    public double resolveComite(int[] mBestClf, int commeetteSize, double[][] matrizTreino) {
 
-    int contTreino = matrizTreino.length;
-    int coll = matrizTreino[0].length;
-    double acc= 0;
+        int contTreino = matrizTreino.length;
+        int coll = matrizTreino[0].length;
+        double acc = 0;
 
 
-    double[][] comiteOutput = new double[contTreino][nroClasses+1];
+        double[][] comiteOutput = new double[contTreino][nroClasses + 1];
 
-    for(int k = 0; k < commeetteSize; k++)
-        for(int c = 0; c < contTreino; c++)
-        if (mBestClf[k] == 1) {  // comite[k].getClassAcc() >  meanClfAcc) {// mBestClf[k] == 1) //if(correctClassification[k][i-1] > 0.7)
-            comiteOutput[c][(int)comite[k].getPredLabels()[c]]++;// += Math.abs(Math.log(1 / comite[k].getWeight())); // comiteOutput[c][(int)testClassification[c][0]]++;//  testClassification[c][1]; // comite[k].getClassAcc(); //  //
-        }
+        for (int k = 0; k < commeetteSize; k++)
+            for (int c = 0; c < contTreino; c++)
+                if (mBestClf[k] == 1) {  // comite[k].getClassAcc() >  meanClfAcc) {// mBestClf[k] == 1) //if(correctClassification[k][i-1] > 0.7)
+                    comiteOutput[c][(int) comite[k].getPredLabels()[c]]++;// += Math.abs(Math.log(1 / comite[k].getWeight())); // comiteOutput[c][(int)testClassification[c][0]]++;//  testClassification[c][1]; // comite[k].getClassAcc(); //  //
+                }
 
         double maior = 0;
         int indMaior = -1;
@@ -867,78 +848,77 @@ public double resolveComite(int[] mBestClf, int commeetteSize, double[][] matriz
                 }
 
             if ((matrizTreino[a][coll - 1] == indMaior)) {        // classes sao 1 e 2
-               acc++;
-               }
+                acc++;
+            }
 
         }
 
-  //  System.out.print(acc/contTreino + " ");
-    return acc/contTreino;
-}
+        //  System.out.print(acc/contTreino + " ");
+        return acc / contTreino;
+    }
 
-    public int heuristicHowManyDecide(double[] clfAcc, int commetteeSize, int len){
-        double somaAcc= 0;
-        int numClfs=0;
+    public int heuristicHowManyDecide(double[] clfAcc, int commetteeSize, int len) {
+        double somaAcc = 0;
+        int numClfs = 0;
         int[] mBestClf = new int[commetteeSize];
         double[] sortedClfAcc = copiaVetor(clfAcc);
-        quicksort(sortedClfAcc,0,commetteeSize-1);
+        quicksort(sortedClfAcc, 0, commetteeSize - 1);
 
-        for(int me = 2; me < commetteeSize; me++){  // ANDA NOS IMPARES
+        for (int me = 2; me < commetteeSize; me++) {  // ANDA NOS IMPARES
             somaAcc = 0;
-            mBestClf = encontraMelhores(clfAcc,me);
+            mBestClf = encontraMelhores(clfAcc, me);
 
-               //     System.out.println(me + " " + sortedClfAcc[commetteeSize - me] + " " + entropyMeasrure(me, mBestClf, commetteeSize, len) + " ");
+            //     System.out.println(me + " " + sortedClfAcc[commetteeSize - me] + " " + entropyMeasrure(me, mBestClf, commetteeSize, len) + " ");
 
-                    somaAcc = sortedClfAcc[commetteeSize - me] - 2*entropyMeasrure(me, mBestClf, commetteeSize, len);
-                    if ( somaAcc < 0) {             //sortedClfAcc[commetteeSize - me] < entropyMeasrure(me, mBestClf, commetteeSize, len)
-                        numClfs = me;
-                        break;
-                    }
-                }
-
+            somaAcc = sortedClfAcc[commetteeSize - me] - 2 * entropyMeasrure(me, mBestClf, commetteeSize, len);
+            if (somaAcc < 0) {             //sortedClfAcc[commetteeSize - me] < entropyMeasrure(me, mBestClf, commetteeSize, len)
+                numClfs = me;
+                break;
+            }
+        }
 
 
         System.out.println(numClfs);
         return numClfs;
     }
 
-    public double[] copiaVetor(double[] A){
+    public double[] copiaVetor(double[] A) {
 
         double[] B = new double[A.length];
 
-        for(int i = 0; i < A.length; i++)
+        for (int i = 0; i < A.length; i++)
             B[i] = A[i];
 
         return B;
     }
 
-    public double entropyMeasrure(int L, int[] mBestClf, int enSize, int len ){  // medida de diversidade do ensemle
+    public double entropyMeasrure(int L, int[] mBestClf, int enSize, int len) {  // medida de diversidade do ensemle
 
         double soma = 0, somaMenosL = 0, menor = 0, somaOut = 0;
         somaOut = 0;
-        for(int j = 0; j < len; j++){
+        for (int j = 0; j < len; j++) {
 
             soma = 0;
             somaMenosL = 0;
             menor = 0;
-            for(int i = 0; i < enSize; i++) {
+            for (int i = 0; i < enSize; i++) {
 
-            if (mBestClf[i] == 1) {
-                soma += (double) comite[i].getOracle()[j];
+                if (mBestClf[i] == 1) {
+                    soma += (double) comite[i].getOracle()[j];
+                }
+
             }
-
-        }
             somaMenosL = L - soma;
 
             menor = Math.min(soma, somaMenosL);
 
             somaOut += menor;
         }
-            return (1/(double)len) * (2/(double)(L-1)) * somaOut;
+        return (1 / (double) len) * (2 / (double) (L - 1)) * somaOut;
 
     }
 
-    public double sAbDGEBIEnsemble(double[][] m, int commetteeSize, int NumPrev, String auxFileName, int rep){
+    public double sAbDGEBIEnsemble(double[][] m, int commetteeSize, int NumPrev, String auxFileName, int rep) {
 
         int trainFold;
         int fold;
@@ -953,7 +933,7 @@ public double resolveComite(int[] mBestClf, int commeetteSize, double[][] matriz
         double somaNeuronios = 0, somaQuadNeuronios = 0;
         double desvioNeuronios = 0;
         int contTreino = 0, indMaior;
-        int k, i=0, i1 = 0, i2 = 0;
+        int k, i = 0, i1 = 0, i2 = 0;
         double errorSum = 0, mediaErro = 0;
         double maior = 0;
         // double[] saida = new double[NumPrev];
@@ -973,7 +953,7 @@ public double resolveComite(int[] mBestClf, int commeetteSize, double[][] matriz
         // Prequential para todos
         //  double[] prequential = new double[len - NumPrev + 1];
         // prequantial em intervalos
-        double[] prequential = new double[(len - NumPrev)/100 + 1];
+        double[] prequential = new double[(len - NumPrev) / 100 + 1];
         double somaNom, somaDenom, alpha = 0.999;
         int[] mBestClf = new int[commetteeSize];
 
@@ -981,18 +961,18 @@ public double resolveComite(int[] mBestClf, int commeetteSize, double[][] matriz
         int line = len;
 
         int it = 0;
-        if( line % NumPrev == 0)
-            it = (int)Math.ceil(line/NumPrev);
+        if (line % NumPrev == 0)
+            it = (int) Math.ceil(line / NumPrev);
         else
-            it = (int)Math.ceil(line/NumPrev) + 1;                  // define numero de iteraçoes
+            it = (int) Math.ceil(line / NumPrev) + 1;                  // define numero de iteraçoes
 
         double[][] saidaTotal = new double[it][2];
 
         double[][] correctClassification = new double[commetteeSize][it];
-        for(int c = 0; c < commetteeSize; c++)
+        for (int c = 0; c < commetteeSize; c++)
             correctClassification[c][0] = 1;  // primeira iteração
 
-        for(int r = 0; r < rep; r++){
+        for (int r = 0; r < rep; r++) {
 
             int coll = m[0].length;
 
@@ -1002,14 +982,14 @@ public double resolveComite(int[] mBestClf, int commeetteSize, double[][] matriz
 
             for (i = 0; i < it; i++) {
 
-                if(i == 0){   // constroi comite
+                if (i == 0) {   // constroi comite
                     redesNoComite = 0;
                     trainFold = NumPrev; //  numero de instancias no primeiro conjunto, no caso deve ser igual a N
                     matrizTreino = new double[trainFold][coll];
                     contTreino = 0;
-                    for(int h = 0; h < trainFold; h++){
+                    for (int h = 0; h < trainFold; h++) {
                         //   if((h >= 0) && (h < trainFold)){            //if(h < i*fold + testFold){
-                        for(int y = 0; y < coll; y++ ){
+                        for (int y = 0; y < coll; y++) {
                             matrizTreino[contTreino][y] = m[h][y];
                         }
                         contTreino++;
@@ -1026,20 +1006,19 @@ public double resolveComite(int[] mBestClf, int commeetteSize, double[][] matriz
 
                     // ################# TESTE
                     int aleatorios = 50;
-                    for(int j = 0; j < commetteeSize-aleatorios; j++) {
+                    for (int j = 0; j < commetteeSize - aleatorios; j++) {
                         comite[j] = new SimplifiedAbDG(matrizTreino, Classes, initGranu + j);    // cria comitê
                         // forest[j] = new Tree(C45(matrizTreino));
                         contaRedesCriadas++;
                     }
 
-                    for(int j = commetteeSize-aleatorios; j < commetteeSize; j++) {
+                    for (int j = commetteeSize - aleatorios; j < commetteeSize; j++) {
                         comite[j] = new SimplifiedAbDG(matrizTreino, Classes, 0);    // cria comitê
                         contaRedesCriadas++;
                     }
                     //###########################
 
-                }
-                else{
+                } else {
                     fold = NumPrev;  // tamanho dos demais conjuntos
 
                     matrizTreino = new double[fold][coll];
@@ -1047,25 +1026,25 @@ public double resolveComite(int[] mBestClf, int commeetteSize, double[][] matriz
                     contTreino = 0;
 
                     // train folds
-                    i1 = i*fold;
-                    i2 = (i+1)*fold;
-                    if(i == (it-1)){        // ultimo conjunto pode ser menor que demais
+                    i1 = i * fold;
+                    i2 = (i + 1) * fold;
+                    if (i == (it - 1)) {        // ultimo conjunto pode ser menor que demais
                         i2 = line;
-                        NumPrev = line - (it-1)*NumPrev;
+                        NumPrev = line - (it - 1) * NumPrev;
                         matrizTreino = new double[NumPrev][coll];
                     }
 
-                    for(int h = i1; h < i2; h++){
-                        if((h >= (i*fold) && (h < i2))){              //if(h < i*fold + testFold){
-                            for(int y = 0; y < coll; y++ )
+                    for (int h = i1; h < i2; h++) {
+                        if ((h >= (i * fold) && (h < i2))) {              //if(h < i*fold + testFold){
+                            for (int y = 0; y < coll; y++)
                                 matrizTreino[contTreino][y] = m[h][y];
-                            weights[contTreino] = 1/(double)fold;
+                            weights[contTreino] = 1 / (double) fold;
                             contTreino++;
                         }
                     }
 
                     matrizTreino = normalizacaoMaiorMenor(matrizTreino);
-                    double[][] comiteOutput = new double[contTreino][nroClasses+1];  // resultado do comite
+                    double[][] comiteOutput = new double[contTreino][nroClasses + 1];  // resultado do comite
 
 
                  /*   if(i > 1)   // EBI
@@ -1075,18 +1054,18 @@ public double resolveComite(int[] mBestClf, int commeetteSize, double[][] matriz
                             mBestClf[t] = 1;
                   */
 
-                    if(i == 1)
-                        for(int t = 0; t <commetteeSize; t++)
+                    if (i == 1)
+                        for (int t = 0; t < commetteeSize; t++)
                             mBestClf[t] = 1;
 
-                    for(k = 0; k < commetteeSize; k++){
+                    for (k = 0; k < commetteeSize; k++) {
                         testClassification = comite[k].sAbDGVertexClassifier(matrizTreino);
 
                         // correctClassification[][k] = 0;
-                        for(int c = 0; c < testClassification.length; c++){
+                        for (int c = 0; c < testClassification.length; c++) {
                             // for(int j = 1; j < nroClasses + 1; j++)
                             // comiteOutput[c][j] += testClassification[c][j];
-                            if(mBestClf[k] == 1){  // comite[k].getClassAcc() >  meanClfAcc) {// mBestClf[k] == 1) //if(correctClassification[k][i-1] > 0.7)
+                            if (mBestClf[k] == 1) {  // comite[k].getClassAcc() >  meanClfAcc) {// mBestClf[k] == 1) //if(correctClassification[k][i-1] > 0.7)
                                 comiteOutput[c][(int) testClassification[c][0]]++;// += Math.abs(Math.log(1 / comite[k].getWeight())); // comiteOutput[c][(int)testClassification[c][0]]++;//  testClassification[c][1]; // comite[k].getClassAcc(); //  //
                                 correctClassification[k][i] = 1;
                                 // mBestClf[k]++;
@@ -1126,7 +1105,7 @@ public double resolveComite(int[] mBestClf, int commeetteSize, double[][] matriz
                     maior = 0;
                     indMaior = -1;
                     erroComiteTreino = 0;
-                    for(int a = 0; a < contTreino; a++) {
+                    for (int a = 0; a < contTreino; a++) {
                         maior = 0;
                         indMaior = 0;
                         for (int b = 1; b < nroClasses + 1; b++)
@@ -1155,7 +1134,7 @@ public double resolveComite(int[] mBestClf, int commeetteSize, double[][] matriz
                         //  prequential[contPrequential] = (erro + (contPrequential-1)*prequential[contPrequential-1])/(double)contPrequential;
 
                         // prequential de 100 em 100
-                        if(contPrequential % 100 == 0) {
+                        if (contPrequential % 100 == 0) {
                             somaNom = 0;
                             somaDenom = 0;
 
@@ -1184,10 +1163,10 @@ public double resolveComite(int[] mBestClf, int commeetteSize, double[][] matriz
             */
 
 
-                    for(int c = 0; c < commetteeSize; c++) {   // atializa peso de todos
+                    for (int c = 0; c < commetteeSize; c++) {   // atializa peso de todos
                         //forest[c].updateClfWeight(weights);
                         //            comite[c].updateClfWeight(weights);
-                        if(comite[c].getClassAcc() < meanClfAcc)
+                        if (comite[c].getClassAcc() < meanClfAcc)
                             comite[c].batchUpdateIntConf(matrizTreino);  //boosting(matrizTreino,weights)
                         // comite[c].updateFadingFactor(boosting(matrizTreino,weights));
                         //comite[c].batchUpdateIntConf(boosting(matrizTreino,weights)); //comite[c].batchUpdateIntConf(boosting(matrizTreino,weights));
@@ -1200,14 +1179,13 @@ public double resolveComite(int[] mBestClf, int commeetteSize, double[][] matriz
                     }
 
 
-
                     double[] clfAcc = new double[commetteeSize];
-                    for(int h = 0; h < commetteeSize; h++) {
+                    for (int h = 0; h < commetteeSize; h++) {
                         System.out.print(h + " " + comite[h].getClassAcc()); //.getWeight());
                         clfAcc[h] = comite[h].getClassAcc();
                         System.out.println();
                     }
-                    mBestClf = encontraMelhores(clfAcc,50);
+                    mBestClf = encontraMelhores(clfAcc, 50);
                     // meanClfAcc = encontraTercQuartil(clfAcc); //somaAcc/commetteeSize;
 /*
                     // ###################################  Testes ##################################################################
@@ -1232,13 +1210,12 @@ public double resolveComite(int[] mBestClf, int commeetteSize, double[][] matriz
                     }
 */
 
-                    saidaTotal[i][0] = i+1;//*NumPrev;
-                    saidaTotal[i][1] += (errorSum/(double)contTreino) * 100;
-                    somaErro += errorSum/(double)contTreino * 100;
-                    somaErroQuad += Math.pow(errorSum/(double)contTreino,2);
+                    saidaTotal[i][0] = i + 1;//*NumPrev;
+                    saidaTotal[i][1] += (errorSum / (double) contTreino) * 100;
+                    somaErro += errorSum / (double) contTreino * 100;
+                    somaErroQuad += Math.pow(errorSum / (double) contTreino, 2);
 
                 }
-
 
 
             }  // fim it
@@ -1246,7 +1223,7 @@ public double resolveComite(int[] mBestClf, int commeetteSize, double[][] matriz
         }  // fim rep
 
 
-        mediaErro = (somaErro/(double)((it-1)*rep));
+        mediaErro = (somaErro / (double) ((it - 1) * rep));
 
 
         //  System.out.println(mediaErro);
@@ -1255,8 +1232,8 @@ public double resolveComite(int[] mBestClf, int commeetteSize, double[][] matriz
         PrintWriter out;
         FileOutputStream outputStream = null;
         try {
-            outputStream = new FileOutputStream ("C:\\Java\\AbDG\\SAbDGEnsemble\\" + auxFileName + commetteeSize + NumPrev + "GRANU_EBI.txt");    // ############# tr - testfold; test trainFold    ###############
-        } catch ( java.io.IOException e) {
+            outputStream = new FileOutputStream("C:\\Java\\AbDG\\SAbDGEnsemble\\" + auxFileName + commetteeSize + NumPrev + "GRANU_EBI.txt");    // ############# tr - testfold; test trainFold    ###############
+        } catch (java.io.IOException e) {
             System.out.println("Could not create result.txt");
 
         }
@@ -1264,8 +1241,7 @@ public double resolveComite(int[] mBestClf, int commeetteSize, double[][] matriz
         out = new PrintWriter(outputStream);
 
 
-
-        desvio = Math.sqrt((somaErroQuad - (Math.pow(somaErro,2)/(double)it*rep))/(double)(it*rep-1));
+        desvio = Math.sqrt((somaErroQuad - (Math.pow(somaErro, 2) / (double) it * rep)) / (double) (it * rep - 1));
         out.println("Erro medio " + mediaErro + " Desvio " + desvio);
 
         //     desvioNeuronios = Math.sqrt((somaQuadNeuronios - (Math.pow(somaNeuronios,2)/(double)contaRedesCriadas))/(double)(contaRedesCriadas-1));
@@ -1276,8 +1252,8 @@ public double resolveComite(int[] mBestClf, int commeetteSize, double[][] matriz
 
         // out.println("################################################################################");
 
-        for(int s = 0; s < prequential.length; s++)
-            out.println( prequential[s]);
+        for (int s = 0; s < prequential.length; s++)
+            out.println(prequential[s]);
 
 //       out.println("################################################################################");
         //        for(int s = 0; s < prequential.length; s++)
@@ -1338,7 +1314,7 @@ public double resolveComite(int[] mBestClf, int commeetteSize, double[][] matriz
         return mediaErro;
     }
 
-    public double sAbDGEBIEnsembleRules(double[][] m, int commetteeSize, int NumPrev, String auxFileName, int deciding, int rep){
+    public double sAbDGEBIEnsembleRules(double[][] m, int commetteeSize, int NumPrev, String auxFileName, int deciding, int rep) {
 
         int trainFold;
         int fold;
@@ -1354,7 +1330,7 @@ public double resolveComite(int[] mBestClf, int commeetteSize, double[][] matriz
         double somaNeuronios = 0, somaQuadNeuronios = 0;
         double desvioNeuronios = 0;
         int contTreino = 0, indMaior;
-        int k, i=0, i1 = 0, i2 = 0;
+        int k, i = 0, i1 = 0, i2 = 0;
         double errorSum = 0, mediaErro = 0;
         double maior = 0;
         // double[] saida = new double[NumPrev];
@@ -1374,8 +1350,8 @@ public double resolveComite(int[] mBestClf, int commeetteSize, double[][] matriz
         // Prequential para todos
         //  double[] prequential = new double[len - NumPrev + 1];
         // prequantial em intervalos
-        double[] prequential = new double[(len - NumPrev)/100 + 1];
-        long[] time = new long[(len - NumPrev)/100 + 1];
+        double[] prequential = new double[(len - NumPrev) / 100 + 1];
+        long[] time = new long[(len - NumPrev) / 100 + 1];
         double somaNom, somaDenom, alpha = 0.998;
         int[] mBestClf = new int[commetteeSize];
 
@@ -1384,18 +1360,18 @@ public double resolveComite(int[] mBestClf, int commeetteSize, double[][] matriz
         int line = len;
 
         int it = 0;
-        if( line % NumPrev == 0)
-            it = (int)Math.ceil(line/NumPrev);
+        if (line % NumPrev == 0)
+            it = (int) Math.ceil(line / NumPrev);
         else
-            it = (int)Math.ceil(line/NumPrev) + 1;                  // define numero de iteraçoes
+            it = (int) Math.ceil(line / NumPrev) + 1;                  // define numero de iteraçoes
 
         double[][] saidaTotal = new double[it][2];
 
         double[][] correctClassification = new double[commetteeSize][it];
-        for(int c = 0; c < commetteeSize; c++)
+        for (int c = 0; c < commetteeSize; c++)
             correctClassification[c][0] = 1;  // primeira iteração
 
-        for(int r = 0; r < rep; r++){
+        for (int r = 0; r < rep; r++) {
 
             int coll = m[0].length;
 
@@ -1405,14 +1381,14 @@ public double resolveComite(int[] mBestClf, int commeetteSize, double[][] matriz
 
             for (i = 0; i < it; i++) {
 
-                if(i == 0){   // constroi comite
+                if (i == 0) {   // constroi comite
                     redesNoComite = 0;
                     trainFold = NumPrev; //  numero de instancias no primeiro conjunto, no caso deve ser igual a N
                     matrizTreino = new double[trainFold][coll];
                     contTreino = 0;
-                    for(int h = 0; h < trainFold; h++){
+                    for (int h = 0; h < trainFold; h++) {
                         //   if((h >= 0) && (h < trainFold)){            //if(h < i*fold + testFold){
-                        for(int y = 0; y < coll; y++ ){
+                        for (int y = 0; y < coll; y++) {
                             matrizTreino[contTreino][y] = m[h][y];
                         }
                         contTreino++;
@@ -1427,12 +1403,12 @@ public double resolveComite(int[] mBestClf, int commeetteSize, double[][] matriz
 
                     // ################# TESTE
                     int aleatorios = 43;
-                    for(int j = 0; j < commetteeSize-aleatorios; j++) {
+                    for (int j = 0; j < commetteeSize - aleatorios; j++) {
                         comite[j] = new SimplifiedAbDG(matrizTreino, Classes, initGranu + j);    // cria comitê
                         contaRedesCriadas++;
                     }
 
-                    for(int j = commetteeSize-aleatorios; j < commetteeSize; j++) {
+                    for (int j = commetteeSize - aleatorios; j < commetteeSize; j++) {
                         comite[j] = new SimplifiedAbDG(matrizTreino, Classes, 0);    // cria comitê
                         contaRedesCriadas++;
                     }
@@ -1440,8 +1416,7 @@ public double resolveComite(int[] mBestClf, int commeetteSize, double[][] matriz
 
                     long t1 = System.currentTimeMillis();
                     time[0] = (t1 - t0);
-                }
-                else{
+                } else {
                     fold = NumPrev;  // tamanho dos demais conjuntos
 
                     matrizTreino = new double[fold][coll];
@@ -1449,19 +1424,19 @@ public double resolveComite(int[] mBestClf, int commeetteSize, double[][] matriz
                     contTreino = 0;
 
                     // train folds
-                    i1 = i*fold;
-                    i2 = (i+1)*fold;
-                    if(i == (it-1)){        // ultimo conjunto pode ser menor que demais
+                    i1 = i * fold;
+                    i2 = (i + 1) * fold;
+                    if (i == (it - 1)) {        // ultimo conjunto pode ser menor que demais
                         i2 = line;
-                        NumPrev = line - (it-1)*NumPrev;
+                        NumPrev = line - (it - 1) * NumPrev;
                         matrizTreino = new double[NumPrev][coll];
                     }
 
-                    for(int h = i1; h < i2; h++){
-                        if((h >= (i*fold) && (h < i2))){              //if(h < i*fold + testFold){
-                            for(int y = 0; y < coll; y++ )
+                    for (int h = i1; h < i2; h++) {
+                        if ((h >= (i * fold) && (h < i2))) {              //if(h < i*fold + testFold){
+                            for (int y = 0; y < coll; y++)
                                 matrizTreino[contTreino][y] = m[h][y];
-                            weights[contTreino] = 1/(double)fold;
+                            weights[contTreino] = 1 / (double) fold;
                             contTreino++;
                         }
                     }
@@ -1469,20 +1444,20 @@ public double resolveComite(int[] mBestClf, int commeetteSize, double[][] matriz
                     //    long t0 = System.currentTimeMillis();
 
                     matrizTreino = normalizacaoMaiorMenor(matrizTreino);
-                    double[][] comiteOutput = new double[contTreino][nroClasses+1];  // resultado do comite
+                    double[][] comiteOutput = new double[contTreino][nroClasses + 1];  // resultado do comite
 
 
-                    if(i == 1)
-                        for(int t = 0; t <commetteeSize; t++)
+                    if (i == 1)
+                        for (int t = 0; t < commetteeSize; t++)
                             mBestClf[t] = 1;
 
-                    for(k = 0; k < commetteeSize; k++){
+                    for (k = 0; k < commetteeSize; k++) {
                         testClassification = comite[k].DnoClassifierFull(matrizTreino, 0.5);
                         // testClassification = comite[k].sAbDGVertexClassifier(matrizTreino);
 
                         // correctClassification[][k] = 0;
-                        for(int c = 0; c < testClassification.length; c++){
-                            if(mBestClf[k] == 1){  // comite[k].getClassAcc() >  meanClfAcc) {// mBestClf[k] == 1) //if(correctClassification[k][i-1] > 0.7)
+                        for (int c = 0; c < testClassification.length; c++) {
+                            if (mBestClf[k] == 1) {  // comite[k].getClassAcc() >  meanClfAcc) {// mBestClf[k] == 1) //if(correctClassification[k][i-1] > 0.7)
                                 comiteOutput[c][(int) testClassification[c][0]]++;// += Math.abs(Math.log(1 / comite[k].getWeight())); // comiteOutput[c][(int)testClassification[c][0]]++;//  testClassification[c][1]; // comite[k].getClassAcc(); //  //
                                 correctClassification[k][i] = 1;
                                 // mBestClf[k]++;
@@ -1497,7 +1472,7 @@ public double resolveComite(int[] mBestClf, int commeetteSize, double[][] matriz
                     maior = 0;
                     indMaior = -1;
                     erroComiteTreino = 0;
-                    for(int a = 0; a < contTreino; a++) {
+                    for (int a = 0; a < contTreino; a++) {
                         maior = 0;
                         indMaior = 0;
                         for (int b = 1; b < nroClasses + 1; b++)
@@ -1521,7 +1496,7 @@ public double resolveComite(int[] mBestClf, int commeetteSize, double[][] matriz
                         long t1 = System.currentTimeMillis();
 
                         mcnemar[contPrequential] = erro;
-                        if(contPrequential % sampleSize == 0) {
+                        if (contPrequential % sampleSize == 0) {
                             somaNom = 0;
                             somaDenom = 0;
 
@@ -1530,39 +1505,37 @@ public double resolveComite(int[] mBestClf, int commeetteSize, double[][] matriz
                                 somaDenom += Math.pow(alpha, ((double) contPrequential - p));
                             }
 
-                            prequential[(int)(contPrequential / sampleSize)] = (somaNom / somaDenom);
+                            prequential[(int) (contPrequential / sampleSize)] = (somaNom / somaDenom);
 
-                            time[(int)(contPrequential / sampleSize)] = (t1 - t0);
+                            time[(int) (contPrequential / sampleSize)] = (t1 - t0);
                         }
 
                     }
 
 
-                    for(int c = 0; c < commetteeSize; c++) {   // atializa peso de todos
-                        if(mBestClf[c] != 1)  //(comite[c].getClassAcc() < meanClfAcc)  //(mBestClf[c] != 1)
+                    for (int c = 0; c < commetteeSize; c++) {   // atializa peso de todos
+                        if (mBestClf[c] != 1)  //(comite[c].getClassAcc() < meanClfAcc)  //(mBestClf[c] != 1)
                             comite[c].updateFadingFactor(matrizTreino);  //boosting(matrizTreino,weights)
                     }
 
 
-
                     double[] clfAcc = new double[commetteeSize];
-                    for(int h = 0; h < commetteeSize; h++) {
+                    for (int h = 0; h < commetteeSize; h++) {
                         //      System.out.print( " " + comite[h].getClassAcc()); //.getWeight());
                         clfAcc[h] = comite[h].getClassAcc();
 
                     }
                     // System.out.println();
-                    mBestClf = encontraMelhores(clfAcc,deciding);
+                    mBestClf = encontraMelhores(clfAcc, deciding);
 
                     //  long t1 = System.currentTimeMillis();
 
-                    saidaTotal[i][0] = i+1;//*NumPrev;
-                    saidaTotal[i][1] += (errorSum/(double)contTreino) * 100;
-                    somaErro += errorSum/(double)contTreino * 100;
-                    somaErroQuad += Math.pow(errorSum/(double)contTreino,2);
+                    saidaTotal[i][0] = i + 1;//*NumPrev;
+                    saidaTotal[i][1] += (errorSum / (double) contTreino) * 100;
+                    somaErro += errorSum / (double) contTreino * 100;
+                    somaErroQuad += Math.pow(errorSum / (double) contTreino, 2);
 
                 }
-
 
 
             }  // fim it
@@ -1570,7 +1543,7 @@ public double resolveComite(int[] mBestClf, int commeetteSize, double[][] matriz
         }  // fim rep
 
 
-        mediaErro = (somaErro/(double)((it-1)*rep));
+        mediaErro = (somaErro / (double) ((it - 1) * rep));
 
 
         //  System.out.println(mediaErro);
@@ -1579,8 +1552,8 @@ public double resolveComite(int[] mBestClf, int commeetteSize, double[][] matriz
         PrintWriter out;
         FileOutputStream outputStream = null;
         try {
-            outputStream = new FileOutputStream ("C:\\Java\\AbDG\\SAbDGEnsemble\\" + auxFileName + commetteeSize + NumPrev + deciding + "DISCO.txt");    // ############# tr - testfold; test trainFold    ###############
-        } catch ( java.io.IOException e) {
+            outputStream = new FileOutputStream("C:\\Java\\AbDG\\SAbDGEnsemble\\" + auxFileName + commetteeSize + NumPrev + deciding + "DISCO.txt");    // ############# tr - testfold; test trainFold    ###############
+        } catch (java.io.IOException e) {
             System.out.println("Could not create result.txt");
 
         }
@@ -1588,8 +1561,7 @@ public double resolveComite(int[] mBestClf, int commeetteSize, double[][] matriz
         out = new PrintWriter(outputStream);
 
 
-
-        desvio = Math.sqrt((somaErroQuad - (Math.pow(somaErro,2)/(double)it*rep))/(double)(it*rep-1));
+        desvio = Math.sqrt((somaErroQuad - (Math.pow(somaErro, 2) / (double) it * rep)) / (double) (it * rep - 1));
         out.println("Erro medio " + mediaErro + " Desvio " + desvio);
 
         //     desvioNeuronios = Math.sqrt((somaQuadNeuronios - (Math.pow(somaNeuronios,2)/(double)contaRedesCriadas))/(double)(contaRedesCriadas-1));
@@ -1600,8 +1572,8 @@ public double resolveComite(int[] mBestClf, int commeetteSize, double[][] matriz
 
         // out.println("################################################################################");
 
-        for(int s = 0; s < prequential.length; s++)
-            out.println( prequential[s]);
+        for (int s = 0; s < prequential.length; s++)
+            out.println(prequential[s]);
 
 //       out.println("################################################################################");
         //        for(int s = 0; s < prequential.length; s++)
@@ -1630,22 +1602,20 @@ public double resolveComite(int[] mBestClf, int commeetteSize, double[][] matriz
 */
 
 
-
-
         // rodar uma unica vez
         PrintWriter out2;
         FileOutputStream outputStream2 = null;
         try {
-            outputStream2 = new FileOutputStream ("C:\\Java\\AbDG\\SAbDGEnsemble\\" + auxFileName + commetteeSize + NumPrev + "TIME.txt");    // ############# tr - testfold; test trainFold    ###############
-        } catch ( java.io.IOException e) {
+            outputStream2 = new FileOutputStream("C:\\Java\\AbDG\\SAbDGEnsemble\\" + auxFileName + commetteeSize + NumPrev + "TIME.txt");    // ############# tr - testfold; test trainFold    ###############
+        } catch (java.io.IOException e) {
             System.out.println("Could not create result.txt");
 
         }
         out2 = new PrintWriter(outputStream2);
 
 
-        for(int t = 0; t < time.length; t++)
-            out2.println(time[t]*0.001);
+        for (int t = 0; t < time.length; t++)
+            out2.println(time[t] * 0.001);
 
         out2.close();
 
@@ -1663,8 +1633,7 @@ public double resolveComite(int[] mBestClf, int commeetteSize, double[][] matriz
     }
 
 
-
-    public double sAbDGEBIEnsembleReal(double[][] m, int commetteeSize, int NumPrev, String auxFileName, int deciding, int rep){
+    public double sAbDGEBIEnsembleReal(double[][] m, int commetteeSize, int NumPrev, String auxFileName, int deciding, int rep) {
 
         int trainFold;
         int fold;
@@ -1680,7 +1649,7 @@ public double resolveComite(int[] mBestClf, int commeetteSize, double[][] matriz
         double somaNeuronios = 0, somaQuadNeuronios = 0;
         double desvioNeuronios = 0;
         int contTreino = 0, indMaior;
-        int k, i=0, i1 = 0, i2 = 0;
+        int k, i = 0, i1 = 0, i2 = 0;
         double errorSum = 0, mediaErro = 0;
         double maior = 0;
         // double[] saida = new double[NumPrev];
@@ -1700,8 +1669,8 @@ public double resolveComite(int[] mBestClf, int commeetteSize, double[][] matriz
         // Prequential para todos
         //  double[] prequential = new double[len - NumPrev + 1];
         // prequantial em intervalos
-        double[] prequential = new double[(len - NumPrev)/100 + 1];
-        long[] time = new long[(len - NumPrev)/100 + 1];
+        double[] prequential = new double[(len - NumPrev) / 100 + 1];
+        long[] time = new long[(len - NumPrev) / 100 + 1];
         double somaNom, somaDenom, alpha = 0.998;
         int[] mBestClf = new int[commetteeSize];
 
@@ -1710,18 +1679,18 @@ public double resolveComite(int[] mBestClf, int commeetteSize, double[][] matriz
         int line = len;
 
         int it = 0;
-        if( line % NumPrev == 0)
-            it = (int)Math.ceil(line/NumPrev);
+        if (line % NumPrev == 0)
+            it = (int) Math.ceil(line / NumPrev);
         else
-            it = (int)Math.ceil(line/NumPrev) + 1;                  // define numero de iteraçoes
+            it = (int) Math.ceil(line / NumPrev) + 1;                  // define numero de iteraçoes
 
         double[][] saidaTotal = new double[it][2];
 
         double[][] correctClassification = new double[commetteeSize][it];
-        for(int c = 0; c < commetteeSize; c++)
+        for (int c = 0; c < commetteeSize; c++)
             correctClassification[c][0] = 1;  // primeira iteração
 
-        for(int r = 0; r < rep; r++){
+        for (int r = 0; r < rep; r++) {
 
             int coll = m[0].length;
 
@@ -1731,14 +1700,14 @@ public double resolveComite(int[] mBestClf, int commeetteSize, double[][] matriz
 
             for (i = 0; i < it; i++) {
 
-                if(i == 0){   // constroi comite
+                if (i == 0) {   // constroi comite
                     redesNoComite = 0;
                     trainFold = NumPrev; //  numero de instancias no primeiro conjunto, no caso deve ser igual a N
                     matrizTreino = new double[trainFold][coll];
                     contTreino = 0;
-                    for(int h = 0; h < trainFold; h++){
+                    for (int h = 0; h < trainFold; h++) {
                         //   if((h >= 0) && (h < trainFold)){            //if(h < i*fold + testFold){
-                        for(int y = 0; y < coll; y++ ){
+                        for (int y = 0; y < coll; y++) {
                             matrizTreino[contTreino][y] = m[h][y];
                         }
                         contTreino++;
@@ -1753,12 +1722,12 @@ public double resolveComite(int[] mBestClf, int commeetteSize, double[][] matriz
 
                     // ################# TESTE
                     int aleatorios = 43;
-                    for(int j = 0; j < commetteeSize-aleatorios; j++) {
+                    for (int j = 0; j < commetteeSize - aleatorios; j++) {
                         comite[j] = new SimplifiedAbDG(matrizTreino, Classes, initGranu + j);    // cria comitê
                         contaRedesCriadas++;
                     }
 
-                    for(int j = commetteeSize-aleatorios; j < commetteeSize; j++) {
+                    for (int j = commetteeSize - aleatorios; j < commetteeSize; j++) {
                         comite[j] = new SimplifiedAbDG(matrizTreino, Classes, 0);    // cria comitê
                         contaRedesCriadas++;
                     }
@@ -1766,8 +1735,7 @@ public double resolveComite(int[] mBestClf, int commeetteSize, double[][] matriz
 
                     long t1 = System.currentTimeMillis();
                     time[0] = (t1 - t0);
-                }
-                else{
+                } else {
                     fold = NumPrev;  // tamanho dos demais conjuntos
 
                     matrizTreino = new double[fold][coll];
@@ -1775,40 +1743,40 @@ public double resolveComite(int[] mBestClf, int commeetteSize, double[][] matriz
                     contTreino = 0;
 
                     // train folds
-                    i1 = i*fold;
-                    i2 = (i+1)*fold;
-                    if(i == (it-1)){        // ultimo conjunto pode ser menor que demais
+                    i1 = i * fold;
+                    i2 = (i + 1) * fold;
+                    if (i == (it - 1)) {        // ultimo conjunto pode ser menor que demais
                         i2 = line;
-                        NumPrev = line - (it-1)*NumPrev;
+                        NumPrev = line - (it - 1) * NumPrev;
                         matrizTreino = new double[NumPrev][coll];
                     }
 
-                    for(int h = i1; h < i2; h++){
-                        if((h >= (i*fold) && (h < i2))){              //if(h < i*fold + testFold){
-                            for(int y = 0; y < coll; y++ )
+                    for (int h = i1; h < i2; h++) {
+                        if ((h >= (i * fold) && (h < i2))) {              //if(h < i*fold + testFold){
+                            for (int y = 0; y < coll; y++)
                                 matrizTreino[contTreino][y] = m[h][y];
-                            weights[contTreino] = 1/(double)fold;
+                            weights[contTreino] = 1 / (double) fold;
                             contTreino++;
                         }
                     }
 
-                //    long t0 = System.currentTimeMillis();
+                    //    long t0 = System.currentTimeMillis();
 
                     matrizTreino = normalizacaoMaiorMenor(matrizTreino);
-                    double[][] comiteOutput = new double[contTreino][nroClasses+1];  // resultado do comite
+                    double[][] comiteOutput = new double[contTreino][nroClasses + 1];  // resultado do comite
 
 
-                    if(i == 1)
-                        for(int t = 0; t <commetteeSize; t++)
+                    if (i == 1)
+                        for (int t = 0; t < commetteeSize; t++)
                             mBestClf[t] = 1;
 
-                    for(k = 0; k < commetteeSize; k++){
+                    for (k = 0; k < commetteeSize; k++) {
                         testClassification = comite[k].RulesAbDGVertexClassifier(matrizTreino); // DnoClassifierFull(matrizTreino, 0.5);
                         // testClassification = comite[k].sAbDGVertexClassifier(matrizTreino);
 
                         // correctClassification[][k] = 0;
-                        for(int c = 0; c < testClassification.length; c++){
-                            if(mBestClf[k] == 1){  // comite[k].getClassAcc() >  meanClfAcc) {// mBestClf[k] == 1) //if(correctClassification[k][i-1] > 0.7)
+                        for (int c = 0; c < testClassification.length; c++) {
+                            if (mBestClf[k] == 1) {  // comite[k].getClassAcc() >  meanClfAcc) {// mBestClf[k] == 1) //if(correctClassification[k][i-1] > 0.7)
                                 comiteOutput[c][(int) testClassification[c][0]]++;// += Math.abs(Math.log(1 / comite[k].getWeight())); // comiteOutput[c][(int)testClassification[c][0]]++;//  testClassification[c][1]; // comite[k].getClassAcc(); //  //
                                 correctClassification[k][i] = 1;
                                 // mBestClf[k]++;
@@ -1823,7 +1791,7 @@ public double resolveComite(int[] mBestClf, int commeetteSize, double[][] matriz
                     maior = 0;
                     indMaior = -1;
                     erroComiteTreino = 0;
-                    for(int a = 0; a < contTreino; a++) {
+                    for (int a = 0; a < contTreino; a++) {
                         maior = 0;
                         indMaior = 0;
                         for (int b = 1; b < nroClasses + 1; b++)
@@ -1847,7 +1815,7 @@ public double resolveComite(int[] mBestClf, int commeetteSize, double[][] matriz
                         long t1 = System.currentTimeMillis();
 
                         mcnemar[contPrequential] = erro;
-                        if(contPrequential % sampleSize == 0) {
+                        if (contPrequential % sampleSize == 0) {
                             somaNom = 0;
                             somaDenom = 0;
 
@@ -1856,39 +1824,37 @@ public double resolveComite(int[] mBestClf, int commeetteSize, double[][] matriz
                                 somaDenom += Math.pow(alpha, ((double) contPrequential - p));
                             }
 
-                            prequential[(int)(contPrequential / sampleSize)] = (somaNom / somaDenom);
+                            prequential[(int) (contPrequential / sampleSize)] = (somaNom / somaDenom);
 
-                            time[(int)(contPrequential / sampleSize)] = (t1 - t0);
+                            time[(int) (contPrequential / sampleSize)] = (t1 - t0);
                         }
 
                     }
 
 
-                    for(int c = 0; c < commetteeSize; c++) {   // atializa peso de todos
-                        if(mBestClf[c] != 1)  //(comite[c].getClassAcc() < meanClfAcc)  //(mBestClf[c] != 1)
+                    for (int c = 0; c < commetteeSize; c++) {   // atializa peso de todos
+                        if (mBestClf[c] != 1)  //(comite[c].getClassAcc() < meanClfAcc)  //(mBestClf[c] != 1)
                             comite[c].updateFadingFactor(matrizTreino);  //boosting(matrizTreino,weights)
                     }
 
 
-
                     double[] clfAcc = new double[commetteeSize];
-                    for(int h = 0; h < commetteeSize; h++) {
-                  //      System.out.print( " " + comite[h].getClassAcc()); //.getWeight());
+                    for (int h = 0; h < commetteeSize; h++) {
+                        //      System.out.print( " " + comite[h].getClassAcc()); //.getWeight());
                         clfAcc[h] = comite[h].getClassAcc();
 
                     }
                     // System.out.println();
-                    mBestClf = encontraMelhores(clfAcc,deciding);
+                    mBestClf = encontraMelhores(clfAcc, deciding);
 
-                  //  long t1 = System.currentTimeMillis();
+                    //  long t1 = System.currentTimeMillis();
 
-                    saidaTotal[i][0] = i+1;//*NumPrev;
-                    saidaTotal[i][1] += (errorSum/(double)contTreino) * 100;
-                    somaErro += errorSum/(double)contTreino * 100;
-                    somaErroQuad += Math.pow(errorSum/(double)contTreino,2);
+                    saidaTotal[i][0] = i + 1;//*NumPrev;
+                    saidaTotal[i][1] += (errorSum / (double) contTreino) * 100;
+                    somaErro += errorSum / (double) contTreino * 100;
+                    somaErroQuad += Math.pow(errorSum / (double) contTreino, 2);
 
                 }
-
 
 
             }  // fim it
@@ -1896,7 +1862,7 @@ public double resolveComite(int[] mBestClf, int commeetteSize, double[][] matriz
         }  // fim rep
 
 
-        mediaErro = (somaErro/(double)((it-1)*rep));
+        mediaErro = (somaErro / (double) ((it - 1) * rep));
 
 
         //  System.out.println(mediaErro);
@@ -1905,8 +1871,8 @@ public double resolveComite(int[] mBestClf, int commeetteSize, double[][] matriz
         PrintWriter out;
         FileOutputStream outputStream = null;
         try {
-            outputStream = new FileOutputStream ("C:\\Java\\AbDG\\SAbDGEnsemble\\" + auxFileName + commetteeSize + NumPrev + deciding + "DISCO.txt");    // ############# tr - testfold; test trainFold    ###############
-        } catch ( java.io.IOException e) {
+            outputStream = new FileOutputStream("C:\\Java\\AbDG\\SAbDGEnsemble\\" + auxFileName + commetteeSize + NumPrev + deciding + "DISCO.txt");    // ############# tr - testfold; test trainFold    ###############
+        } catch (java.io.IOException e) {
             System.out.println("Could not create result.txt");
 
         }
@@ -1914,8 +1880,7 @@ public double resolveComite(int[] mBestClf, int commeetteSize, double[][] matriz
         out = new PrintWriter(outputStream);
 
 
-
-        desvio = Math.sqrt((somaErroQuad - (Math.pow(somaErro,2)/(double)it*rep))/(double)(it*rep-1));
+        desvio = Math.sqrt((somaErroQuad - (Math.pow(somaErro, 2) / (double) it * rep)) / (double) (it * rep - 1));
         out.println("Erro medio " + mediaErro + " Desvio " + desvio);
 
         //     desvioNeuronios = Math.sqrt((somaQuadNeuronios - (Math.pow(somaNeuronios,2)/(double)contaRedesCriadas))/(double)(contaRedesCriadas-1));
@@ -1926,8 +1891,8 @@ public double resolveComite(int[] mBestClf, int commeetteSize, double[][] matriz
 
         // out.println("################################################################################");
 
-        for(int s = 0; s < prequential.length; s++)
-            out.println( prequential[s]);
+        for (int s = 0; s < prequential.length; s++)
+            out.println(prequential[s]);
 
 //       out.println("################################################################################");
         //        for(int s = 0; s < prequential.length; s++)
@@ -1956,22 +1921,20 @@ public double resolveComite(int[] mBestClf, int commeetteSize, double[][] matriz
 */
 
 
-
-
         // rodar uma unica vez
         PrintWriter out2;
         FileOutputStream outputStream2 = null;
         try {
-            outputStream2 = new FileOutputStream ("C:\\Java\\AbDG\\SAbDGEnsemble\\" + auxFileName + commetteeSize + NumPrev + "TIME.txt");    // ############# tr - testfold; test trainFold    ###############
-        } catch ( java.io.IOException e) {
+            outputStream2 = new FileOutputStream("C:\\Java\\AbDG\\SAbDGEnsemble\\" + auxFileName + commetteeSize + NumPrev + "TIME.txt");    // ############# tr - testfold; test trainFold    ###############
+        } catch (java.io.IOException e) {
             System.out.println("Could not create result.txt");
 
         }
         out2 = new PrintWriter(outputStream2);
 
 
-        for(int t = 0; t < time.length; t++)
-            out2.println(time[t]*0.001);
+        for (int t = 0; t < time.length; t++)
+            out2.println(time[t] * 0.001);
 
         out2.close();
 
@@ -1988,7 +1951,7 @@ public double resolveComite(int[] mBestClf, int commeetteSize, double[][] matriz
         return mediaErro;
     }
 
-    public double sAbDGRULEEnsembleArtificialVarK(int commetteeSize,int sizeStream, int NumPrev, int deciding, int rep){
+    public double sAbDGRULEEnsembleArtificialVarK(int commetteeSize, int sizeStream, int NumPrev, int deciding, int rep) {
 
         int trainFold;
         int fold;
@@ -2004,7 +1967,7 @@ public double resolveComite(int[] mBestClf, int commeetteSize, double[][] matriz
         double somaNeuronios = 0, somaQuadNeuronios = 0;
         double desvioNeuronios = 0;
         int contTreino = 0, indMaior;
-        int k, i=0, i1 = 0, i2 = 0;
+        int k, i = 0, i1 = 0, i2 = 0;
         double errorSum = 0, mediaErro = 0;
         double maior = 0;
         // double[] saida = new double[NumPrev];
@@ -2028,8 +1991,8 @@ public double resolveComite(int[] mBestClf, int commeetteSize, double[][] matriz
         // Prequential para todos
         //  double[] prequential = new double[len - NumPrev + 1];
         // prequantial em intervalos
-        double[] prequential = new double[(len - NumPrev)/100 + 1];
-        long[] time = new long[(len - NumPrev)/100 + 1];
+        double[] prequential = new double[(len - NumPrev) / 100 + 1];
+        long[] time = new long[(len - NumPrev) / 100 + 1];
         double somaNom, somaDenom, alpha = 0.998;
         int[] mBestClf = new int[commetteeSize];
 
@@ -2038,21 +2001,21 @@ public double resolveComite(int[] mBestClf, int commeetteSize, double[][] matriz
         int line = len;
 
         int it = 0;
-        if( line % NumPrev == 0)
-            it = (int)Math.ceil(line/NumPrev);
+        if (line % NumPrev == 0)
+            it = (int) Math.ceil(line / NumPrev);
         else
-            it = (int)Math.ceil(line/NumPrev) + 1;                  // define numero de iteraçoes
+            it = (int) Math.ceil(line / NumPrev) + 1;                  // define numero de iteraçoes
 
         double[][] saidaTotal = new double[it][2];
 
         double[][] correctClassification = new double[commetteeSize][it];
-        for(int c = 0; c < commetteeSize; c++)
+        for (int c = 0; c < commetteeSize; c++)
             correctClassification[c][0] = 1;  // primeira iteração
 
         String auxFileName = "HYP";   //#########################################
         deciding = 1001; //#####################################
 
-        for(int r = 0; r < rep; r++){
+        for (int r = 0; r < rep; r++) {
 
             double[] somaErroVet = new double[commetteeSize];
 
@@ -2067,14 +2030,14 @@ public double resolveComite(int[] mBestClf, int commeetteSize, double[][] matriz
 
             for (i = 0; i < it; i++) {
 
-                if(i == 0){   // constroi comite
+                if (i == 0) {   // constroi comite
                     redesNoComite = 0;
                     trainFold = NumPrev; //  numero de instancias no primeiro conjunto, no caso deve ser igual a N
                     matrizTreino = new double[trainFold][coll];
                     contTreino = 0;
-                    for(int h = 0; h < trainFold; h++){
+                    for (int h = 0; h < trainFold; h++) {
                         //   if((h >= 0) && (h < trainFold)){            //if(h < i*fold + testFold){
-                        for(int y = 0; y < coll; y++ ){
+                        for (int y = 0; y < coll; y++) {
                             matrizTreino[contTreino][y] = m[h][y];
                         }
                         contTreino++;
@@ -2089,12 +2052,12 @@ public double resolveComite(int[] mBestClf, int commeetteSize, double[][] matriz
 
                     // ################# TESTE
                     int aleatorios = 46;
-                    for(int j = 0; j < commetteeSize-aleatorios; j++) {
+                    for (int j = 0; j < commetteeSize - aleatorios; j++) {
                         comite[j] = new SimplifiedAbDG(matrizTreino, Classes, initGranu + j);    // cria comitê
                         contaRedesCriadas++;
                     }
 
-                    for(int j = commetteeSize-aleatorios; j < commetteeSize; j++) {
+                    for (int j = commetteeSize - aleatorios; j < commetteeSize; j++) {
                         comite[j] = new SimplifiedAbDG(matrizTreino, Classes, 0);    // cria comitê
                         contaRedesCriadas++;
                     }
@@ -2102,8 +2065,7 @@ public double resolveComite(int[] mBestClf, int commeetteSize, double[][] matriz
 
                     long t1 = System.currentTimeMillis();
                     time[0] = (t1 - t0);
-                }
-                else {
+                } else {
                     fold = NumPrev;  // tamanho dos demais conjuntos
 
                     matrizTreino = new double[fold][coll];
@@ -2164,7 +2126,7 @@ public double resolveComite(int[] mBestClf, int commeetteSize, double[][] matriz
                                 testClassification[c][d] = testClassBaseModel[d];
                         }
 
-                        for (int kr = 1; kr < commetteeSize; kr+=2) {
+                        for (int kr = 1; kr < commetteeSize; kr += 2) {
 
                             // avaliação do comite para o exemplo e
                             // avaliações que usam uma unica regra
@@ -2174,10 +2136,10 @@ public double resolveComite(int[] mBestClf, int commeetteSize, double[][] matriz
 
                             // avaliaçãoes multi-regra
                             //    comiteOutput[e][kr] = votingMajority(testClassification,kr,e); // k ou thr 1000 no arq
-                              comiteOutput[e][kr] = votingMajorityProb(testClassification,kr,e);    // 1001
+                            comiteOutput[e][kr] = votingMajorityProb(testClassification, kr, e);    // 1001
                             //  comiteOutput[e] = votingStrengthWeigth(testClassification, kr, e);   1002
                             //  comiteOutput[e] = votingProbWeigth(testClassification, kr, e);       1003
-                          //  comiteOutput[e][kr] = votingStrengthProbWeigth(testClassification, kr, e);    //1004
+                            //  comiteOutput[e][kr] = votingStrengthProbWeigth(testClassification, kr, e);    //1004
                         }
                     }
 
@@ -2185,7 +2147,7 @@ public double resolveComite(int[] mBestClf, int commeetteSize, double[][] matriz
                     // }
 
 
-                    for (int kr = 1; kr < commetteeSize; kr+=2){
+                    for (int kr = 1; kr < commetteeSize; kr += 2) {
                         errorSum = 0;        // resolve comite
                         maior = 0;
                         indMaior = -1;
@@ -2212,22 +2174,20 @@ public double resolveComite(int[] mBestClf, int commeetteSize, double[][] matriz
                             }
 
 
-
                         }
                         somaErroVet[kr] += errorSum;
-                      //  somaErroQuadVet[kr] += Math.pow(errorSum,2);
+                        //  somaErroQuadVet[kr] += Math.pow(errorSum,2);
                     }
 
 
-                    for(int c = 0; c < commetteeSize; c++) {   // atializa peso de todos
+                    for (int c = 0; c < commetteeSize; c++) {   // atializa peso de todos
                         //   if(mBestClf[c] != 1)  //(comite[c].getClassAcc() < meanClfAcc)  //(mBestClf[c] != 1)
                         comite[c].updateFadingFactor(matrizTreino);  //boosting(matrizTreino,weights)
                     }
 
 
-
                     double[] clfAcc = new double[commetteeSize];
-                    for(int h = 0; h < commetteeSize; h++) {
+                    for (int h = 0; h < commetteeSize; h++) {
                         //      System.out.print( " " + comite[h].getClassAcc()); //.getWeight());
                         clfAcc[h] = comite[h].getClassAcc();
 
@@ -2241,24 +2201,23 @@ public double resolveComite(int[] mBestClf, int commeetteSize, double[][] matriz
                 }
 
 
-
             }  // fim it
             // soma erro para cada iteração
-            for(int kr = 1; kr < commetteeSize; kr+=2) {
-                somaErroExecs[kr] += (somaErroVet[kr]/sizeStream)*100;
-                somaErroQuadVet[kr] += Math.pow((somaErroVet[kr]/sizeStream)*100,2);
+            for (int kr = 1; kr < commetteeSize; kr += 2) {
+                somaErroExecs[kr] += (somaErroVet[kr] / sizeStream) * 100;
+                somaErroQuadVet[kr] += Math.pow((somaErroVet[kr] / sizeStream) * 100, 2);
 
             }
 
         }  // fim rep
 
-        for(int kr = 1; kr < commetteeSize; kr+=2) {
-            mediaErroVet[kr] = (somaErroExecs[kr]/rep);
-            desvioErroVet[kr] = Math.sqrt(((rep)*somaErroQuadVet[kr]-(Math.pow(somaErroExecs[kr],2)))/(double)((rep) *(rep - 1)));
+        for (int kr = 1; kr < commetteeSize; kr += 2) {
+            mediaErroVet[kr] = (somaErroExecs[kr] / rep);
+            desvioErroVet[kr] = Math.sqrt(((rep) * somaErroQuadVet[kr] - (Math.pow(somaErroExecs[kr], 2))) / (double) ((rep) * (rep - 1)));
 
         }
 
-      //  mediaErro = (somaErro/(double)((it-1)*rep));
+        //  mediaErro = (somaErro/(double)((it-1)*rep));
 
 
         //  System.out.println(mediaErro);
@@ -2267,8 +2226,8 @@ public double resolveComite(int[] mBestClf, int commeetteSize, double[][] matriz
         PrintWriter out;
         FileOutputStream outputStream = null;
         try {
-            outputStream = new FileOutputStream ("C:\\Java\\AbDG\\SAbDGEnsemble\\" + auxFileName + deciding + "RULEAbDG_VAR_K.txt");    // ############# tr - testfold; test trainFold    ###############
-        } catch ( java.io.IOException e) {
+            outputStream = new FileOutputStream("C:\\Java\\AbDG\\SAbDGEnsemble\\" + auxFileName + deciding + "RULEAbDG_VAR_K.txt");    // ############# tr - testfold; test trainFold    ###############
+        } catch (java.io.IOException e) {
             System.out.println("Could not create result.txt");
 
         }
@@ -2278,7 +2237,7 @@ public double resolveComite(int[] mBestClf, int commeetteSize, double[][] matriz
 
         // out.println("################################################################################");
 
-        for(int s = 1; s < mediaErroVet.length; s+=2)
+        for (int s = 1; s < mediaErroVet.length; s += 2)
             out.println(s + " " + mediaErroVet[s] + " " + desvioErroVet[s]); //(somaErroVet[s]/sizeStream)*100);
 
 //       out.println("################################################################################");
@@ -2308,8 +2267,6 @@ public double resolveComite(int[] mBestClf, int commeetteSize, double[][] matriz
 */
 
 
-
-
         // rodar uma unica vez
    /*     PrintWriter out2;
         FileOutputStream outputStream2 = null;
@@ -2340,7 +2297,7 @@ public double resolveComite(int[] mBestClf, int commeetteSize, double[][] matriz
         return mediaErro;
     }
 
-    public double sAbDGRULEEnsembleArtificial(int commetteeSize,int sizeStream, int NumPrev, int deciding, int rep){
+    public double sAbDGRULEEnsembleArtificial(int commetteeSize, int sizeStream, int NumPrev, int deciding, int rep) {
 
         int trainFold;
         int fold;
@@ -2356,7 +2313,7 @@ public double resolveComite(int[] mBestClf, int commeetteSize, double[][] matriz
         double somaNeuronios = 0, somaQuadNeuronios = 0;
         double desvioNeuronios = 0;
         int contTreino = 0, indMaior;
-        int k, i=0, i1 = 0, i2 = 0;
+        int k, i = 0, i1 = 0, i2 = 0;
         double errorSum = 0, mediaErro = 0;
         double maior = 0;
         // double[] saida = new double[NumPrev];
@@ -2376,8 +2333,8 @@ public double resolveComite(int[] mBestClf, int commeetteSize, double[][] matriz
         // Prequential para todos
         //  double[] prequential = new double[len - NumPrev + 1];
         // prequantial em intervalos
-        double[] prequential = new double[(len - NumPrev)/100 + 1];
-        long[] time = new long[(len - NumPrev)/100 + 1];
+        double[] prequential = new double[(len - NumPrev) / 100 + 1];
+        long[] time = new long[(len - NumPrev) / 100 + 1];
         double somaNom, somaDenom, alpha = 0.998;
         int[] mBestClf = new int[commetteeSize];
 
@@ -2386,21 +2343,21 @@ public double resolveComite(int[] mBestClf, int commeetteSize, double[][] matriz
         int line = len;
 
         int it = 0;
-        if( line % NumPrev == 0)
-            it = (int)Math.ceil(line/NumPrev);
+        if (line % NumPrev == 0)
+            it = (int) Math.ceil(line / NumPrev);
         else
-            it = (int)Math.ceil(line/NumPrev) + 1;                  // define numero de iteraçoes
+            it = (int) Math.ceil(line / NumPrev) + 1;                  // define numero de iteraçoes
 
         double[][] saidaTotal = new double[it][2];
 
         double[][] correctClassification = new double[commetteeSize][it];
-        for(int c = 0; c < commetteeSize; c++)
+        for (int c = 0; c < commetteeSize; c++)
             correctClassification[c][0] = 1;  // primeira iteração
 
         String auxFileName = "SEA";   //#########################################
 
 
-        for(int r = 0; r < rep; r++){
+        for (int r = 0; r < rep; r++) {
 
             double[][] m = SEAconcept(line); // hyperplane(line); // // gaussData(line); //   gaussData(line); // SEAconcept(line); // sineData(line);//   //circleData(line); // //  //  //  mixedData(line); //
 
@@ -2412,14 +2369,14 @@ public double resolveComite(int[] mBestClf, int commeetteSize, double[][] matriz
 
             for (i = 0; i < it; i++) {
 
-                if(i == 0){   // constroi comite
+                if (i == 0) {   // constroi comite
                     redesNoComite = 0;
                     trainFold = NumPrev; //  numero de instancias no primeiro conjunto, no caso deve ser igual a N
                     matrizTreino = new double[trainFold][coll];
                     contTreino = 0;
-                    for(int h = 0; h < trainFold; h++){
+                    for (int h = 0; h < trainFold; h++) {
                         //   if((h >= 0) && (h < trainFold)){            //if(h < i*fold + testFold){
-                        for(int y = 0; y < coll; y++ ){
+                        for (int y = 0; y < coll; y++) {
                             matrizTreino[contTreino][y] = m[h][y];
                         }
                         contTreino++;
@@ -2434,12 +2391,12 @@ public double resolveComite(int[] mBestClf, int commeetteSize, double[][] matriz
 
                     // ################# TESTE
                     int aleatorios = 46;
-                    for(int j = 0; j < commetteeSize-aleatorios; j++) {
+                    for (int j = 0; j < commetteeSize - aleatorios; j++) {
                         comite[j] = new SimplifiedAbDG(matrizTreino, Classes, initGranu + j);    // cria comitê
                         contaRedesCriadas++;
                     }
 
-                    for(int j = commetteeSize-aleatorios; j < commetteeSize; j++) {
+                    for (int j = commetteeSize - aleatorios; j < commetteeSize; j++) {
                         comite[j] = new SimplifiedAbDG(matrizTreino, Classes, 0);    // cria comitê
                         contaRedesCriadas++;
                     }
@@ -2447,8 +2404,7 @@ public double resolveComite(int[] mBestClf, int commeetteSize, double[][] matriz
 
                     long t1 = System.currentTimeMillis();
                     time[0] = (t1 - t0);
-                }
-                else{
+                } else {
                     fold = NumPrev;  // tamanho dos demais conjuntos
 
                     matrizTreino = new double[fold][coll];
@@ -2456,19 +2412,19 @@ public double resolveComite(int[] mBestClf, int commeetteSize, double[][] matriz
                     contTreino = 0;
 
                     // train folds
-                    i1 = i*fold;
-                    i2 = (i+1)*fold;
-                    if(i == (it-1)){        // ultimo conjunto pode ser menor que demais
+                    i1 = i * fold;
+                    i2 = (i + 1) * fold;
+                    if (i == (it - 1)) {        // ultimo conjunto pode ser menor que demais
                         i2 = line;
-                        NumPrev = line - (it-1)*NumPrev;
+                        NumPrev = line - (it - 1) * NumPrev;
                         matrizTreino = new double[NumPrev][coll];
                     }
 
-                    for(int h = i1; h < i2; h++){
-                        if((h >= (i*fold) && (h < i2))){              //if(h < i*fold + testFold){
-                            for(int y = 0; y < coll; y++ )
+                    for (int h = i1; h < i2; h++) {
+                        if ((h >= (i * fold) && (h < i2))) {              //if(h < i*fold + testFold){
+                            for (int y = 0; y < coll; y++)
                                 matrizTreino[contTreino][y] = m[h][y];
-                            weights[contTreino] = 1/(double)fold;
+                            weights[contTreino] = 1 / (double) fold;
                             contTreino++;
                         }
                     }
@@ -2479,33 +2435,31 @@ public double resolveComite(int[] mBestClf, int commeetteSize, double[][] matriz
                     double[] comiteOutput = new double[contTreino];//[nroClasses+1];  // resultado do comite
                     // comiteOutput[][0] usado para armazenar força da regra
 
-                    if(i == 1) {
+                    if (i == 1) {
                         for (int t = 0; t < commetteeSize; t++)
                             mBestClf[t] = 1;
                         sizeDeciding = commetteeSize;   // primeiro batch todos decidem
-                    }
-                    else
+                    } else
                         sizeDeciding = deciding;
 
 
                     double maiorR = 0;
                     int indMaiorR = 0;
 
-                    for(k = 0; k < commetteeSize; k++) { // RuleClassifierFull
+                    for (k = 0; k < commetteeSize; k++) { // RuleClassifierFull
                         // ruleClassifierFull calcula força da regra e prob para as classes para cada exemplo
                         comite[k].RuleClassifierFullProbOnly(matrizTreino);
                         //comite[k].RuleClassifierFull(matrizTreino);  //sinlgeRulesAbDGVertexClassifier(matrizTreino); // DnoClassifierFull(matrizTreino, 0.5);
 
-                    //    if(i > 1)
-                    //        comite[k].updateAlpha();
+                        //    if(i > 1)
+                        //        comite[k].updateAlpha();
 
-                       // comite[k].calculateLastAcc();
+                        // comite[k].calculateLastAcc();
                     }
                     // ver se precisa
 
 
-
-                    for(int e = 0; e < contTreino; e++) {
+                    for (int e = 0; e < contTreino; e++) {
                         //  para uma unica instancia
                         //  constroi matriz de classificadores por força/probs de classe
                         //testClassification = new double[commetteeSize][nroClasses + 1];
@@ -2513,41 +2467,43 @@ public double resolveComite(int[] mBestClf, int commeetteSize, double[][] matriz
 
                         int contBest = 0;
                         for (int c = 0; c < commetteeSize; c++) {
-                            if(mBestClf[c] == 1) {    // so considera os melhores
+                            if (mBestClf[c] == 1) {    // so considera os melhores
                                 testClassBaseModel = comite[c].getStrenghtAndProbVector(e);
-                                for (int d = 0; d < nroClasses + 1; d++)
-                                    testClassification[contBest][d] = testClassBaseModel[d];
+                                for (int d = 0; d < nroClasses + 1; d++)                        // multiplica por acc
+                                    testClassification[contBest][d] = testClassBaseModel[d] * comite[c].getClassAcc();
                                 contBest++;
-                           }
+                            }
 
                         }
 
                         // print RULE
-                    //    for(int j = 0; j < coll-1; j++)
-                    //        System.out.print(" Atr " + j + " " + matrizTreino[e][j]);
-                    //    System.out.println();
+                        //    for(int j = 0; j < coll-1; j++)
+                        //        System.out.print(" Atr " + j + " " + matrizTreino[e][j]);
+                        //    System.out.println();
 
 
                         int kr = 25;
                         int aux;
                         // avaliação do comite para o exemplo e
                         // avaliações que usam uma unica regra
-                               //  aux = highestStrengh(testClassification,e);
+                        //  aux = highestStrengh(testClassification,e);
                         //   comiteOutput[e] = (double)highestProb(testClassification);
-                                //  aux = highestStrengTimesProb(testClassification,e);
-                           comiteOutput[e] = simpleVoting(testClassification);
+                        //  aux = highestStrengTimesProb(testClassification,e);
 
+                        comiteOutput[e] = simpleVoting(testClassification);
+
+                      //  comiteOutput[e] = accWeightedVoting(testClassification);
                         // avaliaçãoes multi-regra
-                            //comiteOutput[e] = votingMajority(testClassification,kr,e); // k ou thr
-                              //  comiteOutput[e] = votingMajorityProb(testClassification,kr,e);
-                              //  comiteOutput[e] = votingStrengthWeigth(testClassification, kr, e);
-                              //  comiteOutput[e] = votingProbWeigth(testClassification, kr, e);
-                              //  comiteOutput[e] = votingStrengthProbWeigth(testClassification, kr, e);
-                          //  comiteOutput[e] = comite[aux].getPredLabels()[e]; // retorna a classe
+                        //comiteOutput[e] = votingMajority(testClassification,kr,e); // k ou thr
+                        //  comiteOutput[e] = votingMajorityProb(testClassification,kr,e);
+                        //  comiteOutput[e] = votingStrengthWeigth(testClassification, kr, e);
+                        //  comiteOutput[e] = votingProbWeigth(testClassification, kr, e);
+                        //  comiteOutput[e] = votingStrengthProbWeigth(testClassification, kr, e);
+                        //  comiteOutput[e] = comite[aux].getPredLabels()[e]; // retorna a classe
 
                         // print RULE
                         //  comite[aux].printRule(e,matrizTreino[e]);
-                          //  System.out.println(comiteOutput[e] +  " Correta " + matrizTreino[e][coll-1] );
+                        //  System.out.println(comiteOutput[e] +  " Correta " + matrizTreino[e][coll-1] );
                     }
 
 
@@ -2558,7 +2514,7 @@ public double resolveComite(int[] mBestClf, int commeetteSize, double[][] matriz
                     maior = 0;
                     indMaior = -1;
                     erroComiteTreino = 0;
-                    for(int a = 0; a < contTreino; a++) {
+                    for (int a = 0; a < contTreino; a++) {
                         //   maior = 0;
                         //    indMaior = 0;
                         //      for (int b = 1; b < nroClasses + 1; b++)
@@ -2582,7 +2538,7 @@ public double resolveComite(int[] mBestClf, int commeetteSize, double[][] matriz
                         long t1 = System.currentTimeMillis();
 
                         mcnemar[contPrequential] = erro;
-                        if(contPrequential % sampleSize == 0) {
+                        if (contPrequential % sampleSize == 0) {
                             somaNom = 0;
                             somaDenom = 0;
 
@@ -2591,25 +2547,25 @@ public double resolveComite(int[] mBestClf, int commeetteSize, double[][] matriz
                                 somaDenom += Math.pow(alpha, ((double) contPrequential - p));
                             }
 
-                            prequential[(int)(contPrequential / sampleSize)] = (somaNom / somaDenom);
+                            prequential[(int) (contPrequential / sampleSize)] = (somaNom / somaDenom);
 
-                            time[(int)(contPrequential / sampleSize)] = (t1 - t0);
+                            time[(int) (contPrequential / sampleSize)] = (t1 - t0);
                         }
 
                     }
 
 
                     double[] clfAcc = new double[commetteeSize];
-                    for(int h = 0; h < commetteeSize; h++) {
+                    for (int h = 0; h < commetteeSize; h++) {
                         //      System.out.print( " " + comite[h].getClassAcc()); //.getWeight());
                         clfAcc[h] = comite[h].getClassAcc();
 
                     }
                     // System.out.println();
 
-                    mBestClf = encontraMelhores(clfAcc,deciding);
+                    mBestClf = encontraMelhores(clfAcc, deciding);
 
-                    if(i > 1) {
+                    if (i > 1) {
                         // Update
                         for (int c = 0; c < commetteeSize; c++) {   // atualiza peso de todos
                             comite[c].updateAlpha();
@@ -2622,22 +2578,18 @@ public double resolveComite(int[] mBestClf, int commeetteSize, double[][] matriz
                         }
                     }
 
-                    for(k = 0; k < commetteeSize; k++)
+                    for (k = 0; k < commetteeSize; k++)
                         comite[k].calculateLastAcc();  // passa acc atual para last
-
-
-
 
 
                     //  long t1 = System.currentTimeMillis();
 
-                    saidaTotal[i][0] = i+1;//*NumPrev;
-                    saidaTotal[i][1] += (errorSum/(double)contTreino) * 100;
-                    somaErro += errorSum/(double)contTreino * 100;
-                    somaErroQuad += Math.pow(errorSum/(double)contTreino,2);
+                    saidaTotal[i][0] = i + 1;//*NumPrev;
+                    saidaTotal[i][1] += (errorSum / (double) contTreino) * 100;
+                    somaErro += errorSum / (double) contTreino * 100;
+                    somaErroQuad += Math.pow(errorSum / (double) contTreino, 2);
 
                 }
-
 
 
             }  // fim it
@@ -2645,7 +2597,7 @@ public double resolveComite(int[] mBestClf, int commeetteSize, double[][] matriz
         }  // fim rep
 
 
-        mediaErro = (somaErro/(double)((it-1)*rep));
+        mediaErro = (somaErro / (double) ((it - 1) * rep));
 
 
         //  System.out.println(mediaErro);
@@ -2654,8 +2606,8 @@ public double resolveComite(int[] mBestClf, int commeetteSize, double[][] matriz
         PrintWriter out;
         FileOutputStream outputStream = null;
         try {
-            outputStream = new FileOutputStream ("C:\\Java\\AbDG\\SAbDGEnsemble\\" + auxFileName + deciding + "RULEAbDG.txt");    // ############# tr - testfold; test trainFold    ###############
-        } catch ( java.io.IOException e) {
+            outputStream = new FileOutputStream("C:\\Java\\AbDG\\SAbDGEnsemble\\" + auxFileName + deciding + "RULEAbDG.txt");    // ############# tr - testfold; test trainFold    ###############
+        } catch (java.io.IOException e) {
             System.out.println("Could not create result.txt");
 
         }
@@ -2663,8 +2615,7 @@ public double resolveComite(int[] mBestClf, int commeetteSize, double[][] matriz
         out = new PrintWriter(outputStream);
 
 
-
-        desvio = Math.sqrt((somaErroQuad - (Math.pow(somaErro,2)/(double)it*rep))/(double)(it*rep-1));
+        desvio = Math.sqrt((somaErroQuad - (Math.pow(somaErro, 2) / (double) it * rep)) / (double) (it * rep - 1));
         out.println("Erro medio " + mediaErro + " Desvio " + desvio);
 
         //     desvioNeuronios = Math.sqrt((somaQuadNeuronios - (Math.pow(somaNeuronios,2)/(double)contaRedesCriadas))/(double)(contaRedesCriadas-1));
@@ -2675,8 +2626,8 @@ public double resolveComite(int[] mBestClf, int commeetteSize, double[][] matriz
 
         // out.println("################################################################################");
 
-        for(int s = 0; s < prequential.length; s++)
-            out.println( prequential[s]);
+        for (int s = 0; s < prequential.length; s++)
+            out.println(prequential[s]);
 
 //       out.println("################################################################################");
         //        for(int s = 0; s < prequential.length; s++)
@@ -2703,8 +2654,6 @@ public double resolveComite(int[] mBestClf, int commeetteSize, double[][] matriz
 
         out1.close();
 */
-
-
 
 
         // rodar uma unica vez
@@ -2738,7 +2687,7 @@ public double resolveComite(int[] mBestClf, int commeetteSize, double[][] matriz
     }
 
 
-    public double sAbDGRULEEnsembleReal(double[][] m, int commetteeSize, int NumPrev, String auxFileName, int deciding, int rep){
+    public double sAbDGRULEEnsembleReal(double[][] m, int commetteeSize, int NumPrev, String auxFileName, int deciding, int rep) {
 
         int trainFold;
         int fold;
@@ -2754,7 +2703,7 @@ public double resolveComite(int[] mBestClf, int commeetteSize, double[][] matriz
         double somaNeuronios = 0, somaQuadNeuronios = 0;
         double desvioNeuronios = 0;
         int contTreino = 0, indMaior;
-        int k, i=0, i1 = 0, i2 = 0;
+        int k, i = 0, i1 = 0, i2 = 0;
         double errorSum = 0, mediaErro = 0;
         double maior = 0;
         // double[] saida = new double[NumPrev];
@@ -2774,8 +2723,8 @@ public double resolveComite(int[] mBestClf, int commeetteSize, double[][] matriz
         // Prequential para todos
         //  double[] prequential = new double[len - NumPrev + 1];
         // prequantial em intervalos
-        double[] prequential = new double[(len - NumPrev)/100 + 1];
-        long[] time = new long[(len - NumPrev)/100 + 1];
+        double[] prequential = new double[(len - NumPrev) / 100 + 1];
+        long[] time = new long[(len - NumPrev) / 100 + 1];
         double somaNom, somaDenom, alpha = 0.998;
         int[] mBestClf = new int[commetteeSize];
 
@@ -2784,18 +2733,18 @@ public double resolveComite(int[] mBestClf, int commeetteSize, double[][] matriz
         int line = len;
 
         int it = 0;
-        if( line % NumPrev == 0)
-            it = (int)Math.ceil(line/NumPrev);
+        if (line % NumPrev == 0)
+            it = (int) Math.ceil(line / NumPrev);
         else
-            it = (int)Math.ceil(line/NumPrev) + 1;                  // define numero de iteraçoes
+            it = (int) Math.ceil(line / NumPrev) + 1;                  // define numero de iteraçoes
 
         double[][] saidaTotal = new double[it][2];
 
         double[][] correctClassification = new double[commetteeSize][it];
-        for(int c = 0; c < commetteeSize; c++)
+        for (int c = 0; c < commetteeSize; c++)
             correctClassification[c][0] = 1;  // primeira iteração
 
-        for(int r = 0; r < rep; r++){
+        for (int r = 0; r < rep; r++) {
 
             int coll = m[0].length;
 
@@ -2805,14 +2754,14 @@ public double resolveComite(int[] mBestClf, int commeetteSize, double[][] matriz
 
             for (i = 0; i < it; i++) {
 
-                if(i == 0){   // constroi comite
+                if (i == 0) {   // constroi comite
                     redesNoComite = 0;
                     trainFold = NumPrev; //  numero de instancias no primeiro conjunto, no caso deve ser igual a N
                     matrizTreino = new double[trainFold][coll];
                     contTreino = 0;
-                    for(int h = 0; h < trainFold; h++){
+                    for (int h = 0; h < trainFold; h++) {
                         //   if((h >= 0) && (h < trainFold)){            //if(h < i*fold + testFold){
-                        for(int y = 0; y < coll; y++ ){
+                        for (int y = 0; y < coll; y++) {
                             matrizTreino[contTreino][y] = m[h][y];
                         }
                         contTreino++;
@@ -2827,12 +2776,12 @@ public double resolveComite(int[] mBestClf, int commeetteSize, double[][] matriz
 
                     // ################# TESTE
                     int aleatorios = 46;
-                    for(int j = 0; j < commetteeSize-aleatorios; j++) {
+                    for (int j = 0; j < commetteeSize - aleatorios; j++) {
                         comite[j] = new SimplifiedAbDG(matrizTreino, Classes, initGranu + j);    // cria comitê
                         contaRedesCriadas++;
                     }
 
-                    for(int j = commetteeSize-aleatorios; j < commetteeSize; j++) {
+                    for (int j = commetteeSize - aleatorios; j < commetteeSize; j++) {
                         comite[j] = new SimplifiedAbDG(matrizTreino, Classes, 0);    // cria comitê
                         contaRedesCriadas++;
                     }
@@ -2840,8 +2789,7 @@ public double resolveComite(int[] mBestClf, int commeetteSize, double[][] matriz
 
                     long t1 = System.currentTimeMillis();
                     time[0] = (t1 - t0);
-                }
-                else{
+                } else {
                     fold = NumPrev;  // tamanho dos demais conjuntos
 
                     matrizTreino = new double[fold][coll];
@@ -2849,19 +2797,19 @@ public double resolveComite(int[] mBestClf, int commeetteSize, double[][] matriz
                     contTreino = 0;
 
                     // train folds
-                    i1 = i*fold;
-                    i2 = (i+1)*fold;
-                    if(i == (it-1)){        // ultimo conjunto pode ser menor que demais
+                    i1 = i * fold;
+                    i2 = (i + 1) * fold;
+                    if (i == (it - 1)) {        // ultimo conjunto pode ser menor que demais
                         i2 = line;
-                        NumPrev = line - (it-1)*NumPrev;
+                        NumPrev = line - (it - 1) * NumPrev;
                         matrizTreino = new double[NumPrev][coll];
                     }
 
-                    for(int h = i1; h < i2; h++){
-                        if((h >= (i*fold) && (h < i2))){              //if(h < i*fold + testFold){
-                            for(int y = 0; y < coll; y++ )
+                    for (int h = i1; h < i2; h++) {
+                        if ((h >= (i * fold) && (h < i2))) {              //if(h < i*fold + testFold){
+                            for (int y = 0; y < coll; y++)
                                 matrizTreino[contTreino][y] = m[h][y];
-                            weights[contTreino] = 1/(double)fold;
+                            weights[contTreino] = 1 / (double) fold;
                             contTreino++;
                         }
                     }
@@ -2870,65 +2818,65 @@ public double resolveComite(int[] mBestClf, int commeetteSize, double[][] matriz
 
                     matrizTreino = normalizacaoMaiorMenor(matrizTreino);
                     double[] comiteOutput = new double[contTreino];//[nroClasses+1];  // resultado do comite
-                                // comiteOutput[][0] usado para armazenar força da regra
+                    // comiteOutput[][0] usado para armazenar força da regra
 
-                    if(i == 1)
-                        for(int t = 0; t <commetteeSize; t++)
+                    if (i == 1)
+                        for (int t = 0; t < commetteeSize; t++)
                             mBestClf[t] = 1;
 
 
-                        double maiorR = 0;
-                        int indMaiorR = 0;
+                    double maiorR = 0;
+                    int indMaiorR = 0;
 
-                        for(k = 0; k < commetteeSize; k++) { // RuleClassifierFull
-                            // ruleClassifierFull calcula força da regra e prob para as classes para cada exemplo
-                            comite[k].RuleClassifierFull(matrizTreino);  //sinlgeRulesAbDGVertexClassifier(matrizTreino); // DnoClassifierFull(matrizTreino, 0.5);
+                    for (k = 0; k < commetteeSize; k++) { // RuleClassifierFull
+                        // ruleClassifierFull calcula força da regra e prob para as classes para cada exemplo
+                        comite[k].RuleClassifierFull(matrizTreino);  //sinlgeRulesAbDGVertexClassifier(matrizTreino); // DnoClassifierFull(matrizTreino, 0.5);
 
-                            comite[k].calculateLastAcc();
-                        }
-                        // ver se precisa
+                        comite[k].calculateLastAcc();
+                    }
+                    // ver se precisa
 
 
-                        for(int e = 0; e < contTreino; e++) {
-                            //  para uma unica instancia
-                            //  constroi matriz de classificadores por força/probs de classe
-                            testClassification = new double[commetteeSize][nroClasses + 1];
-                            for (int c = 0; c < commetteeSize; c++) {
-                                testClassBaseModel = comite[c].getStrenghtAndProbVector(e);
-                                for (int d = 0; d < nroClasses + 1; d++)
-                                    testClassification[c][d] = testClassBaseModel[d];
-                            }
-
-                            int kr = 5;
-                            // avaliação do comite para o exemplo e
-                            // avaliações que usam uma unica regra
-                     //       comiteOutput[e] = highestStrengh(testClassification,e);
-                    //        comiteOutput[e] = highestProb(testClassification,e);
-                    //        comiteOutput[e] = highestStrengTimesProb(testClassification,e);
-                            // avaliaçãoes multi-regra
-                              comiteOutput[e] = votingMajority(testClassification,kr,e); // k ou thr
-                     //         comiteOutput[e] = votingMajorityProb(testClassification,kr,e);
-                    //        comiteOutput[e] = votingStrengthWeigth(testClassification, kr, e);
-                    //        comiteOutput[e] = votingProbWeigth(testClassification, kr, e);
-                    //        comiteOutput[e] = votingStrengthProbWeigth(testClassification, kr, e);
+                    for (int e = 0; e < contTreino; e++) {
+                        //  para uma unica instancia
+                        //  constroi matriz de classificadores por força/probs de classe
+                        testClassification = new double[commetteeSize][nroClasses + 1];
+                        for (int c = 0; c < commetteeSize; c++) {
+                            testClassBaseModel = comite[c].getStrenghtAndProbVector(e);
+                            for (int d = 0; d < nroClasses + 1; d++)
+                                testClassification[c][d] = testClassBaseModel[d];
                         }
 
+                        int kr = 5;
+                        // avaliação do comite para o exemplo e
+                        // avaliações que usam uma unica regra
+                        //       comiteOutput[e] = highestStrengh(testClassification,e);
+                        //        comiteOutput[e] = highestProb(testClassification,e);
+                        //        comiteOutput[e] = highestStrengTimesProb(testClassification,e);
+                        // avaliaçãoes multi-regra
+                        comiteOutput[e] = votingMajority(testClassification, kr, e); // k ou thr
+                        //         comiteOutput[e] = votingMajorityProb(testClassification,kr,e);
+                        //        comiteOutput[e] = votingStrengthWeigth(testClassification, kr, e);
+                        //        comiteOutput[e] = votingProbWeigth(testClassification, kr, e);
+                        //        comiteOutput[e] = votingStrengthProbWeigth(testClassification, kr, e);
+                    }
 
-                   // }
+
+                    // }
 
 
                     errorSum = 0;        // resolve comite
                     maior = 0;
                     indMaior = -1;
                     erroComiteTreino = 0;
-                    for(int a = 0; a < contTreino; a++) {
-                     //   maior = 0;
-                    //    indMaior = 0;
-                  //      for (int b = 1; b < nroClasses + 1; b++)
-                   //         if (comiteOutput[a][b] > maior) { // comiteOutput[a][b]
-                      //          maior = comiteOutput[a][b];// comiteOutput[a][b];
-                    //            indMaior = b;
-                      //      }
+                    for (int a = 0; a < contTreino; a++) {
+                        //   maior = 0;
+                        //    indMaior = 0;
+                        //      for (int b = 1; b < nroClasses + 1; b++)
+                        //         if (comiteOutput[a][b] > maior) { // comiteOutput[a][b]
+                        //          maior = comiteOutput[a][b];// comiteOutput[a][b];
+                        //            indMaior = b;
+                        //      }
 
                         contPrequential++;     // i em gama13
                         if ((matrizTreino[a][coll - 1] != comiteOutput[a])) {        // classes sao 1 e 2
@@ -2945,7 +2893,7 @@ public double resolveComite(int[] mBestClf, int commeetteSize, double[][] matriz
                         long t1 = System.currentTimeMillis();
 
                         mcnemar[contPrequential] = erro;
-                        if(contPrequential % sampleSize == 0) {
+                        if (contPrequential % sampleSize == 0) {
                             somaNom = 0;
                             somaDenom = 0;
 
@@ -2954,39 +2902,37 @@ public double resolveComite(int[] mBestClf, int commeetteSize, double[][] matriz
                                 somaDenom += Math.pow(alpha, ((double) contPrequential - p));
                             }
 
-                            prequential[(int)(contPrequential / sampleSize)] = (somaNom / somaDenom);
+                            prequential[(int) (contPrequential / sampleSize)] = (somaNom / somaDenom);
 
-                            time[(int)(contPrequential / sampleSize)] = (t1 - t0);
+                            time[(int) (contPrequential / sampleSize)] = (t1 - t0);
                         }
 
                     }
 
 
-                    for(int c = 0; c < commetteeSize; c++) {   // atializa peso de todos
-                     //   if(mBestClf[c] != 1)  //(comite[c].getClassAcc() < meanClfAcc)  //(mBestClf[c] != 1)
-                            comite[c].updateFadingFactor(matrizTreino);  //boosting(matrizTreino,weights)
+                    for (int c = 0; c < commetteeSize; c++) {   // atializa peso de todos
+                        //   if(mBestClf[c] != 1)  //(comite[c].getClassAcc() < meanClfAcc)  //(mBestClf[c] != 1)
+                        comite[c].updateFadingFactor(matrizTreino);  //boosting(matrizTreino,weights)
                     }
 
 
-
                     double[] clfAcc = new double[commetteeSize];
-                    for(int h = 0; h < commetteeSize; h++) {
+                    for (int h = 0; h < commetteeSize; h++) {
                         //      System.out.print( " " + comite[h].getClassAcc()); //.getWeight());
                         clfAcc[h] = comite[h].getClassAcc();
 
                     }
                     // System.out.println();
-                  //  mBestClf = encontraMelhores(clfAcc,deciding);
+                    //  mBestClf = encontraMelhores(clfAcc,deciding);
 
                     //  long t1 = System.currentTimeMillis();
 
-                    saidaTotal[i][0] = i+1;//*NumPrev;
-                    saidaTotal[i][1] += (errorSum/(double)contTreino) * 100;
-                    somaErro += errorSum/(double)contTreino * 100;
-                    somaErroQuad += Math.pow(errorSum/(double)contTreino,2);
+                    saidaTotal[i][0] = i + 1;//*NumPrev;
+                    saidaTotal[i][1] += (errorSum / (double) contTreino) * 100;
+                    somaErro += errorSum / (double) contTreino * 100;
+                    somaErroQuad += Math.pow(errorSum / (double) contTreino, 2);
 
                 }
-
 
 
             }  // fim it
@@ -2994,7 +2940,7 @@ public double resolveComite(int[] mBestClf, int commeetteSize, double[][] matriz
         }  // fim rep
 
 
-        mediaErro = (somaErro/(double)((it-1)*rep));
+        mediaErro = (somaErro / (double) ((it - 1) * rep));
 
 
         //  System.out.println(mediaErro);
@@ -3003,8 +2949,8 @@ public double resolveComite(int[] mBestClf, int commeetteSize, double[][] matriz
         PrintWriter out;
         FileOutputStream outputStream = null;
         try {
-            outputStream = new FileOutputStream ("C:\\Java\\AbDG\\SAbDGEnsemble\\" + auxFileName + commetteeSize + NumPrev + deciding + "RULEAbDG.txt");    // ############# tr - testfold; test trainFold    ###############
-        } catch ( java.io.IOException e) {
+            outputStream = new FileOutputStream("C:\\Java\\AbDG\\SAbDGEnsemble\\" + auxFileName + commetteeSize + NumPrev + deciding + "RULEAbDG.txt");    // ############# tr - testfold; test trainFold    ###############
+        } catch (java.io.IOException e) {
             System.out.println("Could not create result.txt");
 
         }
@@ -3012,8 +2958,7 @@ public double resolveComite(int[] mBestClf, int commeetteSize, double[][] matriz
         out = new PrintWriter(outputStream);
 
 
-
-        desvio = Math.sqrt((somaErroQuad - (Math.pow(somaErro,2)/(double)it*rep))/(double)(it*rep-1));
+        desvio = Math.sqrt((somaErroQuad - (Math.pow(somaErro, 2) / (double) it * rep)) / (double) (it * rep - 1));
         out.println("Erro medio " + mediaErro + " Desvio " + desvio);
 
         //     desvioNeuronios = Math.sqrt((somaQuadNeuronios - (Math.pow(somaNeuronios,2)/(double)contaRedesCriadas))/(double)(contaRedesCriadas-1));
@@ -3024,8 +2969,8 @@ public double resolveComite(int[] mBestClf, int commeetteSize, double[][] matriz
 
         // out.println("################################################################################");
 
-        for(int s = 0; s < prequential.length; s++)
-            out.println( prequential[s]);
+        for (int s = 0; s < prequential.length; s++)
+            out.println(prequential[s]);
 
 //       out.println("################################################################################");
         //        for(int s = 0; s < prequential.length; s++)
@@ -3052,8 +2997,6 @@ public double resolveComite(int[] mBestClf, int commeetteSize, double[][] matriz
 
         out1.close();
 */
-
-
 
 
         // rodar uma unica vez
@@ -3088,7 +3031,7 @@ public double resolveComite(int[] mBestClf, int commeetteSize, double[][] matriz
 
     // métodos para avaliação do comite baseado em regras
 
-    public int highestStrengh(double[][] classifications, int example){
+    public int highestStrengh(double[][] classifications, int example) {
         // retorna a classificação correspondente à regra de maior força para a instancia example
         int line = classifications.length;
         int coll = classifications[0].length;
@@ -3097,30 +3040,30 @@ public double resolveComite(int[] mBestClf, int commeetteSize, double[][] matriz
 
         maior = classifications[0][0];
         indMaior = 0;
-        for(int i = 1; i < line; i++)
-            if (classifications[i][0] > maior){  // compara força das regras
+        for (int i = 1; i < line; i++)
+            if (classifications[i][0] > maior) {  // compara força das regras
                 maior = classifications[i][0];
                 indMaior = i;
             }
 
-       // classe = comite[indMaior].getPredLabels()[example];
+        // classe = comite[indMaior].getPredLabels()[example];
 
         return indMaior;
 
     }
 
 
-    public int highestProb(double[][] classifications){
+    public int highestProb(double[][] classifications) {
         // retorna a classificação correspondente à regra de maior prob. para a instancia example
         int line = classifications.length;
         int coll = classifications[0].length;
-        double maior  = -10, prob;
+        double maior = -10, prob;
         int cls = 0;  //[indMaior, classe]
         int indMaior;
 
 
         indMaior = -1;
-        for(int i = 0; i < line; i++) {
+        for (int i = 0; i < line; i++) {
             for (int j = 1; j < nroClasses + 1; j++) {
                 if (classifications[i][j] > maior) {
                     maior = classifications[i][j];
@@ -3137,7 +3080,7 @@ public double resolveComite(int[] mBestClf, int commeetteSize, double[][] matriz
 
     }
 
-    public int highestProb(double[][] classifications, int example, int[] bClf){
+    public int highestProb(double[][] classifications, int example, int[] bClf) {
         // retorna a classificação correspondente à regra de maior prob. para a instancia example
         // considerando os melhores classificadores
         int line = classifications.length;
@@ -3148,8 +3091,8 @@ public double resolveComite(int[] mBestClf, int commeetteSize, double[][] matriz
 
         maior = -10;
         indMaior = -1;
-        for(int i = 0; i < line; i++) {
-            if(bClf[i] == 1) {   // considera somente os melhores clfs.
+        for (int i = 0; i < line; i++) {
+            if (bClf[i] == 1) {   // considera somente os melhores clfs.
                 prob = comite[i].getProbPredLabel(example);
                 if (prob > maior) {  // compara probs das regras
                     maior = comite[i].getProbPredLabel(example);
@@ -3164,16 +3107,16 @@ public double resolveComite(int[] mBestClf, int commeetteSize, double[][] matriz
 
     }
 
-    public int simpleVoting(double[][] classifications){
+    public int simpleVoting(double[][] classifications) {
         // retorna a classificação correspondente à regra de maior prob. para a instancia example
         int line = classifications.length;
         int coll = classifications[0].length;
         double maior = 0, prob;
-        int indMaior = 0,cls = 0;
-        int[] voting = new int[nroClasses+1];  //[indMaior, classe]
+        int indMaior = 0, cls = 0;
+        int[] voting = new int[nroClasses + 1];  //[indMaior, classe]
 
 
-        for(int i = 0; i < line; i++) {
+        for (int i = 0; i < line; i++) {
             maior = classifications[i][1];
             cls = 1;
             indMaior = 1;
@@ -3190,19 +3133,19 @@ public double resolveComite(int[] mBestClf, int commeetteSize, double[][] matriz
 
         maior = voting[1];
         indMaior = 1;
-        for(int j = 2; j < nroClasses+1; j++)
-        if (voting[j] > maior) {  // compara probs das regras
-            maior = voting[j];
-            indMaior = j;
-        }
+        for (int j = 2; j < nroClasses + 1; j++)
+            if (voting[j] > maior) {  // compara probs das regras
+                maior = voting[j];
+                indMaior = j;
+            }
 
-            //classe = comite[indMaior].getPredLabels()[example];
+        //classe = comite[indMaior].getPredLabels()[example];
 
         return indMaior; // bestClf; // retorna o melhor classificador
 
     }
 
-    public int highestStrengTimesProb(double[][] classifications, int example){
+    public int highestStrengTimesProb(double[][] classifications, int example) {
         // retorna a classificação correspondente à regra de maior forçaxprob para a instancia example
         int line = classifications.length;
         //int coll = matriz[0].length;
@@ -3210,10 +3153,10 @@ public double resolveComite(int[] mBestClf, int commeetteSize, double[][] matriz
         double classe;// = new double[2];  // [indMaior][classe]
         int indMaior;
 
-        maior = comite[0].getProbPredLabel(example)*classifications[0][0];  // prob x força
+        maior = comite[0].getProbPredLabel(example) * classifications[0][0];  // prob x força
         indMaior = 0;
-        for(int i = 1; i < line; i++) {
-            prob = comite[i].getProbPredLabel(example)*classifications[i][0];
+        for (int i = 1; i < line; i++) {
+            prob = comite[i].getProbPredLabel(example) * classifications[i][0];
             if (prob > maior) {  // compara probs das regras
                 maior = prob; //comite[i].getProbPredLabel(example)*classifications[i][0];
                 indMaior = i;
@@ -3225,6 +3168,45 @@ public double resolveComite(int[] mBestClf, int commeetteSize, double[][] matriz
 
         return indMaior;
     }
+
+
+    public int accWeightedVoting(double[][] classifications, int base){
+
+        // retorna a classificação correspondente à regra de maior prob. para a instancia example
+        int line = classifications.length;
+        int coll = classifications[0].length;
+        double maior = 0, prob;
+        int indMaior = 0, cls = 0;
+        int[] voting = new int[nroClasses + 1];  //[indMaior, classe]
+
+
+        for (int i = 0; i < line; i++) {
+            maior = classifications[i][1]*comite[base].getClassAcc();
+            cls = 1;
+            indMaior = 1;
+            for (int j = 2; j < nroClasses + 1; j++) {
+                if (classifications[i][j] > maior) {
+                    maior = classifications[i][j];
+                    indMaior = i;
+                    cls = j;
+                }
+                voting[cls]++;
+            }
+        }
+
+
+        maior = voting[1];
+        indMaior = 1;
+        for (int j = 2; j < nroClasses + 1; j++)
+            if (voting[j] > maior) {  // compara probs das regras
+                maior = voting[j];
+                indMaior = j;
+            }
+
+        //classe = comite[indMaior].getPredLabels()[example];
+
+        return indMaior; // bestClf; // retorna o melhor classificador
+}
 
 // multi-rules
 

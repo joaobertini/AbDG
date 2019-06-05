@@ -1684,10 +1684,13 @@ public class SimplifiedAbDG {
 
 
 
+
             //    if(labels[i] == 0)
             //        System.out.println("Zero");
 
         } // for-line
+
+        classifierAcertos /= line;
 
         // [0] - força da regra [1,...] prob da classe
         return privateProbVector;
@@ -1894,7 +1897,7 @@ public class SimplifiedAbDG {
         return privateProbVector[example];
     }
 
-    public void setWeight(double W){
+     public void setWeight(double W){
         Weight = W;
     }
 
@@ -1933,7 +1936,7 @@ public class SimplifiedAbDG {
     }
 
     public void updateAlpha(){
-        double diff = lastAcc/100 - classifierAcertos/100;
+        double diff = lastAcc - classifierAcertos;   // /100
         double lambda = 0.9; // para atenuar valor da diff
 
     //    if(diff < 0)
