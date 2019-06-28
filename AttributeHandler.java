@@ -64,7 +64,7 @@ public class AttributeHandler {    // classe com objetivo de lidar com os atribu
         double intMark = 0;
         maxVet[0] = menor;
         while(intMark <= maior){
-            intMark = intMark + Math.random();
+            intMark = intMark + Math.random()/2;
             if(intMark <= maior) {
                 cont++;
                 maxVet[cont] = intMark;
@@ -504,7 +504,7 @@ public class AttributeHandler {    // classe com objetivo de lidar com os atribu
 
     }
 
-    public void EDADB(double numClasses){    // M�todo EDADB - para discretizar atributo; An e Cercone
+    public void EDADB(double numClasses){    // Mtodo EDADB - para discretizar atributo; An e Cercone
 
            int line = atrClass.length;
            int cutPointsCand = 0;
@@ -616,6 +616,321 @@ public class AttributeHandler {    // classe com objetivo de lidar com os atribu
 
            intervals = vetAtr;
        }
+
+    public void ChiMerge(){  // não esta pronto
+
+        int line = atrClass.length;   // atributo já ordenado!? -considera repetição
+        int cutPointsCand = 0;
+        double[] candidates;
+        double[] ChiCandidates;
+
+        int cutPoint = 0;
+        double maior = 0, val = 0;
+
+        for(int i = 1; i < line; i++){
+            if(atrClass[i-1][0] != atrClass[i][0])
+                cutPointsCand++;
+
+        }
+
+        candidates = new double[cutPointsCand + 2];       // cut points      + inicio e fim
+        ChiCandidates = new double[cutPointsCand + 1];
+
+        cutPointsCand = 1;
+        for(int i = 1; i < line; i++)
+            if(atrClass[i-1][0] != atrClass[i][0]){        // sempre que trocar mas com valor de atributo diferente
+                candidates[cutPointsCand] = (atrClass[i-1][0] +
+                        atrClass[i][0])/2;
+                cutPointsCand++;
+            }
+        candidates[0] = atrClass[0][0];
+        candidates[cutPointsCand] = atrClass[line-1][0];
+
+        do{
+            maior = 0;
+            for(int cut = 0; cut < candidates.length - 2; cut++){
+                ChiCandidates[cut] = chiSquare(cut,cut+1, cut+2);
+                if(val > maior){
+                    maior = val;
+                    cutPoint = cut;
+                }
+            }
+            if(maior > 0)
+                candidates = eliminaUmCutPoint(candidates, cutPoint);
+
+        }while(maior > 0);
+
+
+        vetAtr = new double[candidates.length];               // cortes         + boundaries
+        for(int f = 0; f < candidates.length; f++)
+            vetAtr[f] = candidates[f];
+
+        intervals = vetAtr;
+
+    }
+
+    public double chiSquare(double b1, double b2, double b3){
+       // boundaries comparando dois intervalos intervals >= b1 e < b3 // b1 I1 b2
+        // I2 b3
+        // mede ChiSquare para dois intervalos
+        double numElIntClass = 0, numElInt = 0, ExpFreq = 0, chi2 = 0;
+        int line = atrClass.length; // assumindo repetição de valores
+        double[] elClass = new double[classes.length];
+
+        for(int c = 0; c < classes.length; c++)
+            for(int i = 0; i < line; i++)
+                if(atrClass[i][1] == classes[c])
+                    elClass[c]++;
+
+        for(int j = 0; j < classes.length; j++) {
+            numElIntClass = 0;
+            numElInt = 0;
+            for (int i = 0; i < line; i++)
+                if (atrClass[i][0] >= b1 && atrClass[i][0] < b2) {
+                    if (atrClass[i][1] == classes[j])
+                        numElIntClass++;
+                    numElInt++;
+                }
+
+            ExpFreq = (numElInt * elClass[j]) / line;
+
+            chi2 += Math.pow((numElIntClass - ExpFreq),2)/ExpFreq;
+        }
+
+
+        for(int j = 0; j < classes.length; j++) {
+            numElIntClass = 0;
+            numElInt = 0;
+            for (int i = 0; i < line; i++)
+                if (atrClass[i][0] >= b2 && atrClass[i][0] < b3) {
+                    if (atrClass[i][1] == classes[j])
+                        numElIntClass++;
+                    numElInt++;
+                }
+
+            ExpFreq = (numElInt * elClass[j]) / line;
+            chi2 += Math.pow((numElIntClass - ExpFreq),2)/ExpFreq;
+        }
+
+        return chi2;
+
+    }
+
+
+    // Distance - Cerquides e Mantaras
+/*
+    public void Distance(){
+
+        int line = atrClass.length;
+        int cutPoints = 0;
+        double[] candidates;
+        double begin, end, somaij = 0;
+        int nroClasses = classes.length;
+        double[] vetClass = new double[nroClasses];
+        double IPC = 0;
+
+
+        for(int i = 1; i < line; i++)
+            if(atrClass[i-1][0] != atrClass[i][0] &&  atrClass[i-1][1] != atrClass[i][1])
+                cutPoints++;
+
+        candidates = new double[cutPoints];
+        cuts = new double[cutPoints];          // cuts encontrados e seu contador
+        contCuts = 0;
+        cutPoints = 0;
+
+        for(int i = 1; i < line; i++)
+            if(atrClass[i-1][0] != atrClass[i][0] && atrClass[i-1][1] != atrClass[i][1]){        // sempre que trocar mas com valor de atributo diferente
+                candidates[cutPoints] = (atrClass[i-1][0] + atrClass[i][0])/2;
+                cutPoints++;
+            }
+
+        // calcula IPC - entropia da partição definida por cutCandidates
+        for(int i = 0; i < cutPoints - 1; i++) {
+            begin = candidates[i];
+            end = candidates[i + 1];
+            vetClass = new double[nroClasses+1];
+            somaij = 0;
+            for (int k = 0; k < line; k++)
+                if (atrClass[k][0] > begin && atrClass[k][0] <= end){   // intervalo em Pd
+                    vetClass[(int) atrClass[k][1]]++; // numero de instancias que pertencem a ambos os intervalos  Pij = P(A_i inter B_j) por classe
+                    somaij++;
+                }
+        }
+
+        for(int h = 1; h < nroClasses; h++)
+            IPC += vetClass[h]/somaij * Math.log(vetClass[h]/somaij) / Math.log(2);
+
+
+        // Realiza discretização
+        for(int i = 0; i < cutPoints; i++)
+            dist = Dist(candidates, vetor cut sendo criado, novo ponto a tentar, numero de cortes);    //  splitsTesting(candidates,atrClass[0][0], atrClass[line-1][0]);
+
+
+        vetAtr = new double[contCuts+2];               // cortes + boundaries
+        int cont = 0, indMenor = 0;
+        double menor;
+
+        for(int i = 0; i < contCuts; i++){
+            menor = 100000;
+            for(int j = 0; j < contCuts; j++)
+                if(cuts[j] < menor && cuts[j] != -1000){
+                    menor = cuts[j];
+                    indMenor = j;
+                }
+
+            vetAtr[i+1] = menor;
+            cuts[indMenor] = -1000;
+        }
+        // boundaries
+        vetAtr[0] = atrClass[0][0];
+        vetAtr[contCuts+1] = atrClass[line-1][0];
+        //  System.out.println();
+
+        //       for(int y = 0; y < vetAtr.length; y++)
+        //          System.out.print( vetAtr[y] + " ");
+        //       System.out.println();
+
+        intervals = vetAtr;
+    }
+
+
+    public void splitsDistance(double[] actualCandidates, double begin, double end){
+        // usado em Distance
+        int thrLen = actualCandidates.length, indMaior = 0; // candidates tem todos os pontos de corte
+        int[] distDiv = new int[thrLen];  // vetor para armazenar os cortes encontrados por Distance - marca 0 ou 1 na posição do corte que; 1 se esta em uso.
+        double maior = -1000, aux = 0;
+        double distancia = 0;
+        int numcuts = 0;
+
+        // while para controlar stopping criteria
+        maior = 0;
+        indMaior = 0;
+        for(int i = 0; i < thrLen; i++){
+            if(distDiv[i] != 0)     // considera adicionar uma corte por vez
+//                distancia = Dist(actualCandidates, distDiv, i, numcuts);   // calcula distancia entre partiçoes
+            indMaior = i;
+
+            if(distancia > maior){
+                maior = distancia;
+                indMaior = i;
+            }
+            distDiv[indMaior] = 1; // marca como cutpoint
+            numcuts++;
+        }
+
+
+    }
+
+    public double Dist(double[] cutCandidates, int[] cutDist, int posCut, int numcuts, double IPC){ // dist entre Pc (particao dada por cut candidate) e Pd (particao gerada)
+
+        int line = atrClass.length;
+        int nroClasses = classes.length;  // ver
+        cutDist[posCut] = 1;
+        numcuts++; // pois o ponto i foi adicionado
+        int numCandidates = cutCandidates.length;
+        double begin, end;
+        double beginIn, endIn;  // inner loop
+        double somaij = 0, somaJoint = 0, PCPD, IPD = 0;
+        double[] vetClass = new double[nroClasses+1]; // vetor do tamanho de num de classes
+
+        for(int i = 0; i < numCandidates - 1; i++)
+            for(int j = 0; j < numcuts; j++) {
+                somaij = 0;
+                // caso geral
+                begin = cutCandidates[i];
+                end = cutCandidates[i + 1];
+                beginIn = cutCandidates[cutDist[j]];
+                endIn = cutCandidates[cutDist[j + 1]];
+
+                // condições de fronteira
+                if (i == numCandidates - 1)
+                    end = atrClass[line - 1][0];
+                if (cutDist[j] == 0) // primeiro cut de cutcandidate
+                    beginIn = atrClass[0][0];
+                if (cutDist[j] == numCandidates - 1)
+                    endIn = atrClass[line - 1][0];
+
+                for (int k = 0; k < line; k++)
+                    if (atrClass[k][0] > begin && atrClass[k][0] <= end)           //    intervalo em Pc
+                        if (atrClass[k][0] > beginIn && atrClass[k][0] <= endIn){   // intervalo em Pd
+                            vetClass[(int) atrClass[k][1]]++; // numero de instancias que pertencem a ambos os intervalos  Pij = P(A_i inter B_j) por classe
+                            somaij++;
+                        }
+
+                if(somaij != 0)
+                    for(int h = 1; h < vetClass.length; h++)
+                        somaJoint += vetClass[h]/somaij * Math.log(vetClass[h]/somaij) / Math.log(2);  // I(P_C inter P_D)
+                // calcular P(A_i cup B_j) = Pij
+
+            }
+
+        PCPD = somaJoint * -1;
+
+
+        // calculo de IPD
+        for(int i = 0; i < numCandidates - 1; i++) {
+            for (int j = 0; j < numcuts; j++) {
+                begin = cutCandidates[cutDist[j]];
+                end = cutCandidates[cutDist[j + 1]];
+                vetClass = new double[nroClasses + 1];
+                somaij = 0;
+
+                for (int k = 0; k < line; k++)
+                    if (atrClass[k][0] > begin && atrClass[k][0] <= end) {   // intervalo em Pd
+                        vetClass[(int) atrClass[k][1]]++; // numero de instancias que pertencem a ambos os intervalos  Pij = P(A_i inter B_j) por classe
+                        somaij++;
+                    }
+            }
+
+            for (int h = 1; h < nroClasses; h++)
+                IPD += vetClass[h] / somaij * Math.log(vetClass[h] / somaij) / Math.log(2);
+        }
+
+        double IPCPD = PCPD - IPD;
+        double IPDPC = PCPD - IPC;
+
+
+        // usado em Distance
+        // I(Pc|Pd)
+        // I(Pd|Pc)
+        // I(Pc cup Pd)
+
+        // I(Pa cup Pb)  Pij = Pi
+
+        return ;
+
+    }
+
+   /* public double calculaIPA(double[] cutCandidates, double[] cuts, boolean isAll){
+        // calcula I(PA)
+        int numCandidates = cuts.length;
+        int line = atrClass.length;
+        double begin, end;
+        double somaij = 0, somaJoint = 0;
+        int nroClasses = classes.length;  // ver
+        double vetClass[] = new double[nroClasses+1]; //
+
+        // calculo de PA
+        for(int i = 0; i < numCandidates - 1; i++) {
+            begin = cuts[i];
+            end = cuts[i + 1];
+            vetClass = new double[nroClasses+1];
+            somaij = 0;
+            for (int k = 0; k < line; k++)
+                if (atrClass[k][0] > begin && atrClass[k][0] <= end){   // intervalo em Pd
+                    vetClass[(int) atrClass[k][1]]++; // numero de instancias que pertencem a ambos os intervalos  Pij = P(A_i inter B_j) por classe
+                    somaij++;
+                }
+        }
+
+        for(int h = 1; h < nroClasses; h++)
+            somaJoint += vetClass[h]/somaij * Math.log(vetClass[h]/somaij) / Math.log(2);
+
+    return somaJoint;
+    }
+*/
+
 
     public void FUSINTER(){    // Metodo FUSINTER - para discretizar atributo; Zighed et al.
 
@@ -1227,6 +1542,38 @@ public class AttributeHandler {    // classe com objetivo de lidar com os atribu
         return weight;// ((weight > 0.2) ? weight: 0.0);
     }
 
+    public double getWeightedIntervalRandSize(double value, int classe){ // retorna peso multiplicado por confianca do intervalo
+        int atrLen = vetAtr.length;
+        int intervalo = -1;
+        double weight;
+
+
+        for(int i = 0; i < atrLen-1; i++)
+            if(value > vetAtr[i] && value <= vetAtr[i+1])
+                intervalo = i;
+
+        if(intervalo == -1)
+            if(value <= vetAtr[0])
+                intervalo = 0;
+            else if (value > vetAtr[atrLen-1])
+                intervalo = atrLen-2;
+
+//        if(classesWeights[intervalo][classe] == 0)
+//            System.out.println();
+
+        //  double beta = 0.8;
+        // weight = (1-beta)*classesWeights[intervalo][classe] + beta* probAccInterval[intervalo];
+        // weight = classesWeights[intervalo][classe] * intervalGain; // + beta* probAccInterval[intervalo];
+
+        //  if(probAccInterval[intervalo] > 0.5)
+        //      System.out.println(intervalo + " " + classe);
+        weight = classesWeights[intervalo][classe];// * probAccIntervalMat[intervalo][classe]; // * intervalGain;//* probAccInterval[intervalo];//
+        //  else
+        //  weight = 0;
+
+
+        return weight;// ((weight > 0.2) ? weight: 0.0);
+    }
 
     public double getMaxWeightInterval(double value){ // retorna o maior peso para o intervalo dentre as classes
         int atrLen = vetAtr.length;
@@ -1240,6 +1587,34 @@ public class AttributeHandler {    // classe com objetivo de lidar com os atribu
         intervalo = (int)Math.floor(value/partSize);
         if(intervalo >= atrLen-1)
             intervalo--;
+
+        maior = 0;
+        for(int classe = 1; classe < numClass + 1; classe++) {
+            weight = classesWeights[intervalo][classe];// * probAccIntervalMat[intervalo][classe]; // * intervalGain;//* probAccInterval[intervalo];//
+            if (maior < weight)
+                maior = weight;
+        }
+        //  weight = 0;
+
+
+        return maior;// ((weight > 0.2) ? weight: 0.0);
+    }
+
+    public double getMaxWeightIntervalRandSize(double value){ // retorna o maior peso para o intervalo dentre as classes
+        int atrLen = vetAtr.length;
+        int intervalo = -1;
+        double weight, maior;
+        int numClass = classes.length;
+
+        for(int i = 0; i < atrLen-1; i++)
+            if(value > vetAtr[i] && value <= vetAtr[i+1])
+                intervalo = i;
+
+        if(intervalo == -1)
+            if(value <= vetAtr[0])
+                intervalo = 0;
+            else if (value > vetAtr[atrLen-1])
+                intervalo = atrLen-2;
 
         maior = 0;
         for(int classe = 1; classe < numClass + 1; classe++) {
@@ -2571,6 +2946,149 @@ public class AttributeHandler {    // classe com objetivo de lidar com os atribu
         }
 */
       //  normalizaClassesWeights();
+        //   System.out.println();
+    }
+
+    public void fastUpdateIntervalWeightsIncLearnWeightedIntervalsFadingFactorRandSize(double[][] attrCl, double[] lastClassifications, double alpha){
+        // Fading factors
+        // faz alteração diretamente nos pesos. classesWeights[i][c] = (jointP[c] / normTerm) + alpha*classesWeights[i][c];
+
+        int line = attrCl.length;
+        //  double alpha = 0.99; // fading rate
+        //numTrain = line + alpha*numTrain; //
+        numTrain = line + alpha*numTrain;  // atualiza numero de intancias processadas
+        int nroClasses = classes.length;
+        int nroIntervals = vetAtr.length;
+        double[] PC = new double[classes.length +1];
+        double[] jointP = new double[nroClasses +1];
+        double[] auxSomaClass = new double[somaClassIL.length];
+        double[][] auxSomaInterClass = new double[nroIntervals-1][somaClassIL.length];
+        double[] auxAcertoIntervalo = new double[somaAcertoIntervalo.length];
+        double[] auxSomaIntervalo = new double[somaAcertoIntervalo.length];
+        double normTerm;
+        boolean allZero;
+
+        contaCftIntervalo = new double[nroIntervals - 1];
+
+        entropyInterval = new double[nroIntervals - 1];
+        coverageInterval = new double[nroIntervals - 1];
+
+        double partSize;
+        int intervalo;
+
+        for(int j = 0; j < line; j++)             // |Ci|      - numero de elementos da classe i no conjunto de treinamento
+            auxSomaClass[(int)attrCl[j][1]]++;  // conta o numero de instancias por classe
+
+        for(int s = 0; s < nroClasses+1; s++) {
+            somaClassIL[s] = auxSomaClass[s] + alpha*somaClassIL[s];
+            PC[s] = somaClassIL[s] / numTrain;   // P(Ci)  prob da classe i.
+        }
+
+
+        // zera vetores auxiliares
+        for(int k = 0; k < auxAcertoIntervalo.length; k++) {
+            auxAcertoIntervalo[k] = 0;
+            auxSomaIntervalo[k] = 0;
+        }
+
+
+
+/*
+        for(int j = 0; j < line; j++) {
+
+            partSize = 1/(double)(vetAtr.length-1);
+            intervalo = (int)Math.floor(attrCl[j][0]/partSize);
+            //  System.out.println(partSize + " " + atrClass[j][0] + " " + intervalo);
+
+            if(intervalo >= nroIntervals-1)
+                intervalo--;
+
+            auxSomaInterClass[intervalo][(int)attrCl[j][1]]++;
+            if(attrCl[j][1] == lastClassifications[j])
+                auxAcertoIntervalo[intervalo]++;  // somaAcertoIntervalo[i]++; // probAccInterval[i]
+            auxSomaIntervalo[intervalo]++;
+
+
+        }
+*/
+
+        for (int i = 0; i < nroIntervals - 1; i++) {
+            normTerm = 0;
+
+
+            for(int j = 0; j < line; j++) {
+                if (i == 0) {
+                    if (attrCl[j][0] >= vetAtr[i] && attrCl[j][0] <= vetAtr[i + 1]) {
+                        auxSomaInterClass[i][(int) attrCl[j][1]]++;
+                        if(attrCl[j][1] == lastClassifications[j])
+                            auxAcertoIntervalo[i]++; // somaAcertoIntervaloMat[i][(int) attrCl[j][1]]++; // probAccInterval[i]
+                        auxSomaIntervalo[i]++; // contaCftIntervaloMat[i][(int) attrCl[j][1]]++;
+                        //    break;
+                    }
+                } else {
+                    if (attrCl[j][0] > vetAtr[i] && attrCl[j][0] <= vetAtr[i + 1]) {
+                        auxSomaInterClass[i][(int) attrCl[j][1]]++;// somaIntervalClassIL[i][(int) attrCl[j][1]]++;
+                        if(attrCl[j][1] == lastClassifications[j])
+                            auxAcertoIntervalo[i]++;//somaAcertoIntervaloMat[i][(int) attrCl[j][1]]++; // probAccInterval[i]
+                        auxSomaIntervalo[i]++; //contaCftIntervaloMat[i][(int) attrCl[j][1]]++;
+                        //    break;
+                    }
+                }
+            }
+
+
+
+            for(int j = 0; j < auxSomaClass.length; j++)
+                somaIntervalClassIL[i][j] = auxSomaInterClass[i][j] + alpha*somaIntervalClassIL[i][j];
+
+
+            // calcula entropia
+            for(int e = 0; e < nroIntervals-1; e++) {
+                for (int c = 1; c < nroClasses + 1; c++)
+                    entropyInterval[e] += (somaIntervalClassIL[e][c]/numTrain) * (Math.log(somaIntervalClassIL[e][c]/numTrain) / Math.log(2));
+
+                entropyInterval[e] *= -1;
+            }
+
+            // somaAcertoIntervalo[i] = auxAcertoIntervalo[i] + alpha*somaAcertoIntervalo[i];
+            // contaCftIntervalo[i] = auxSomaIntervalo[i] + alpha*contaCftIntervalo[i];
+
+            //teste  - acuracia é medida somente no ultimo batch
+            if(auxSomaIntervalo[i] != 0)
+                probAccInterval[i] = auxAcertoIntervalo[i]/auxSomaIntervalo[i]; //  + alpha*probAccInterval[i];
+
+
+            for (int j = 0; j < nroClasses + 1; j++)
+                if (auxSomaClass[j] != 0) {
+                    jointP[j] = (somaIntervalClassIL[i][j] / somaClassIL[j]) * PC[j]; // joint  (auxSomaInterClass[i][j] / auxSomaClass[j]) * PC[j]; // joint
+                    normTerm += jointP[j];
+                } else
+                    jointP[j] = 0;
+
+            for (int c = 1; c < nroClasses + 1; c++) {
+                if (normTerm != 0)
+                    classesWeights[i][c] = (jointP[c] / normTerm);// + alpha*classesWeights[i][c];         //  Math.pow(normTerm,2);
+            }
+
+
+            // calcula coverage para cada intervalo
+            if(normTerm != 1)
+                coverageInterval[i] = normTerm;
+            else
+                coverageInterval[i] = 0;
+
+
+        }
+
+        // calcula entropia
+   /*     for(int e = 0; e < nroIntervals-1; e++) {
+            for (int c = 1; c < nroClasses + 1; c++)
+                entropyInterval[e] += classesWeights[e][c] * (Math.log(classesWeights[e][c]) / Math.log(2));
+
+            entropyInterval[e] *= -1;
+        }
+*/
+        //  normalizaClassesWeights();
         //   System.out.println();
     }
     public void fastUpdateIntervalWeightsKullbackLeibler(double[][] attrCl, double[] lastClassifications){
