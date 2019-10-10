@@ -1,6 +1,6 @@
 /**
  * Created by IntelliJ IDEA.
- * User: João
+ * User: Joao
  * Date: 19/08/2009
  * Time: 11:45:22
  * To change this template use File | Settings | File Templates.

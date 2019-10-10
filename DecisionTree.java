@@ -2,7 +2,7 @@ import java.util.Random;
 
 /**
  * Created by IntelliJ IDEA.
- * User: João
+ * User: Joao
  * Date: 23/09/2008
  * Time: 09:03:49
  * To change this template use File | Settings | File Templates.
@@ -111,7 +111,7 @@ public class DecisionTree {
   nroClasses = cont;
 
 
-    // correção necessaria para execução de C45  -  trocar as classes -1 por 2
+    // correcao necessaria para execucao de C45  -  trocar as classes -1 por 2
     for(int c = 0; c < line; c++)
        if(matriz[c][coll-1] == -1)
           matriz[c][coll-1] = 2;
@@ -253,7 +253,7 @@ public class DecisionTree {
 
 
 
-        // ------------------------------    inicia construção da arvore
+        // ------------------------------    inicia construï¿½ï¿½o da arvore
 
        tree = new  Tree(C45(matriz));
 
@@ -447,7 +447,7 @@ public class DecisionTree {
 
           it++;
 
-              //  ########## Classificação -  Fold it -  #########
+              //  ########## Classificaï¿½ï¿½o -  Fold it -  #########
 
 
                tree = new  Tree(C45(matrizTreino));
@@ -510,7 +510,7 @@ public class DecisionTree {
            double[] somaClasse = new double[nroClasses+1];
            double[] porcentClass = new double[nroClasses+1];
            double[] restantes = new double[nroClasses+1];
-           int crossClass[][] = new int[10][nroClasses+1];  // matriz que armazena proporção de elementos por classe
+           int crossClass[][] = new int[10][nroClasses+1];  // matriz que armazena proporï¿½ï¿½o de elementos por classe
            int ind = 0;
 
            for(int i = 0; i < line; i++)                      // numero de exemplos por classe
@@ -521,7 +521,7 @@ public class DecisionTree {
               restantes[i] = somaClasse[i];
            }
 
-          // #############  calcula estratificação ##############
+          // #############  calcula estratificaï¿½ï¿½o ##############
 
           for(int j = 0; j < 10; j++){
 
@@ -597,7 +597,7 @@ public class DecisionTree {
            it++;
 
 
-          //  ########## Classificação -  Fold it -  #########
+          //  ########## Classificaï¿½ï¿½o -  Fold it -  #########
 
           
            tree = new  Tree(C45(matrizTreino));
@@ -634,7 +634,7 @@ public class DecisionTree {
 
            double[][] newA, newB;
            TreeNode treeNode;
-           double classe = hasOneClass(A);     // retorma -1 se tem mais que uma classe; senão retorna a unica classe
+           double classe = hasOneClass(A);     // retorma -1 se tem mais que uma classe; senï¿½o retorna a unica classe
 
            if(classe == -1){
                treeNode = criaNo(A);

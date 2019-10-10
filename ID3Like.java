@@ -2,7 +2,7 @@ import java.util.Random;
 
 /**
  * Created by IntelliJ IDEA.
- * User: João
+ * User: Joï¿½o
  * Date: 11/05/2010
  * Time: 17:32:25
  * To change this template use File | Settings | File Templates.
@@ -203,7 +203,7 @@ public class ID3Like {
         int line = matriz.length;
         int coll = matriz[0].length;
         int[] indices = new int[line];
-        int[] classes = new int[nroClasses+1]; // +1 pois não existe classe 0
+        int[] classes = new int[nroClasses+1]; // +1 pois nï¿½o existe classe 0
         double[] proportions = new double[nroClasses+1];
         int foldLen = line/folds;
         int restFold = line % folds;    // restantes
@@ -216,7 +216,7 @@ public class ID3Like {
         }
 
         for(int j = 1; j <= nroClasses; j++)
-           proportions[j] = (double)classes[j]/(double)line;   // calcula proporção de instancias no conjunto total
+           proportions[j] = (double)classes[j]/(double)line;   // calcula proporï¿½ï¿½o de instancias no conjunto total
 
         for(int i = 1; i <= folds; i++){
             contFold = 0;
@@ -249,7 +249,7 @@ public class ID3Like {
 
 
       int[] contV = new int[folds+1];
-        for(int j = 0; j < line; j++)                   // imprime para verificação
+        for(int j = 0; j < line; j++)                   // imprime para verificaï¿½ï¿½o
             contV[indices[j]]++;
 
        // for(int kk = 1; kk <= folds; kk++)
@@ -369,7 +369,7 @@ public class ID3Like {
         int coll = A[0].length;
         double[][] newA;
         TreeNode treeNode = null;
-        double classe = hasOneClass(A);     // retorma -1 se tem mais que uma classe; senão retorna a unica classe
+        double classe = hasOneClass(A);     // retorma -1 se tem mais que uma classe; senao retorna a unica classe
         double maior = -1;
         int indMaior = -1;
         int aux =  0;
@@ -382,7 +382,7 @@ public class ID3Like {
 
             for(int a = 0; a < coll - 1; a++){
                 vetAtrHandler[a].MDLP();
-                vetAtrHandler[a].calculateIntervalGain();    // calcula ganho de informação de intervalo atual
+                vetAtrHandler[a].calculateIntervalGain();    // calcula ganho de informaï¿½ï¿½o de intervalo atual
                 if(vetAtrHandler[a].getIntervalGain() > maior){
                    maior = vetAtrHandler[a].getIntervalGain();
                    indMaior = a;                               // encontra atributo de maior ganho
@@ -393,7 +393,7 @@ public class ID3Like {
 //            if(vetAtrHandler[indMaior].getVetAtr().length == 3)
 //               System.out.println();
 
-            if(vetAtrHandler[indMaior].getVetAtr().length > 2){  // condiçao que assegura que novas partiçoes foram aceitas
+            if(vetAtrHandler[indMaior].getVetAtr().length > 2){  // condiï¿½ao que assegura que novas partiï¿½oes foram aceitas
 
                 treeNode = new TreeNode(indMaior, vetAtrHandler[indMaior].getVetAtr());
                
@@ -485,7 +485,7 @@ public class ID3Like {
         return atributo;
     }
 
-    public double[][] quicksort(double[][] a, int p, int r) {      // versão matriz 1-atributo-classe
+    public double[][] quicksort(double[][] a, int p, int r) {      // versï¿½o matriz 1-atributo-classe
         int i;
         if (p < r) {
             i = partition(a, p, r);
@@ -495,7 +495,7 @@ public class ID3Like {
         return a;
     }
 
-    public int partition(double[][] a, int p, int r)          // ordena matriz, segundo posicao do atributo [0], posiscao [1] refere-se à classe
+    public int partition(double[][] a, int p, int r)          // ordena matriz, segundo posicao do atributo [0], posiscao [1] refere-se ï¿½ classe
     {
         int i = p-1, j = r;
         double v = a[r][0], aux = 0, aux1 = 0;

@@ -76,7 +76,7 @@ public class Classification
            // ID3Like tree = new ID3Like(input);
           //  OutrosMetodosImputacao others = new OutrosMetodosImputacao(input, args[0]);
 
-          // IncrementalAlgorithms inca = new IncrementalAlgorithms();
+         //  IncrementalAlgorithms inca = new IncrementalAlgorithms();
           // SEA sea = new SEA();
 
            IncrementalAlgorithms inca = new IncrementalAlgorithms(input, args[0]);

@@ -2344,6 +2344,31 @@ public class SimplifiedAbDG {
        // System.out.println("last " + lastAcc + " curAc " + classifierAcertos + " dif " + diff + " alpha " + alpha + " ");
     }
 
+    public void updateAlphaVARLamda(double lambda){
+        double diff = lastAcc - classifierAcertos;   // /100
+        //double lambda = 0.6; // para atenuar valor da diff
+
+        //    if(diff < 0)
+        //        lambda = 2.9;
+        //    else
+        //        lambda = 0.9;
+
+
+        // VER se é necessario colocar restrição no |diff| para não alterar com valor pequeno
+        //  if(diff > 0)
+        alpha -= diff*lambda;
+        //   if(diff < 0)
+        //      alpha *= 1.001; // melhorou
+
+        // limites inferior e superior para alpha
+        if(alpha > 1)
+            alpha = 0.99;
+        if(alpha < 0.001)
+            alpha = 0.1;
+
+        // System.out.println("last " + lastAcc + " curAc " + classifierAcertos + " dif " + diff + " alpha " + alpha + " ");
+    }
+
     public void setRuleSize(int r){
         ruleSize = r;
     }
