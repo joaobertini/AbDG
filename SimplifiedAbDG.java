@@ -56,6 +56,29 @@ public class SimplifiedAbDG {
     }
 
 
+    public SimplifiedAbDG(double[][] matriz, double[] classes, int granularidade, int ruleMax){   // usado em aprendizado incremental
+        //  this.initialData = shuffle(matriz);
+        this.Classes = classes;
+        this.nroClasses = classes.length;
+        this.classifierAccAcumulado = 0;
+        this.Weight = 0.0001;
+        alpha = 0.999;
+        ruleSize = 1 + (int)(Math.random()*ruleMax);
+       // System.out.println(ruleSize);
+        // networksFull = new NetworkFull();
+
+
+        if(granularidade != 0)
+            buildVertexAbDG(matriz, granularidade);  //buildVertexMDLP(matriz);
+        else {
+            //     if(Math.random() > 0.0)
+            buildVertexAleatorio(matriz);
+            //     else
+            //    buildVertexMDLP(matriz);
+        }
+    }
+
+
 
     public void buildSAbDG(double[][] matriz){  //  cria flw graph - considera atributos numéricos
 
@@ -251,6 +274,7 @@ public class SimplifiedAbDG {
 
               //  geraRegras();
     }
+
 
     public void buildVertexIntSizeAleatorio(double[][] matriz){  //  cria AbDG simplificado - só considera vertices
 
@@ -1527,6 +1551,12 @@ public class SimplifiedAbDG {
         rule = new int[line][2*(ruleSize)]; //  vetor para armazenar regra; 2 posições para cada termo, se for regra de vertice v e -1; e se for de aresta v1 e v2
         int cont;
 
+
+        // inicia rule com valor -10, para verificar quando imprimir
+        for(int a = 0; a < line; a++)
+            for(int b = 0; b < 2*ruleSize; b++)
+                rule[a][b] = -10;
+
         for(int z = 0; z < line; z++)
             for(int y = 0; y < nroClasses + 1; y++)
                 privateProbVector[z][y] = 0;  // 1 para prod. de prob
@@ -2083,19 +2113,22 @@ public class SimplifiedAbDG {
 
     public void printRule(int example, double[] matriz){  // rule[exemplo][intervalo]
 
-        for(int i = 0; i < ruleSize; i++)
-            if(rule[example][2*i+1] == -1) { // vertice
-                System.out.print(" attr " + rule[example][2*i] + " in ");
-                vetAtrHandler[rule[example][2*i]].printInterval(matriz[rule[example][2*i]]);
-            }
-            else{  // aresta
-                System.out.print(" attr " + rule[example][2*i] + " in ");
-                vetAtrHandler[rule[example][2*i]].printInterval(matriz[rule[example][2*i]]);
-                System.out.print(" and attr " + rule[example][2*i+1] + " in ");
-                vetAtrHandler[rule[example][2*i+1]].printInterval(matriz[rule[example][2*i+1]]);
-            }
 
+        for(int i = 0; i < ruleSize; i++) {
+            //System.out.println(rule[example][2*i+1]);
 
+          if(rule[example][2*i] != -10) {
+              if (rule[example][2 * i + 1] == -1) { // vertice
+                  System.out.print(" attr " + rule[example][2 * i] + " in ");
+                  vetAtrHandler[rule[example][2 * i]].printInterval(matriz[rule[example][2 * i]]);
+              } else {  // aresta
+                  System.out.print(" attr " + rule[example][2 * i] + " in ");
+                  vetAtrHandler[rule[example][2 * i]].printInterval(matriz[rule[example][2 * i]]);
+                  System.out.print(" and attr " + rule[example][2 * i + 1] + " in ");
+                  vetAtrHandler[rule[example][2 * i + 1]].printInterval(matriz[rule[example][2 * i + 1]]);
+              }
+          }
+        }
     }
 
     public double[] sAbDGClassifier(double[][] matriz){   // classificador
@@ -2348,17 +2381,7 @@ public class SimplifiedAbDG {
         double diff = lastAcc - classifierAcertos;   // /100
         //double lambda = 0.6; // para atenuar valor da diff
 
-        //    if(diff < 0)
-        //        lambda = 2.9;
-        //    else
-        //        lambda = 0.9;
-
-
-        // VER se é necessario colocar restrição no |diff| para não alterar com valor pequeno
-        //  if(diff > 0)
         alpha -= diff*lambda;
-        //   if(diff < 0)
-        //      alpha *= 1.001; // melhorou
 
         // limites inferior e superior para alpha
         if(alpha > 1)

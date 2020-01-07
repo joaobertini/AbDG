@@ -1,3 +1,5 @@
+import java.text.DecimalFormat;
+
 /**
  * Created by IntelliJ IDEA.
  * User: Jo�o
@@ -1954,6 +1956,8 @@ public class AttributeHandler {    // classe com objetivo de lidar com os atribu
 
     public void printInterval(double value){
 
+        DecimalFormat dec = new DecimalFormat("0.00");
+
        int atrLen = vetAtr.length;
        int intervalo = -1;
        double weight;
@@ -1966,9 +1970,9 @@ public class AttributeHandler {    // classe com objetivo de lidar com os atribu
            intervalo--;
 
        if(intervalo < vetAtr.length)
-           System.out.print("[ " + vetAtr[intervalo] + ", " + vetAtr[intervalo + 1] + " ]");
+           System.out.print("[ " + dec.format(vetAtr[intervalo]) + ", " + dec.format(vetAtr[intervalo + 1]) + " ]");
        else
-           System.out.print("[ " + vetAtr[intervalo] + ", "  + " )");
+           System.out.print("[ " + dec.format(vetAtr[intervalo]) + ", "  + " )");
 
     }
 
