@@ -220,7 +220,7 @@ public class NetworkFull {
 
                         if (soma != 0)
                             for (int x = 1; x < nroClasses + 1; x++) {
-                                System.out.println(cont + " " + k + " " + m + " " + soma);
+                              //  System.out.println(cont + " " + k + " " + m + " " + soma);
                                 fullVetCorrelations[cont][x].setCMEx(k, m, soma);
                             }
                     }
@@ -229,7 +229,7 @@ public class NetworkFull {
             }
 
         }
-        System.out.println();
+   //     System.out.println();
     }
 
 

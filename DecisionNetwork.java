@@ -341,14 +341,19 @@ public class DecisionNetwork {
 
 
 
-
+        for(double str = 0.8; str < 1.5; str += 0.1) {
+            System.out.print(str + " ");
+            ruleClassification(matriz, str);  // rule for stationary classification
+        }
 
 
     //  criaMatrizMissingAttrubute(matriz,filename);
 
    //    criaMatrizMissingAttrubuteNA(matriz,filename);        // atualmente rodando com prob = 0
 
-      matriz = normalizacaoMaiorMenor(matriz);    // normaliza��o para AbDG
+
+    //###################################################################
+    //  matriz = normalizacaoMaiorMenor(matriz);    // normalizacao para AbDG
 
 
       //exemploAbDG(matriz); // constroi um AbDG com matriz
@@ -358,10 +363,10 @@ public class DecisionNetwork {
      //  criaMatrizMissingAttrubuteNALinXColForAmelia(matriz,filename);
    //
 
-        // imputa��o    ##########################################
+        // imputacao    ##########################################
 
        // 'iris', 'teac', 'wine', 'vehi', 'wdpc', 'wdbc', 'habe', 'pima', 'wave', 'sona', 'hspe', 'bala',	'hear', 'live'
-       String f = "imputed";
+      // String f = "imputed";
 
     //   fileProbMissingTreinoeTeste(matriz,f);            // CPP-AbDG
 
@@ -369,10 +374,10 @@ public class DecisionNetwork {
 
 
 
-        // figura distor��o imputa��o
+        // figura distorcao imputacao
        // FigureMissingTreinoAbDG(matriz,f);
 
-        // n�o sao esses -- V ver
+        // nao sao esses -- V ver
      //  criaDominioImputadoCppAbDG(matriz,filename);             // cria dominio imputado por CPP-AbDG
 
    //    criaDominioImputadoAbDG(matriz,filename);
@@ -383,7 +388,7 @@ public class DecisionNetwork {
 
 
 
-  //      matriz = normalizacaoMaiorMenor(matriz);    // normaliza��o para AbDG
+  //      matriz = normalizacaoMaiorMenor(matriz);    // normalizacao para AbDG
 
     //   criaTreinoeTesteRefining(matriz, filename);     //  cria treino e teste (nao alterado) refinando ambos
 
@@ -395,16 +400,16 @@ public class DecisionNetwork {
 
   //      matriz = normalizacaoReescala(matriz,0,10);  // rescale, matriz e novo intervalo
 
-  //     matriz = normalizacaoMaiorMenor(matriz);    // normaliza��o para AbDG
+  //     matriz = normalizacaoMaiorMenor(matriz);    // normalizacao para AbDG
 
      //   matriz = normalizacaoMaiorMenorMissing(matriz);
 
 
 
 
-   //     twoWayImputationAbDGClassifier(matriz);         //       AbDG  - mecanismo de imputa��o interno
+   //     twoWayImputationAbDGClassifier(matriz);         //       AbDG  - mecanismo de imputacao interno
 
-  //     twoWayImputationAbDGClassifierFull(matriz);     //      CpP-AbDG  - mecanismo de imputa��o interno
+  //     twoWayImputationAbDGClassifierFull(matriz);     //      CpP-AbDG  - mecanismo de imputacao interno
 
         
        // matriz = shuffle(matriz);
@@ -1734,6 +1739,432 @@ public class DecisionNetwork {
 
     */
 
+    public void ruleClassification(double[][] matriz, double minStr){
+
+        int line = matriz.length;
+        int coll = matriz[0].length;
+        double[][] matrizTreino;
+        double[][] matrizTeste;
+        int fold = 10, cvMax = 2;
+        int contTreino = 0, contTeste = 0, it = 1, cont = 0;
+        int numExp = fold * cvMax;
+        double[] mainClassification = new double[numExp];
+        double somaQuadClassification = 0;
+        double somaClassification = 0;
+        double desvio = 0;
+        double mediaClass = 0;
+
+        DecimalFormat show = new DecimalFormat("0.00");
+
+        for(int ncv = 0; ncv < cvMax; ncv++) {
+
+            it = 1;
+            matriz = shuffle(matriz);
+            int[] stratification = indicesEstratificados(matriz,fold);
+
+
+            while(it <= fold){
+
+                coll = matriz[0].length;
+                contTreino = 0;
+                contTeste = 0;
+                for(int i = 0; i < line; i++)
+                    if(stratification[i] == it)
+                        contTeste++;
+
+                matrizTreino = new double[line - contTeste][coll];
+                matrizTeste = new double[contTeste][coll];
+
+                contTeste = 0;
+                contTreino = 0;
+                for(int h = 0; h < line; h++)
+                    if(stratification[h] != it){
+                        for(int y = 0; y < coll; y++ )
+                            matrizTreino[contTreino][y] = matriz[h][y];  //  matrizTreino[contTreino][y] = matriz[h][y];
+                        contTreino++;
+                    }
+                    else{
+                        for(int y = 0; y < coll; y++ )
+                            matrizTeste[contTeste][y] = matriz[h][y];
+                        contTeste++;
+                    }
+                it++;
+
+                particionaAtributo(matrizTreino);
+
+
+                int[] auxAtr = new int[vetAtrHandler.length];
+                int[] ordem;
+                for(int o = 0; o < auxAtr.length; o++)
+                    auxAtr[o] = 0;
+                int contAtrZero = 0;
+
+
+                /* #### retirar this.intervals = thrs de AttributeHandler  #### */
+                for(int a = 0; a < coll - 1; a++){
+                    if(attributeType[a] == 'n')         // atributo real - numerico
+                        vetAtrHandler[a].MDLP();  // EDADB(nroClasses); //    // // vetAtrHandler[a].histogramPart(v);.FUSINTER();// Distance(); // ChiMerge(nroClasses);/
+                    else
+                        vetAtrHandler[a].Categorical();
+
+               //       vetAtrHandler[a].calculateIntervalGain();    // calcula ganho de informacao de intervalo atual
+                //    if(vetAtrHandler[a].getIntervalGain() == 0){
+                //        auxAtr[a] = 1;
+                //        contAtrZero++;
+                    //}
+
+                    //    System.out.println(a + "  " + vetAtrHandler[a].getIntervalGain());
+              //      vetAtrHandler[a].intervalWeights();         // calcula pesos dos intervalos
+                 //    vetAtrHandler[a].intervalWeightsEntropy();
+                    // vetAtrHandler[a].fastIntervalWeightsIncLearnPerClass();
+                    vetAtrHandler[a].intervalWeightsIncLearn();
+                }
+
+
+                // %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%   FULL   %%%%%%%%%%%%%%%%
+
+/*          if(contAtrZero != 0 && contAtrZero != (coll-1)){
+                   matrizTreino = retiraAtributos(auxAtr, contAtrZero, matrizTreino);
+                   matrizTeste = retiraAtributosTeste(auxAtr, contAtrZero, matrizTeste);
+                   coll = matrizTreino[0].length;
+               }
+*/
+                //#############################################
+
+
+
+                //   for(int i = 0; i < nroClasses; i++) {   // para experimento com 3 classe  - anda em classes
+                //      oneClassTrain = criaTreinamento(matrizTreino,Classes[i]);
+                //      networksFull[i] = new NetworkFull(oneClassTrain, Classes[i], matrizTreino.length);
+                //      networksFull[i].learnFullConection(vetAtrHandler);
+                //  }
+
+                networksFull = new NetworkFull(matrizTreino, nroClasses, vetAtrHandler);
+                networksFull.learnFullConection();
+
+                int numAttr = coll - 1;
+                int numEdges = numAttr + (numAttr*(numAttr-3))/2;
+
+                networksFull.normalizeCorrelationsFullVersion();  // normaliza correlações de arestas
+
+                normalizeIntervalGain(coll-1);
+
+
+                // %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+
+     /*
+            // atualiza matriz - retira atributos com ganho 0           // ************ tirar atrs com 0 de ganho
+          if(contAtrZero != 0){
+                matrizTreino = retiraAtributos(auxAtr, contAtrZero, matrizTreino);
+                matrizTeste = retiraAtributosTeste(auxAtr, contAtrZero, matrizTeste);
+                coll = matrizTreino[0].length;
+            }
+
+ // $$$$$$$$$$$$$$$$$$$$$$$$$$$$$  p-partido
+
+                ordem = ordenaVetorDeAtributos(coll);                // ordena atributos por ganho de informa��o
+                matrizTreino = ordenaAtributosPorGanho(matrizTreino,ordem);
+                matrizTeste = ordenaAtributosPorGanho(matrizTeste,ordem);
+
+
+             // vetor que armazena correla��es de instancias independentes de suas classes
+            AttributeCorrelation[] vetAtrCorrAllClass = classIndependentCorrs(vetAtrHandler,matrizTreino);
+
+
+            for(int i = 0; i < nroClasses; i++) {   //  anda em classes
+              //  ordem = ordenaAtributos(Classes[i]);
+                oneClassTrain = criaTreinamento(matrizTreino,Classes[i]);
+                networks[i] = new Networks(oneClassTrain, Classes[i], matrizTreino.length);
+                networks[i].learn(vetAtrHandler);
+
+            }
+
+            normalizeCorrelations(coll-1);
+
+            normalizeIntervalGain(coll-1);
+
+
+              */
+
+            Rule[] regras = rulesCreation(matrizTreino,minStr);
+            double classe, acertos = 0;
+
+            for(int i = 0; i < matrizTeste.length; i++)
+                for(int h = 0; h < regras.length; h++) {
+                    classe = regras[h].avalia(matrizTeste[i]);
+                    if(classe != -1){
+                        if(classe == matrizTeste[i][coll-1])
+                            acertos++;
+                       break;
+                    }
+                }
+
+                mainClassification[cont] = acertos/(matrizTeste.length)*100;
+                somaClassification += mainClassification[cont];
+                somaQuadClassification += Math.pow(mainClassification[cont],2);
+                cont++;
+
+
+          /*      for(int i = 0; i < mainClassification1.length; i++){
+                    //   somaQuadClassification[i] += Math.pow(mainClassification[i],2);
+                    //   somaClassification[i] += mainClassification[i];
+
+                    somaQuadClassification1[i] += Math.pow(mainClassification1[i],2);
+                    somaClassification1[i] += mainClassification1[i];
+
+                }
+          */
+
+                networksFull = null;
+                vetAtrHandler = null;
+
+
+            } // fim do while it < 10        -- cross validation --
+
+        }
+
+        //  System.out.println();
+  /*     for(int i = 0; i < desvio.length; i++){
+           desvio[i] = Math.sqrt((somaQuadClassification[i] - (Math.pow(somaClassification[i],2)/100))/99);
+           mediaClass[i] = somaClassification[i]/100;
+           System.out.println(mediaClass[i] + "   " + desvio[i]);
+       }
+   */
+
+            desvio = Math.sqrt((somaQuadClassification - (Math.pow(somaClassification,2)/numExp))/(numExp-1));
+            mediaClass = somaClassification/numExp;
+            System.out.println("  " + show.format(mediaClass) + "   " + show.format(desvio));
+
+
+        // System.out.println(mediaClass + "  " + desvio);// + "  " + mediaCenter + "  " + desvioCenter + "  " +  newMediaClass + "  " + newDesvio);
+
+
+
+    }
+
+    public Rule[] rulesCreation(double[][] matriz, double minStr) {
+        // retorna regra e prob para a regra de maior valor de ruleVector
+
+        int line = matriz.length;
+        int coll = matriz[0].length;
+        double maior, acertos = 0, maiorA;
+        int indMaior, indMaiorA, indA = 0, indB = 0;
+        int numAttr = coll - 1;
+        int attrPairs = numAttr + (numAttr * (numAttr - 3)) / 2;
+        double[][] privateProbVector = new double[line][nroClasses + 1];  // posição 0 usada para a força da regra
+        double[][] ruleIntVector = new double[line][coll - 1];  // line x nroAtr
+        double[][] ruleEdgeVector = new double[line][attrPairs];
+        double[][] labels = new double[line][2];          // classe e prob de pert. a classe
+        double[] predLabels = new double[line];
+        double[] errorModel = new double[line];
+        int[] oracle = new int[line];
+        int numTe = line;
+        int classifierAcertos = 0;
+        double soma = 0, somaAnt = 0, str;
+       // double minStr = 0.8;                      // parametro ########################################
+        int ruleSize = attrPairs + numAttr;
+        int[] somaClassIL = new int[nroClasses + 1];
+        //int ruleSize = 1 + (int) (Math.random() * 5); // gera regras de tamanhos de 1 a 5
+        int[][] rule = new int[line][2 * (ruleSize)]; //  vetor para armazenar regra; 2 posições para cada termo, se for regra de vertice v e -1; e se for de aresta v1 e v2
+        int cont;
+
+        Rule[] vetRules = new Rule[line];   // vetor de regras
+        double[][] intBounderies = new double[line][(coll-1)*2];
+        double[] aux;
+
+        for (int i = 0; i < line; i++) {
+            for (int j = 0; j < coll - 1; j++) {
+                aux = vetAtrHandler[j].getIntervalFromValue(matriz[i][j]);
+                intBounderies[i][2*j] = aux[0];
+                intBounderies[i][2*j+1] = aux[1];
+            }
+        }
+
+            for(int z = 0; z < line; z++)
+            for(int y = 0; y < nroClasses + 1; y++)
+                privateProbVector[z][y] = 0;  // 1 para prod. de prob
+
+        // para contar num. de el. em cada classe
+        for(int j = 0; j < line; j++)             // P(Ci)      -   porcentagem de elementos da classe i no conjunto de treinamento
+            somaClassIL[(int)matriz[j][coll-1]]++;
+
+        // ############## calcula força de vertices ########################
+        // ruleIntVector armazena a força da cada intervalo de atributo relativo aos vertices
+        for(int i = 0; i < line; i++) {
+
+                for (int j = 0; j < coll - 1; j++) {
+                    if(vetAtrHandler[j].getCoverageIntervalNonEqui(matriz[i][j]) < 1) {
+                        ruleIntVector[i][j] = 1 - vetAtrHandler[j].getEntropyIntervalNonEqui(matriz[i][j]) + vetAtrHandler[j].getCoverageIntervalNonEqui(matriz[i][j]);// + vetAtrHandler[j].getAccInterval(matriz[i][j]);
+                    }
+                }
+
+        }
+
+        // ################ Calcula força de Arestas ##########################
+        // ruleEdgeVector armazena a força de cada aresta conectando pares de vertices
+        for(int k = 0; k < line; k++) {
+            cont = 0;
+            for (int i = 0; i < coll - 1; i++) {
+                 for (int j = i + 1; j < coll - 1; j++) { //  [cont][1] pois essas medidas são independentes de classe e apenas armazenadas na classe 1
+                        ruleEdgeVector[k][cont] = 1 - networksFull.getVetCorrelation()[cont][1].getEntropyEdge(matriz[k][i], matriz[k][j]);
+                        ruleEdgeVector[k][cont] += networksFull.getVetCorrelation()[cont][1].getCoverageEdge(matriz[k][i], matriz[k][j]);
+                        //  ruleEdgeVector[k][cont] += networksFull.getVetCorrelation()[cont][1].getAccEdge(matriz[k][i], matriz[k][j]);
+                        cont++;
+                    }
+
+            }
+        }
+
+        // Encontra os maiores valores de força tanto para ruleIntVector quanto para ruleEdgeVector
+        // soma peso dos intervalos, do maior para o menor até certo ths ou tamanho de regra. Retorna tambem a força da regra
+
+            for (int i = 0; i < line; i++) {
+                 soma = 0;
+                 str = 10; //  somaAnt = 0;
+
+                for(int r = 0; (str > minStr) && (r < ruleSize); r++){
+                    // encontra maior entre os intervalos
+                    indMaior = 0;
+                    maior = ruleIntVector[i][0];
+                    for (int j = 1; j < coll - 1; j++) {
+                        if (ruleIntVector[i][j] != -2 && ruleIntVector[i][j] > maior) {
+                            indMaior = j;
+                            maior = ruleIntVector[i][j];
+                        }
+                    }
+
+                    // encontra maior entre as arestas
+                    cont = 0;
+                    maiorA = -10;
+                    indMaiorA = -1;
+                    for (int a = 0; a < coll - 1; a++) {
+                        for (int b = a + 1; b < coll - 1; b++) {
+                            if(ruleEdgeVector[i][cont] != -2 && ruleEdgeVector[i][cont]> maiorA){
+                                maiorA = ruleEdgeVector[i][cont];
+                                indMaiorA = cont;
+                                indA = a;
+                                indB = b;
+                            }
+                            cont++;
+                        }
+                    }
+
+                    // criar vetor para armazenar intervalos usados nas regras
+                    // no caso de aresta, armazenar a e b
+
+                    //o el. maior não considera restrição ao el. menor - i.e. se aresta e maior os vertices nao sao punidos
+                    if(maior > maiorA) {  // força de atributos maior que arestas
+
+                        str = maior;
+                        if(str > minStr) {
+                            privateProbVector[i][0] += ruleIntVector[i][indMaior];    // força da regra
+                            for (int classe = 1; classe < nroClasses + 1; classe++)
+                                if (vetAtrHandler[indMaior].getWeightedIntervalRandSize(matriz[i][indMaior], classe) != 0)
+                                    privateProbVector[i][classe] += Math.log(vetAtrHandler[indMaior].getWeightedIntervalRandSize(matriz[i][indMaior], classe));
+                                else
+                                    privateProbVector[i][classe] += Math.log(0.0001);
+
+                            rule[i][2 * r] = indMaior;
+                            rule[i][2 * r + 1] = -1; // notação para regra de vertice; vertice e -1
+                            ruleIntVector[i][indMaior] = -2; // para sair da comparação de maior
+
+                            soma += maior;
+                        }
+
+                    }
+                    else{ // caso em que força de aresta é maior
+
+                        str = maiorA;
+                        if(str > minStr) {
+                            privateProbVector[i][0] += ruleEdgeVector[i][indMaiorA];    // força da regra
+                            for (int classe = 1; classe < nroClasses + 1; classe++)
+                                if (networksFull.getVetCorrelation()[indMaiorA][classe].findCorrelation(matriz[i][indA], matriz[i][indB]) != 0)
+                                    privateProbVector[i][classe] += Math.log(networksFull.getVetCorrelation()[indMaiorA][classe].findCorrelation(matriz[i][indA], matriz[i][indB]));
+                                else
+                                    privateProbVector[i][classe] += Math.log(0.0001);
+
+                            rule[i][2 * r] = indA;
+                            rule[i][2 * r + 1] = indB; // notação para regra de aresta; vertice1 e vertice2
+                            ruleEdgeVector[i][indMaiorA] = -2; // para sair da comparação de maior
+
+                            soma += maiorA;
+                        }
+
+                    }
+
+
+               //     System.out.println("S/g " + soma/(r+1));
+               //     System.out.println(minStr);
+                }
+
+
+                for (int classe = 1; classe < nroClasses + 1; classe++)
+                    privateProbVector[i][classe] = Math.exp(privateProbVector[i][classe]);
+
+                vetRules[i] = new Rule(rule[i], privateProbVector[i], intBounderies[i]); // vetor de regras - cada regra pode ter um tamanho diferente
+   //             vetRules[i].printRule();
+            }
+
+           Rule[] nVet;
+           nVet =  ordenaRetiraRepeticao(vetRules);
+
+ //           System.out.println("NOVAS ");
+ //           for(int r = 0; r < nVet.length; r++)
+ //               nVet[r].printRule();
+
+        return nVet;
+
+    }
+
+    public Rule[] ordenaRetiraRepeticao(Rule[] vetRules){
+
+        int len = vetRules.length, indMaior = 0, indMaiorAnt = 0;
+        int[] maskOrder = new int[len];
+        double maior = 0, maiorAnt = 0;
+        int cont = 1;
+
+        // retira repetição
+        for(int i = 0; i < len-1; i++)
+            for(int j = i + 1; j < len; j++)
+                if(maskOrder[i] != -1 && maskOrder[j] != -1) { // verifica se são regras repetidas
+                    if (vetRules[i].isSameAs(vetRules[j]))
+                        maskOrder[j] = -1; // marca regra como invalida
+                }
+
+
+        for(int j = 0; j < len; j++){
+            maior = 0;
+            for(int i = 0; i < len; i++) {
+                if (maskOrder[i] == 0)
+                    if (vetRules[i].getStrengh() > maior) {
+                        maior = vetRules[i].getStrengh();
+                        indMaior = i;
+                    }
+            }
+            if(maior != 0) {
+                maskOrder[indMaior] = cont;
+                cont++;
+            }
+
+        }
+
+        // escreve vetor ordenado e sem repetição de regras
+        Rule[] newVetRule = new Rule[cont-1];
+
+
+       for(int j = 1; j <= cont; j++)
+           for(int i = 0; i < len; i++)
+              if(maskOrder[i] == j) {
+                  newVetRule[j - 1] = vetRules[i];
+                  break;
+              }
+
+        return newVetRule;
+
+}
+
+
   public void exemploAbDG(double[][] matriz){
 
       int line = matriz.length;
@@ -2227,7 +2658,7 @@ public class DecisionNetwork {
 
 
     public double[][] ImputacaoCppAbDG(double[][] matriz){
-         // m�todo em duas vias para imputa��o  - metodo cria matriz completa
+         // todos em duas vias para imputa��o  - metodo cria matriz completa
           // matriz j� deve ter atributos faltantes
 
            double[][] oneClassTrain;
@@ -6107,7 +6538,9 @@ public class DecisionNetwork {
 
             MO = quicksort(selecionaAtributo(matriz,a),0,line-1);     // atributo 1
 
-            MO = retiraEmptyValue(MO);   // usado em imputa�ao para retirar valores vazios
+            //########################################################### Imputacao
+           // MO = retiraEmptyValue(MO);   // usado em imputaçao para retirar valores vazios
+
 
    /*   for(int i = 0; i < line; i++) {
          for(int j = 0; j < 2; j++)
@@ -6154,7 +6587,7 @@ public class DecisionNetwork {
         return newMO;
     }
 
-    public double[] retiraRepeticao(double[][] atrClass){    // retorna vetor de atributos sem repeti��es
+    public double[] retiraRepeticao(double[][] atrClass){    // retorna vetor de atributos sem repetiçoes
 
         int len = atrClass.length;
         int cont = 0, contValid = 0;
@@ -8202,7 +8635,7 @@ public class DecisionNetwork {
     private static int contThreshold;
     private int numAtr, nroClasses;
     private char[] attributeType;
-    // usado em imputa��o
+    // usado em imputacao
     private double emptyValue = -10000;
     // usado em refinamento
     private int contAltAtrTR = 0, contAltAtrTE = 0, contAltClasses = 0, contMissAtr = 0, contMissAtrTE = 0;

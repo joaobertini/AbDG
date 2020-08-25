@@ -5,6 +5,8 @@ import java.io.*;
 /**
  * Created by João on 04/08/2016.
  */
+
+// C:\Java\EnsembleStream\MS_asset.txt   // program argument
 public class IncrementalAlgorithms {
 
 
@@ -80,7 +82,7 @@ public class IncrementalAlgorithms {
                         j++;
                         tokenPos++;
                     } else {
-                        //  System.out.println(number.toString());
+                    //    System.out.println(number.toString());
                         matriz[i][j] = Double.valueOf(number.toString()).doubleValue();
                         runningAvg[j] += matriz[i][j];
                         j++;
@@ -154,7 +156,7 @@ public class IncrementalAlgorithms {
         //sAbDGEBIEnsembleReal(matriz,50,1000,"ELEC",5,1);
 
         // funcionando
-   //     sAbDGRULEEnsembleRealNew(matriz,50,1000,"ASSET",5,1);
+        sAbDGRULEEnsembleRealNew(matriz,50,1000,"Outros",5,1);
 
         //varia o tamanho da regra
         //sAbDGRULEEnsembleArtificialVarK(50,10000, 100,1,10);
@@ -184,7 +186,7 @@ public class IncrementalAlgorithms {
             }
         }
      */
-
+/*
         //  varia lambda {0.1,0.2,..., 0.9}
         int[] chunckSize = {50,	100, 250, 500,750, 1000, 1500, 2000};
         //double[][] result = new double[50][8];
@@ -199,7 +201,7 @@ public class IncrementalAlgorithms {
                 System.out.println();
             }
         }
-
+*/
 
 
             // rule max {3, 4, ... 10}  x acc rule {0.5,0.6...,0.9}  // superficie
@@ -3746,15 +3748,17 @@ public class IncrementalAlgorithms {
                         // avaliações que usam uma unica regra
                         ///   comiteOutput[e] = highestStrengh(testClassification);  // precisa do classificador RuleClassifier
 
-
-                        //   comiteOutput[e] = (double)highestProb(testClassification);
+                        // ABDG_HP
+                      //  comiteOutput[e] = (double)highestProb(testClassification);
 
 
 
                         // multi-regra rules
                         //  comiteOutput[e] = simpleVoting(testClassification);
                         //comiteOutput[e] = sumOfProbs(testClassification);
-                        comiteOutput[e] = weightedVoting(testClassification);
+
+                        //ABDG-WE
+                         comiteOutput[e] = weightedVoting(testClassification);
 
 
                         // avaliaçãoes multi-regra
