@@ -13,6 +13,21 @@ public class NetworkFull {
        coll = E[0].length;
     }
 
+    public NetworkFull(double[][] matriz, int nrClasses){
+        E = matriz;
+        line = E.length;                           // conjuto com classe 'classe'  usado no treinamento desta rede
+        coll = E[0].length;
+
+        nroClasses = nrClasses;//       // tamanho do conjunto de treinamento completo
+
+        numAttr = coll-1;
+        numEdgeFull = numAttr + (numAttr*(numAttr-3))/2;       // numero de 'matrizes' de conexoes entre atributos
+        fullVetCorrelations = new AttributeCorrelation[numEdgeFull][nroClasses+1];  // matriz que representa as arestas e seus pesos
+
+        // learnFullConection();
+
+    }
+
     public NetworkFull(double[][] matriz, int nrClasses, AttributeHandler[] atr){
        E = matriz;
        line = E.length;                           // conjuto com classe 'classe'  usado no treinamento desta rede
@@ -202,6 +217,50 @@ public class NetworkFull {
 
     }
 
+    public void learnFullConectionGAextended(GAvertices[] ve){
+        // usado na versão GA estendida - cria um abdg usando conjunto de vertices formados por diferentes metodos
+        // não é necessário usar o conjunto de arestas/ cria-se uma rede completa e as arestas são usadas no classificador, como 0 ou 1.
+        double[][] A;
+        int lineA = 0;
+
+        // cria vetAtr
+        vetAtr = new AttributeHandler[numAttr];
+        for(int i = 0; i < numAttr; i++)
+            vetAtr[i] = ve[i].getAtrHand();
+
+
+        int cont = 0;
+        for(int i = 0; i < numAttr; i++){
+            for(int j = i  + 1; j < numAttr; j++){
+                for(int c = 1; c < nroClasses + 1; c++)
+                    fullVetCorrelations[cont][c] = new AttributeCorrelation(i, j, vetAtr[i].getVetAtr(), vetAtr[j].getVetAtr()); // cria matriz
+                cont++;
+            }
+
+        }
+
+
+        for(int c = 1; c < nroClasses+1; c++) {
+            A = criaTreinamento(E,c);  // separa elementos da classe c
+            lineA = A.length;
+            cont = 0;
+            for (int i = 0; i < numAttr; i++) {
+                for (int j = i + 1; j < numAttr; j++) {                        // separar por classe
+                    for (int k = 0; k < lineA; k++)
+                        fullVetCorrelations[cont][c].buildCorrelation(A[k][i], A[k][j]);
+                    //    vetCorrelations[j].showCM();
+                    if(lineA != 0)
+                        fullVetCorrelations[cont][c].createWeightsPAPER(lineA,((double)lineA/line));
+                    else
+                        System.out.println("Erro - classe inexistente");
+                    cont++;
+                    //     vetCorrelations[j].showCM();
+                }
+            }
+        }
+        //     System.out.println();
+    }
+
 
     public void normalizeCorrelationsFullVersion() {
 
@@ -220,7 +279,7 @@ public class NetworkFull {
 
                         if (soma != 0)
                             for (int x = 1; x < nroClasses + 1; x++) {
-                              //  System.out.println(cont + " " + k + " " + m + " " + soma);
+                                //  System.out.println(cont + " " + k + " " + m + " " + soma);
                                 fullVetCorrelations[cont][x].setCMEx(k, m, soma);
                             }
                     }
@@ -229,9 +288,8 @@ public class NetworkFull {
             }
 
         }
-   //     System.out.println();
+        //     System.out.println();
     }
-
 
     public void normalizeCorrelationsFullVersionInc() {
         // normaliza pesos e calcula ent, coverage e define acc = 1.
@@ -713,6 +771,59 @@ for(int e = 0; e < nroIntervals-1; e++) {
         int lineTe = A.length;
         int coll = A[0].length;
         int cont = 0;
+        double aux = 1, somaProb = 0, somaSum = 0, somaGain = 0;
+        privateProbVector = new double[lineTe][nroClasses+1];
+        privateSumVector = new double[lineTe][nroClasses+1];
+        privateProdSumVector = new double[lineTe][nroClasses+1];
+
+
+        for(int i = 0; i < lineTe; i++){
+             for(int c = 1; c < nroClasses+1; c++)
+                for(int j = 0; j < coll - 1; j++){
+                    if(vetAtr[j].getWeight(A[i][j],c) != 0)
+                        privateProbVector[i][c] += Math.log(vetAtr[j].getWeight(A[i][j],c)); // * (vetAtr[j].getIntervalGain()/somaGain);//(vetAtr[j].getWeight(A[i][j],(int)classe) * vetAtr[j+1].getWeight(A[i][j+1],(int)classe)) ;  //     vetAtr[j].getIntervalGain()/somaGain + vetAtr[j+1].getIntervalGain()/somaGain;
+            }
+
+            somaProb = 0;
+            for(int c = 1; c < nroClasses +1; c++) {
+                privateProbVector[i][c] = Math.exp(privateProbVector[i][c]);
+                somaProb += privateProbVector[i][c];
+            }
+            for(int c = 1; c < nroClasses +1; c++)
+                privateProbVector[i][c] /= somaProb;
+
+        }
+
+        cont = 0;                                                   // fullVetCorrelations tem a dimensao de numEdgeFull
+        for(int a = 0; a < numAttr; a++){
+            for(int b = a + 1; b < numAttr; b++){
+                for(int i = 0; i < lineTe; i++){
+                    for(int c = 1; c < nroClasses+1; c++)
+                        //todo vetEdge e fullVetCorrelations parecem que estão com dimensão diferentes após primeira rodade de crossover - mutation
+                            if(vetEdge[cont].getConexao(fullVetCorrelations[cont][c].getIntervalNumATR1(A[i][a]),fullVetCorrelations[cont][c].getIntervalNumATR2(A[i][b])) == 1)
+                                if(fullVetCorrelations[cont][c].findCorrelation(A[i][a], A[i][b]) != 0)
+                                    privateSumVector[i][c] += fullVetCorrelations[cont][c].findCorrelation(A[i][a], A[i][b]);  // log
+                }
+                cont++;
+            }
+        }
+        for(int i = 0; i < lineTe; i++) {
+            somaSum = 0;
+            for (int c = 1; c < nroClasses + 1; c++) {
+                privateSumVector[i][c] = privateSumVector[i][c];// exp
+                somaSum += privateSumVector[i][c];
+            }
+            for (int c = 1; c < nroClasses + 1; c++)
+                privateSumVector[i][c] /= somaSum;
+        }
+
+    }
+
+    public void criaProbClassWeightedGeneticAlgorithmEXTENDED(double[][] A, GAvertices[] vetVertices, GAedges[] vetEdge){           // armazena no objeto o vetor de probabilidades da rede corrente
+
+        int lineTe = A.length;
+        int coll = A[0].length;
+        int cont;
         double aux = 1, soma = 0, maior = 0, somaGain = 0;
         privateProbVector = new double[lineTe][nroClasses+1];
         privateSumVector = new double[lineTe][nroClasses+1];
@@ -726,7 +837,10 @@ for(int e = 0; e < nroIntervals-1; e++) {
                 for(int j = 0; j < coll - 1; j++){
                     if(vetAtr[j].getWeight(A[i][j],c) != 0)
                         privateProbVector[i][c] += Math.log(vetAtr[j].getWeight(A[i][j],c)); // * (vetAtr[j].getIntervalGain()/somaGain);//(vetAtr[j].getWeight(A[i][j],(int)classe) * vetAtr[j+1].getWeight(A[i][j+1],(int)classe)) ;  //     vetAtr[j].getIntervalGain()/somaGain + vetAtr[j+1].getIntervalGain()/somaGain;
-            }
+                }
+
+            for(int c = 1; c < nroClasses +1; c++)
+                privateProbVector[i][c] = Math.exp(privateProbVector[i][c]);
         }
 
         cont = 0;                                                   // fullVetCorrelations tem a dimens�o de numEdgeFull
@@ -734,14 +848,22 @@ for(int e = 0; e < nroIntervals-1; e++) {
             for(int b = a + 1; b < numAttr; b++){
                 for(int i = 0; i < lineTe; i++){
                     for(int c = 1; c < nroClasses+1; c++)
-                            if(vetEdge[cont].getConexao(fullVetCorrelations[cont][c].getIntervalNumATR1(A[i][a]),fullVetCorrelations[cont][c].getIntervalNumATR2(A[i][b])) == 1)
-                                if(fullVetCorrelations[cont][c].findCorrelation(A[i][a], A[i][b]) != 0)
-                                    privateSumVector[i][c] += Math.log(fullVetCorrelations[cont][c].findCorrelation(A[i][a], A[i][b]));
+                        if(vetEdge[cont].getConexao(fullVetCorrelations[cont][c].getIntervalNumATR1(A[i][a]),fullVetCorrelations[cont][c].getIntervalNumATR2(A[i][b])) == 1)
+                            if(fullVetCorrelations[cont][c].findCorrelation(A[i][a], A[i][b]) != 0)
+                                privateSumVector[i][c] += Math.log(fullVetCorrelations[cont][c].findCorrelation(A[i][a], A[i][b]));
                 }
                 cont++;
             }
 
         }
+        for(int i = 0; i < lineTe; i++)
+            for(int c = 1; c < nroClasses +1; c++)
+                privateSumVector[i][c] = Math.exp(privateSumVector[i][c]);
+
+
+
+
+
     }
 
 

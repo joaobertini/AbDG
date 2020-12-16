@@ -2,14 +2,12 @@
  * Created by João on 12/03/2018.
  */
 public class GAvertices {
+    // representa o conjunto de vértices formado por um atributo
 
-    public GAvertices(int atr1Len) {
+    public GAvertices(AttributeHandler atr, int disc) {
 
-
-        candidatesIntervals = new int[atr1Len];
-        for(int i = 0; i < atr1Len; i++)
-            if(Math.random() > 0.4)
-                candidatesIntervals[i] = 1; // inicia atributo aleatoriamente.
+        atrHand = atr;
+        discretization = disc;
 
     }
 
@@ -63,19 +61,35 @@ public class GAvertices {
 
     }
 
-  /*  public int getConexao(int i, int j){
-        return conexoes[i][j];
-
+    public void setAtr(int a){
+        atr = a;
     }
 
-    public int[][] getMatConexao(){
-        return conexoes;
-
+    public int getAtr(){   // retorna o indice do atributo?
+        return atr;
     }
-*/
+
+    public AttributeHandler getAtrHand(){   // retorna o objeto de AttributeHandler
+        return atrHand;
+    }
+
+    public double[] getVetAtr(){  // retorna vetor de discretização do atributo
+        return atrHand.getVetAtr();
+    }
+
+    public int getVetAtrLen(){  // retorna tamanho do vetor de discretização do atributo
+        return atrHand.getVetAtr().length;
+    }
+
+    public int getDiscMethod(){   // retorna o método de discretização usado
+        return discretization;
+    }
+
 
     private int[] candidatesIntervals; // matriz de conexões entre atributos atr1 e atr2
-    private int atr1, atr2;
+    private int atr;
+    private int discretization;
+    private AttributeHandler atrHand;
 
 
 }

@@ -2,7 +2,7 @@ import java.text.DecimalFormat;
 
 /**
  * Created by IntelliJ IDEA.
- * User: Jo�o
+ * User: Joao
  * Date: 16/07/2009
  * Time: 16:25:31
  * To change this template use File | Settings | File Templates.
@@ -1703,6 +1703,7 @@ public class AttributeHandler {    // classe com objetivo de lidar com os atribu
      public int getNumInterval(){
         return vetAtr.length - 1;
     }
+
 
     public double getWeight(double value, int classe){
      int atrLen = vetAtr.length;

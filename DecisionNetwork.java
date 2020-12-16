@@ -132,10 +132,14 @@ public class DecisionNetwork {
         }
 
 
-      //  stratifiedCrossValidationGeneticallyDefinedStructure(matriz,0);  // Algoritmo genético
+       // stratifiedCrossValidationGeneticallyDefinedStructure(matriz,0);  // Algoritmo genético
 
-        // particionaAtributo(matriz);
+        stratifiedCrossValidationGeneticallyDefinedStructureEXTENDED(matriz, 0);
 
+    //     particionaAtributo(matriz);
+
+        // for(int a = 0; a < vetAtrHandler.length; a++)
+        //     vetAtrHandler[a].ChiMerge(3);//.FUSINTER();//.Distance();
         /* networks = new Networks[nroClasses];
 
           for(int b = 0; b < nroClasses; b++) {   // para experimento com 3 classe  - anda em classes
@@ -151,14 +155,14 @@ public class DecisionNetwork {
 
    //    matriz = shuffle(matriz);
 
-    //  validation(matriz);                   // com nova rede que conecta todos os atributos
+         // validation(matriz);                   // com nova rede que conecta todos os atributos
 
 
    //   mostraRede(matriz);   // mostra rede com pesos
 
  //   matriz = normalizaMediaEDesvio(matriz);
 
-      stratifiedCrossValidation(matriz,0);
+  //    stratifiedCrossValidation(matriz,0);                  // desenvolvimento - classificador baseado em regra
 
    //   stratifiedCrossValidationFull(matriz);           // ainda com rede antiga
 
@@ -329,6 +333,12 @@ public class DecisionNetwork {
                 Classes[1] = 2;
         }
 
+
+        stratifiedCrossValidationGeneticallyDefinedStructureEXTENDED(matriz, 0);
+
+
+        // VVV  -  regras estacionários - VVV
+/*
         int classe1 = 0, classe2 = 0;
 
         for(int r = 0; r < line; r++)
@@ -346,6 +356,9 @@ public class DecisionNetwork {
             ruleClassification(matriz, str);  // rule for stationary classification
         }
 
+      // ###################################################
+
+*/
 
     //  criaMatrizMissingAttrubute(matriz,filename);
 
@@ -1211,7 +1224,157 @@ public class DecisionNetwork {
 
 
     }
+    public void stratifiedCrossValidationGeneticallyDefinedStructureEXTENDED(double[][] matriz, int v){
+        // extenção do classificador genético publicado em 2016/ versão de 2020.
+        // nessa versão os vértices também são gerados geneticametne, considerando diferentes algoritmos
+        // de discretização. Principal mudança, criação da estrutura matAtrHandler.
 
+        int line = matriz.length;
+        int coll = matriz[0].length;
+        double[][] matrizTreino;
+        double[][] matrizTeste;
+        double[][] matrizValidation;
+        int fold = 10;
+        int contTreino = 0, contTeste = 0, contValidation = 0, it = 1;
+        int cont = 0;
+        double[] mainClassification;
+        double somaQuadClassification = 0;
+        double somaClassification = 0;
+        double desvio = 0;
+        double[] mediaClass = new double[3];
+
+        double[] somaQuadClassification1;
+        double[] somaClassification1;
+        double[] mainClassification1 = new double[fold-2]; // usado na cv interna
+        double[] desvio1 = new double[12];
+        double[] mediaClass1 = new double[12];
+        double newDesvio = 0, newMediaClass = 0;
+        double[] classDesvio = new double[2];
+        double[][] oneClassTrain;
+        // networks = new Networks[nroClasses];
+        int numDiscretizations = 5;         // numero de discretizadores
+
+        DecimalFormat show = new DecimalFormat("0.00");
+
+        for(int ncv = 0; ncv < 1; ncv++) {
+
+            it = 1;
+            matriz = shuffle(matriz);
+            int[] stratification = indicesEstratificados(matriz,fold); // todo veriticar estratificação
+
+            // loop externo
+            while(it <= fold){
+
+                // separa conjunto de teste
+                contTeste = 0;
+                for(int i = 0; i < line; i++)
+                    if(stratification[i] == it)
+                        contTeste++;
+
+                matrizTeste = new double[contTeste][coll];
+                contTeste = 0;
+                for(int h = 0; h < line; h++)
+                    if(stratification[h] == it){
+                        for(int y = 0; y < coll; y++ )
+                            matrizTeste[contTeste][y] = matriz[h][y];
+                        contTeste++;
+                    }
+
+                // loop interno
+                FullEvolution bestModel = null;
+                double maior = 0;
+                for(int it2 = 1; it2 <= fold; it2++) {
+
+                    if(it2 == it)    // não executa loop
+                        continue;
+
+                    // separa conjunto de teste
+                    contValidation = 0;
+                    for (int i = 0; i < line; i++)
+                        if (it2 != it)
+                            if (stratification[i] == it2)
+                                contValidation++;
+
+                    matrizTreino = new double[line - (contTeste + contValidation)][coll];
+                    matrizValidation = new double[contValidation][coll];
+                    contTreino = 0;
+                    contValidation = 0;
+                    for (int h = 0; h < line; h++)
+                        if(stratification[h] != it){
+                            if (stratification[h] != it2) {
+                                for (int y = 0; y < coll; y++)
+                                    matrizTreino[contTreino][y] = matriz[h][y];  //  matrizTreino[contTreino][y] = matriz[h][y];
+                                contTreino++;
+                            } else {
+                                for (int y = 0; y < coll; y++)
+                                    matrizValidation[contValidation][y] = matriz[h][y];
+                                contValidation++;
+                            }
+                        }
+
+                    particionaAtributoCriaMatAtrHandler(matrizTreino, numDiscretizations);  // numero de discretizadores
+
+
+                    /* #### retirar this.intervals = thrs de AttributeHandler  #### */
+                    for (int a = 0; a < coll - 1; a++) {
+                        if (attributeType[a] == 'n') {         // atributo real - numerico
+                            matAtrHandler[a][0].MDLP();   // vetAtrHandler[a].EDADB(nroClasses);// vetAtrHandler[a].histogramPart(v); // vetAtrHandler[a].MDLP();//          // usa metodo EDA-DB para obter intervalos
+                            matAtrHandler[a][1].EDADB(nroClasses);
+                            matAtrHandler[a][2].ChiMerge(nroClasses);
+                            matAtrHandler[a][3].FUSINTER();
+                            matAtrHandler[a][4].Distance(); // colocar random?
+                        } else {
+                            for (int b = 0; b < numDiscretizations; b++)
+                                matAtrHandler[a][b].Categorical();
+                        }
+
+                        for (int b = 0; b < numDiscretizations; b++)
+                            matAtrHandler[a][b].intervalWeights();
+
+                    }
+
+
+                     // = new Evolution(networksFull, vetAtrHandler,matrizTeste,30);
+
+                    // for(int n = 0; n < 11; n++ ){
+                    FullEvolution ea;
+                    ea = new FullEvolution(matAtrHandler, matrizTreino, matrizValidation, nroClasses, 30, numDiscretizations); // FullEvolution deve retornar melhor individuo
+                    if(ea.getAcc() > maior){
+                        maior = ea.getAcc();
+                        bestModel = ea;
+                    }
+
+                }
+
+                System.out.println(bestModel.predict(matrizTeste));
+
+
+
+              //  networksFull = null;
+              //  vetAtrHandler = null;
+
+                it++;
+            } // fim do while it < 10        -- cross validation --
+
+        }
+
+        //  System.out.println();
+      /*  for(int i = 0; i < desvio1.length; i++){
+            desvio1[i] = Math.sqrt((somaQuadClassification1[i] - (Math.pow(somaClassification1[i],2)/cont))/(cont-1));
+            mediaClass1[i] = somaClassification1[i]/cont;
+            System.out.println(show.format(i*0.1) + "  " + show.format(mediaClass1[i]) + "   " + show.format(desvio1[i]));
+        }
+        */
+
+
+        desvio = Math.sqrt((somaQuadClassification - (Math.pow(somaClassification,2)/cont))/(cont-1));
+        System.out.println(show.format(somaClassification/cont) + "   " + show.format(desvio));
+
+
+        // System.out.println(mediaClass + "  " + desvio);// + "  " + mediaCenter + "  " + desvioCenter + "  " +  newMediaClass + "  " + newDesvio);
+
+
+    }
 
     public void stratifiedCrossValidationGeneticallyDefinedStructure(double[][] matriz, int v){
 
@@ -1292,8 +1455,8 @@ public class DecisionNetwork {
                         vetAtrHandler[a].Categorical();
 
                     //  vetAtrHandler[a].optmizeIntervals();
-                    //   vetAtrHandler[a].histogramPart(3);        // numero de intervalos n�o de thresholds.   retirar para o caso de info gain
-                    vetAtrHandler[a].calculateIntervalGain();    // calcula ganho de informa��o de intervalo atual
+                    //   vetAtrHandler[a].histogramPart(3);        // numero de intervalos nao de thresholds.   retirar para o caso de info gain
+                    vetAtrHandler[a].calculateIntervalGain();    // calcula ganho de informacao de intervalo atual
                     if(vetAtrHandler[a].getIntervalGain() == 0){
                         auxAtr[a] = 1;
                         contAtrZero++;
@@ -3211,7 +3374,7 @@ public class DecisionNetwork {
 
     }
 
-    public double[][] ImputacaoAbDG(double[][] matriz){        // m�todo em duas vias para imputa��o  - metodo cria matriz completa
+    public double[][] ImputacaoAbDG(double[][] matriz){        // metodo em duas vias para imputa��o  - metodo cria matriz completa
 
            double[][] oneClassTrain;
            int line = matriz.length;
@@ -3291,7 +3454,7 @@ public class DecisionNetwork {
 
 
 
-    public void criaDominioImputadoAbDG(double[][] matriz, String fileName){        // m�todo em duas vias para imputa��o  - metodo cria matriz completa
+    public void criaDominioImputadoAbDG(double[][] matriz, String fileName){        // metodo em duas vias para imputao  - metodo cria matriz completa
 
         double[][] oneClassTrain;
         int line = matriz.length;
@@ -6563,6 +6726,48 @@ public class DecisionNetwork {
        // System.out.println();
     }
 
+    public void particionaAtributoCriaMatAtrHandler(double[][] matriz, int numDicretizations){
+            // cria matAtrHandler numero de atrbitutos x numero de discretizadores
+            // vetor de vetAttrHandler, um para cada metodo de discretização.
+
+        int line = matriz.length;
+        int coll = matriz[0].length;
+        double[][] MO;
+        double[] noRep;
+        thresholds = new double[line];
+        matAtrHandler = new AttributeHandler[coll-1][numDicretizations];
+
+        for(int a = 0; a < coll - 1; a++){
+
+            MO = quicksort(selecionaAtributo(matriz,a),0,line-1);     // atributo 1
+
+            //########################################################### Imputacao
+            // MO = retiraEmptyValue(MO);   // usado em imputaçao para retirar valores vazios
+
+
+   /*   for(int i = 0; i < line; i++) {
+         for(int j = 0; j < 2; j++)
+            System.out.print(MO[i][j] + " ");
+      System.out.println();
+      }
+   */
+            contThreshold = 0;
+            for(int z = 0; z < line; z++)         // zera vetor de threshold  - valor nulo deve ser nada usual
+                thresholds[z] = 10000000;
+
+            //  particionaEmDois(MO);     //   #######   cria thresholds usando arvore binaria   ######
+
+            noRep = retiraRepeticao(MO);
+
+            for(int b = 0; b < numDicretizations; b++)
+                matAtrHandler[a][b] = new AttributeHandler(noRep, MO, Classes);
+            // vetAtrHandler[a].optmizeIntervals();       // ##### encontra intervalo otimo para particionamento que usa info gain #####
+
+
+        }
+        // System.out.println();
+    }
+
     public double[][] retiraEmptyValue(double[][] M){
 
         int line = M.length, cont = 0, aux = 0;
@@ -8631,6 +8836,10 @@ public class DecisionNetwork {
     Networks[] networks;
     NetworkFull networksFull;
     private AttributeHandler[] vetAtrHandler;
+
+    // extensão genética
+    private AttributeHandler[][] matAtrHandler;
+
     private static double[] thresholds;
     private static int contThreshold;
     private int numAtr, nroClasses;
